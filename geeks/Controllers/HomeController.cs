@@ -10,15 +10,11 @@ namespace geeks.Controllers
     {
         public ActionResult Index()
         {
-            ViewBag.Message = "Organise a night out without all the game theory. Who is going? Who is not going? Will there be enough people I like? Why not relax and let the machines decide.";
-
             return View();
         }
 
         public ActionResult About()
         {
-            ViewBag.Message = "Your app description page.";
-
             return View();
         }
 
