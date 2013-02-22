@@ -11,47 +11,67 @@
         <meta name="viewport" content="width=device-width">
 
         <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
-
-        @Styles.Render("~/Content/css")
-        <link href='http://fonts.googleapis.com/css?family=Russo+One|Press+Start+2P|Audiowide' rel='stylesheet' type='text/css'>
-        @Scripts.Render("~/bundles/modernizr")
-    </head>
-    <body>
-        <header>
-            <div class="content-wrapper">
-                <div class="float-left">
-                    <p class="site-title">@Html.ActionLink("Geeks Night Out", "Index", "Home")</p>
-                </div>
-                <div class="float-right">
-                    <section id="login">
-                        @Html.Partial("_LoginPartial")
-                    </section>
-                    <nav>
-                        <ul id="menu">
-                            <li>@Html.ActionLink("Home", "Index", "Home")</li>
-                            <li>@Html.ActionLink("Get Started", "Start", "Home")</li>
-                            <li>@Html.ActionLink("About", "About", "Home")</li>
-                        </ul>
-                    </nav>
-                </div>
-            </div>
-        </header>
-        <div id="body">
-            @RenderSection("featured", required: false)
-            <section class="content-wrapper main-content clear-fix">
-                @RenderBody()
-            </section>
-        </div>
-        <footer>
-            <div class="content-wrapper">
-                <div class="float-left">
-                    <p>&copy; @DateTime.Now.Year - Geeks Night Out</p>
-                </div>
-            </div>
-        </footer>
         
-        @Scripts.Render("~/bundles/jquery")
-        @RenderSection("scripts", required: false)
+        @Styles.Render("~/bundles/css")
+        <link href='http://fonts.googleapis.com/css?family=Russo+One|Press+Start+2P|Audiowide' rel='stylesheet' type='text/css'>
+    </head>
+<body>
+    <div class="container">
 
-    </body>
+        <div class="row">
+            <div class="span3 offset1 logo"></div>
+            <div class="span7">
+                <div class="row">
+                    <ul class="nav nav-tabs">
+                        <li class="active">
+                            @Html.ActionLink("Home", "Index", "Home")
+                        </li>
+                        <li>
+                            @Html.ActionLink("Events", "Events", "Home")
+                        </li>
+                        <li>
+                            @Html.ActionLink("About", "About", "Home")
+                        </li>
+                        @if (!Request.IsAuthenticated)
+                        {
+                            <li class="pull-right">@Html.ActionLink("Register", "Register", "Account", routeValues: null, htmlAttributes: new {id = "registerLink"})</li>
+                            <li class="pull-right">@Html.ActionLink("Log in", "Login", "Account", routeValues: null, htmlAttributes: new {id = "loginLink"})</li>
+                        }
+                        else
+                        {
+                            <li class="pull-right">@Html.ActionLink("Log Off", "LogOff", "Account", routeValues: null, htmlAttributes: new { @id = "logOff", @class = "postLink" })</li>
+                            <li class="pull-right">@Html.ActionLink(User.Identity.Name, "Manage", "Account", routeValues: null, htmlAttributes: new { title = "Manage" })</li>
+                        }
+                    </ul>
+                </div>
+                <div class="row">
+                    <h1 class="geek pull-right">Geeks Night Out</h1>    
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="span10 offset1">
+                @RenderBody()
+            </div>
+        </div>
+        <div class="row">
+            <p class="span10 offset1">&copy; @DateTime.Now.Year - Geeks Night Out</p>
+        </div>
+    </div>
+        
+    @Scripts.Render("~/bundles/script")
+    @RenderSection("scripts", required: false)
+    
+    <script type="text/javascript">
+      $(function(){
+        $("a.postLink").click(function(e){
+            e.preventDefault();
+            $.post($(this).attr("href"),function(data) {
+                window.location.href = window.location.href;
+            });
+        });    
+      });    
+    </script>
+
+</body>
 </html>

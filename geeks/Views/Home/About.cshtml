@@ -2,11 +2,12 @@
     ViewBag.Title = "About";
 }
 
-<hgroup class="title">
-    <h1>@ViewBag.Title</h1>
-</hgroup>
+<div class="content">
+    <hgroup class="title">
+              <h1>@ViewBag.Title</h1>
+          </hgroup>
 
-<article>
+
     <p>
         This site was created because I noticed something about the way blokes behave when organising 
         a night out. One person will send out an email suggesting the night out to a long list of other
@@ -30,16 +31,4 @@
     <p>
         You're joking right? You don't really think like that? I'm half joking. More like a quarter.
     </p>
-</article>
-
-<aside>
-    <h3>Aside Title</h3>
-    <p>
-        Use this area to provide additional information.
-    </p>
-    <ul>
-        <li>@Html.ActionLink("Home", "Index", "Home")</li>
-        <li>@Html.ActionLink("About", "About", "Home")</li>
-        <li>@Html.ActionLink("Contact", "Contact", "Home")</li>
-    </ul>
-</aside>
+</div>

@@ -19,7 +19,7 @@ namespace geeks.Controllers
         }
 
         [Authorize]
-        public ActionResult Start()
+        public ActionResult Events()
         {
             ViewBag.Message = "Create an event";
 

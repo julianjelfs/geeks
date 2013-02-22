@@ -8,13 +8,11 @@ namespace geeks
         // For more information on Bundling, visit http://go.microsoft.com/fwlink/?LinkId=254725
         public static void RegisterBundles(BundleCollection bundles)
         {
-            bundles.Add(new StyleBundle("~/Content/css").Include("~/Content/*.css"));
+            bundles.Add(new StyleBundle("~/bundles/css").Include("~/css/bootstrap.css", "~/css/styles.css"));
 
-            bundles.Add(new ScriptBundle("~/bundles/modernizr").Include(
-                        "~/Scripts/modernizr-*"));
-
-            bundles.Add(new ScriptBundle("~/bundles/jquery").Include(
-                        "~/Scripts/jquery-{version}.js"));
+            bundles.Add(new ScriptBundle("~/bundles/script").Include(
+                        "~/js/jquery-{version}.min.js",
+                        "~/js/bootstrap.js"));
 
             /*bundles.Add(new ScriptBundle("~/bundles/jqueryui").Include(
                         "~/Scripts/jquery-ui-{version}.js"));
