@@ -22,25 +22,25 @@
             <div class="span3 offset1 logo"></div>
             <div class="span7">
                 <div class="row">
-                    <ul class="nav nav-tabs">
-                        <li class="active">
+                    <ul id="nav-bar" class="nav nav-tabs">
+                        <li id="home-nav">
                             @Html.ActionLink("Home", "Index", "Home")
                         </li>
-                        <li>
+                        <li id="events-nav">
                             @Html.ActionLink("Events", "Events", "Home")
                         </li>
-                        <li>
+                        <li id="about-nav">
                             @Html.ActionLink("About", "About", "Home")
                         </li>
                         @if (!Request.IsAuthenticated)
                         {
-                            <li class="pull-right">@Html.ActionLink("Register", "Register", "Account", routeValues: null, htmlAttributes: new {id = "registerLink"})</li>
-                            <li class="pull-right">@Html.ActionLink("Log in", "Login", "Account", routeValues: null, htmlAttributes: new {id = "loginLink"})</li>
+                            <li id="register-nav" class="pull-right">@Html.ActionLink("Register", "Register", "Account", routeValues: null, htmlAttributes: new {id = "registerLink"})</li>
+                            <li id="login-nav" class="pull-right">@Html.ActionLink("Log in", "Login", "Account", routeValues: null, htmlAttributes: new {id = "loginLink"})</li>
                         }
                         else
                         {
-                            <li class="pull-right">@Html.ActionLink("Log Off", "LogOff", "Account", routeValues: null, htmlAttributes: new { @id = "logOff", @class = "postLink" })</li>
-                            <li class="pull-right">@Html.ActionLink(User.Identity.Name, "Manage", "Account", routeValues: null, htmlAttributes: new { title = "Manage" })</li>
+                            <li id="logoff-nav" class="pull-right">@Html.ActionLink("Log Off", "LogOff", "Account", routeValues: null, htmlAttributes: new { @id = "logOff", @class = "postLink" })</li>
+                            <li id="manage-nav" class="pull-right">@Html.ActionLink(User.Identity.Name, "Manage", "Account", routeValues: null, htmlAttributes: new { title = "Manage" })</li>
                         }
                     </ul>
                 </div>
@@ -60,9 +60,10 @@
     </div>
         
     @Scripts.Render("~/bundles/script")
-    @RenderSection("scripts", required: false)
     
     <script type="text/javascript">
+      @RenderSection("scripts", required: false)
+    
       $(function(){
         $("a.postLink").click(function(e){
             e.preventDefault();

@@ -29,6 +29,9 @@ else
 </section>
 
 @section Scripts {
-    @Scripts.Render("~/bundles/jqueryval")
+    $(function(){
+        $("#nav-bar li.active").removeClass("active");
+        $("#manage-nav").addClass("active");
+    });
 }
 </div>

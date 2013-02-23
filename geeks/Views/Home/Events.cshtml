@@ -21,3 +21,10 @@
         Finally you will also be able to create a new event
     </p>
 </div>
+
+@section scripts{
+    $(function(){
+        $("#nav-bar li.active").removeClass("active");
+        $("#events-nav").addClass("active");
+    });
+}

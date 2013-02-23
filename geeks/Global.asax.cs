@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Web;
 using System.Web.Http;
 using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
+using Raven.Client.Document;
+using Raven.Client.Indexes;
 
 namespace geeks
 {
@@ -14,6 +17,8 @@ namespace geeks
 
     public class MvcApplication : System.Web.HttpApplication
     {
+        public static DocumentStore Store;
+
         protected void Application_Start()
         {
             AreaRegistration.RegisterAllAreas();
@@ -23,6 +28,15 @@ namespace geeks
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
             AuthConfig.RegisterAuth();
+
+            StartRaven();
+        }
+
+        private static void StartRaven()
+        {
+            Store = new DocumentStore {ConnectionStringName = "RavenDB"};
+            Store.Initialize();
+            IndexCreation.CreateIndexes(Assembly.GetCallingAssembly(), Store);
         }
     }
 }

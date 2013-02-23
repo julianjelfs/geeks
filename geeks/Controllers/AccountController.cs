@@ -15,7 +15,7 @@ namespace geeks.Controllers
 {
     [Authorize]
     [InitializeSimpleMembership]
-    public class AccountController : Controller
+    public class AccountController : RavenController
     {
         //
         // GET: /Account/Login

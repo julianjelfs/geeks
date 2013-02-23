@@ -4,8 +4,8 @@
 
 <div class="content">
     <hgroup class="title">
-              <h2 class="geek">@ViewBag.Title</h2>
-          </hgroup>
+        <h2 class="geek">@ViewBag.Title</h2>
+    </hgroup>
 
 
     <p>
@@ -32,3 +32,10 @@
         You're joking right? You don't really think like that? I'm half joking. More like a quarter.
     </p>
 </div>
+
+@section scripts{
+    $(function(){
+        $("#nav-bar li.active").removeClass("active");
+        $("#about-nav").addClass("active");
+    });
+}

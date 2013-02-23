@@ -6,7 +6,7 @@ using System.Web.Mvc;
 
 namespace geeks.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController : RavenController
     {
         public ActionResult Index()
         {
@@ -22,6 +22,7 @@ namespace geeks.Controllers
         public ActionResult Events()
         {
             ViewBag.Message = "Create an event";
+
 
             return View();
         }
