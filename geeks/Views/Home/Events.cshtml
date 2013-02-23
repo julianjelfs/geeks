@@ -1,14 +1,60 @@
-﻿@{
+﻿@model IEnumerable<geeks.Models.EventModel>
+
+@{
     ViewBag.Title = "Events";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <div class="content">
     <h2 class="geek">Events</h2>
+    
+    @Html.ActionLink("Create an event", "Event", "Home", routeValues: new { id = 0 }, htmlAttributes: new { @id = "add-event", @class = "btn" })
+    
+    <br/>
+    
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Venue</th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var ev in Model)
+            {
+                <tr>
+                    <td>@ev.Title</td>
+                    <td>@ev.Venue</td>
+                    <td>
+                        @Html.ActionLink("Edit", "Event", "Home", routeValues:new {id=@ev.Id}, htmlAttributes: new { @id = "edit-event", @class = "btn btn-block" })
+                    </td>
+                    <td>
+                        <a href="#delete-warning" role="button" class="btn btn-block" data-toggle="modal">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    
+    <div id="delete-warning" class="modal hide fade">
+        <div class="modal-header">
+            <h3 class="geek">Cancel Event</h3>
+        </div>
+        <div class="modal-body">
+            <p>
+                Are you sure you want to cancel this event? 
+                If you proceed, a notification email will be sent to 
+                everyone that you invited.
+            </p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-info" data-dismiss="modal" aria-hidden="true">No</button>
+            <button class="btn">Yes</button>
+        </div>
+    </div>
 
-    <p>
-        This will display a list of events that you have either created or been invited to
-    </p>
     <p>
         You will have the option to drill into a specific event to see the details and whether
         it is green or red
@@ -20,6 +66,10 @@
     <p>
         Finally you will also be able to create a new event
     </p>
+</div>
+
+<div>
+    
 </div>
 
 @section scripts{

@@ -1,0 +1,30 @@
+﻿@model geeks.Models.EventModel
+
+@{
+    ViewBag.Title = "Event";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content">
+@using (Html.BeginForm()) {
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true)
+
+    <fieldset>
+        <legend class="geek">Enter details to create a new event</legend>
+        @Html.TextBoxFor(m => m.Title, htmlAttributes: new { @class = "input-xlarge input-block-level", @placeholder = "Title" })
+        @Html.ValidationMessageFor(m => m.Title)
+        @Html.TextAreaFor(m => m.Description, htmlAttributes: new { @class = "input-xlarge input-block-level", @placeholder = "Description" })
+        @Html.ValidationMessageFor(m => m.Description)
+        @Html.TextBoxFor(m => m.Date, htmlAttributes: new { @class = "input-xlarge input-block-level", @placeholder = "Date and time" })
+        @Html.ValidationMessageFor(m => m.Date)
+        <br/>
+        @Html.TextBoxFor(m => m.Venue, htmlAttributes: new { @class = "input-xlarge input-block-level", @placeholder = "Venue" })
+        @Html.ValidationMessageFor(m => m.Venue)
+        <br/>
+        <button class="btn" type="submit">Save</button>
+        <br/>
+        @Html.ActionLink("Back to list", "Events", "Home")
+    </fieldset>
+}
+</div>
