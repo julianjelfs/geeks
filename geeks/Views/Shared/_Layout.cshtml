@@ -40,7 +40,7 @@
                         else
                         {
                             <li id="logoff-nav" class="pull-right">@Html.ActionLink("Log Off", "LogOff", "Account", routeValues: null, htmlAttributes: new { @id = "logOff", @class = "postLink" })</li>
-                            <li id="manage-nav" class="pull-right">@Html.ActionLink(User.Identity.Name, "Manage", "Account", routeValues: null, htmlAttributes: new { title = "Manage" })</li>
+                            <li id="manage-nav" class="pull-right">@Html.ActionLink(User.Identity.Name, "Manage", "Account")</li>
                         }
                     </ul>
                 </div>
@@ -70,7 +70,14 @@
             $.post($(this).attr("href"),function(data) {
                 window.location.href = window.location.href;
             });
-        });    
+        });
+          $("#manage-nav").tooltip({
+            animation : true,
+            title : 'Manager your account settings',
+            trigger : 'hover',
+            placement : 'bottom',
+            delay : 200
+          });
       });    
     </script>
 
