@@ -54,15 +54,16 @@
                 @RenderBody()
             </div>
         </div>
-        <div class="row">
+        <div class="row footer">
             <p class="span10 offset1">&copy; @DateTime.Now.Year - Geek's Dilemma</p>
         </div>
     </div>
         
     @Scripts.Render("~/bundles/script")
     
+    @RenderSection("scripts", required: false)
+
     <script type="text/javascript">
-      @RenderSection("scripts", required: false)
     
       $(function(){
         $("a.postLink").click(function(e){

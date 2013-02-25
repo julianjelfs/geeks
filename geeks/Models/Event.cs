@@ -30,5 +30,9 @@ namespace geeks.Models
         [DataType(DataType.MultilineText)]
         [Display(Name = "Venue")]
         public string Venue { get; set; }
+        
+        [DataType(DataType.Text)]
+        [Display(Name = "Created By")]
+        public string CreatedBy { get; set; }
     }
 }

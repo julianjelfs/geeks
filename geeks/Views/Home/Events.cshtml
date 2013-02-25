@@ -10,13 +10,14 @@
     
     @Html.ActionLink("Create an event", "Event", "Home", routeValues: new { id = 0 }, htmlAttributes: new { @id = "add-event", @class = "btn" })
     
-    <br/>
+    <p></p>
     
-    <table class="table table-bordered">
+    <table class="table table-hover">
         <thead>
             <tr>
                 <th>Title</th>
                 <th>Venue</th>
+                <th>Created By</th>
                 <th width="40px"></th>
                 <th width="40px"></th>
                 <th width="40px"></th>
@@ -26,13 +27,14 @@
             @foreach (var ev in Model)
             {
                 <tr>
-                    <td>@Html.Encode(ev.Title)</td>
-                    <td>@Html.Encode(ev.Venue)</td>
+                    <td>@ev.Title</td>
+                    <td>@ev.Venue</td>
+                    <td>@ev.CreatedBy</td>
                     <td>
                         @Html.ActionLink("Edit", "Event", "Home", routeValues:new {id=@ev.Id}, htmlAttributes: new { @id = "edit-event", @class = "btn btn-block" })
                     </td>
                     <td>
-                        <a href="#delete-warning" role="button" class="delete-event btn" data-toggle="modal"><i class="icon-trash"></i></a>
+                        <a href="#delete-warning" role="button" class="delete-event btn" data-eventid="@ev.Id"><i class="icon-trash"></i></a>
                     </td>
                     <td>
                         <a href="#reschedule" role="button" class="reschedule-event btn" data-toggle="modal"><i class="icon-calendar"></i></a>
@@ -42,26 +44,22 @@
         </tbody>
     </table>
     
-    @using (Html.BeginForm("DeleteEvent", "Home"))
-    {
-        @Html.AntiForgeryToken()
-        <div id="delete-warning" class="modal hide">
-            <div class="modal-header">
-                <h3 class="geek">Cancel Event</h3>
-            </div>
-            <div class="modal-body">
-                <p>
-                    Are you sure you want to cancel this event? 
-                    If you proceed, a notification email will be sent to 
-                    everyone that you invited.
-                </p>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-info" data-dismiss="modal" aria-hidden="true">No</button>
-                <input type="submit" class="btn" value="Yes"/>
-            </div>
+    <div id="delete-warning" class="modal hide">
+        <div class="modal-header">
+            <h3 class="geek">Cancel Event</h3>
         </div>
-    }
+        <div class="modal-body">
+            <p>
+                Are you sure you want to cancel this event? 
+                If you proceed, a notification email will be sent to 
+                everyone that you invited.
+            </p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-info" data-dismiss="modal" aria-hidden="true">No</button>
+            <input id="delete-event" type="button" class="btn" value="Yes"/>
+        </div>
+    </div>
     
     <div id="reschedule" class="modal hide">
         <div class="modal-header">
@@ -77,39 +75,11 @@
             <button class="btn btn-info" data-dismiss="modal" aria-hidden="true">Done</button>
         </div>
     </div>
-
-    <p>
-        You will have the option to drill into a specific event to see the details and whether
-        it is green or red
-    </p>
-    <p>
-        You will also have the option to cancel / reschedule an event you created, or to update
-        your attendance
-    </p>
-    <p>
-        Finally you will also be able to create a new event
-    </p>
-</div>
-
-<div>
     
+    @Html.AntiForgeryToken()
+
 </div>
 
 @section scripts{
-    $(function(){
-        $("#nav-bar li.active").removeClass("active");
-        $("#events-nav").addClass("active");
-        $("a.delete-event").tooltip({
-            animation : true,
-            title : 'Cancel the event',
-            trigger : 'hover',
-            placement : 'right'
-    });
-    $("a.reschedule-event").tooltip({
-            animation : true,
-            title : 'Reschedule the event',
-            trigger : 'hover',
-            placement : 'right'
-        });
-    });
+    @Scripts.Render("~/js/events.js")
 }

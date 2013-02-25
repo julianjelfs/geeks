@@ -190,6 +190,7 @@
     <Content Include="img\logo.png" />
     <Content Include="js\bootstrap.js" />
     <Content Include="js\bootstrap.min.js" />
+    <Content Include="js\events.js" />
     <Content Include="js\jquery-1.9.1.min.js" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">

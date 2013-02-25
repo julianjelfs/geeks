@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using WebMatrix.WebData;
 using geeks.Models;
 
 namespace geeks.Controllers
@@ -37,27 +38,33 @@ namespace geeks.Controllers
             if (ModelState.IsValid)
             {
                 //save the event
+                if (model.Id == 0)
+                {
+                    model.CreatedBy = User.Identity.Name;
+                }
                 RavenSession.Store(model);
                 return RedirectToAction("Events");
             }
             return View();
         }
-        
+
+        [HttpPost]
         [Authorize]
-        public ActionResult DeleteEvent(int id)
+        [ValidateAntiForgeryToken]
+        public void DeleteEvent(int id)
         {
             var model = RavenSession.Load<EventModel>(id);
             if (model != null)
             {
                 RavenSession.Delete(model);
             }
-            return RedirectToAction("Events");
         }
 
         [Authorize]
         public ActionResult Events()
         {
             return View(from ev in RavenSession.Query<EventModel>()
+                        where ev.CreatedBy == User.Identity.Name
                         select ev);
         }
     }

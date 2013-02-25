@@ -12,14 +12,14 @@
 
     <fieldset>
         <legend class="geek">Enter details to create a new event</legend>
-        @Html.TextBoxFor(m => m.Title, htmlAttributes: new { @class = "input-xlarge input-block-level", @placeholder = "Title" })
+        @Html.TextBoxFor(m => m.Title, htmlAttributes: new { @class = "input-xxlarge input-block-level", @placeholder = "Title" })
         @Html.ValidationMessageFor(m => m.Title)
-        @Html.TextAreaFor(m => m.Description, htmlAttributes: new { @class = "input-xlarge input-block-level", @placeholder = "Description" })
+        @Html.TextAreaFor(m => m.Description, htmlAttributes: new { @class = "input-xxlarge input-block-level", @placeholder = "Description" })
         @Html.ValidationMessageFor(m => m.Description)
-        @Html.TextBoxFor(m => m.Date, htmlAttributes: new { @class = "input-xlarge input-block-level", @placeholder = "Date and time" })
+        @Html.TextBoxFor(m => m.Date, htmlAttributes: new { @class = "input-xxlarge input-block-level", @placeholder = "Date and time" })
         @Html.ValidationMessageFor(m => m.Date)
         <br/>
-        @Html.TextBoxFor(m => m.Venue, htmlAttributes: new { @class = "input-xlarge input-block-level", @placeholder = "Venue" })
+        @Html.TextBoxFor(m => m.Venue, htmlAttributes: new { @class = "input-xxlarge input-block-level", @placeholder = "Venue" })
         @Html.ValidationMessageFor(m => m.Venue)
         <br/>
         <button class="btn" type="submit">Save</button>

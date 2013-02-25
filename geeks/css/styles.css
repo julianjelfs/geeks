@@ -87,6 +87,11 @@ ol.round li.nine {
 }
 
 div.content {
-	background-color: #eee;
-	padding:10px;
+	background-color: #f9f9f9;
+	padding:20px;
+	border: 1px solid rgb(221, 221, 221);
+}
+
+div.footer {
+	margin-top: 40px;
 }
