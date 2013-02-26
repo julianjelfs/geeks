@@ -5,4 +5,9 @@
 
 <div class="content">
     <h2 class="geek">Import from @ViewBag.ImportFrom</h2>
+    
+    @using (Html.BeginForm()) {
+        @Html.ActionLink("Import", "AuthoriseGoogleImport", "Import", htmlAttributes:new {@class="btn"})
+    }
+
 </div>

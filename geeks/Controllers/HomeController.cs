@@ -67,11 +67,5 @@ namespace geeks.Controllers
                         where ev.CreatedBy == User.Identity.Name
                         select ev);
         }
-        
-        [Authorize]
-        public ActionResult Friends()
-        {
-            return View(new List<FriendModel>());
-        }
     }
 }
