@@ -2,33 +2,35 @@
 
 @if (Model.Count > 0)
 {
-    <h3>Registered external logins</h3>
-    <table>
-        <tbody>
-        @foreach (geeks.Models.ExternalLogin externalLogin in Model)
-        {
-            <tr>
-                <td>@externalLogin.ProviderDisplayName</td>
-                <td>
-                    @if (ViewBag.ShowRemoveButton)
-                    {
-                        using (Html.BeginForm("Disassociate", "Account"))
+    <fieldset>
+        <legend class="geek">Registered external logins</legend>
+    
+        <table>
+            <tbody>
+                @foreach (geeks.Models.ExternalLogin externalLogin in Model)
+                {
+                    <tr>
+                        <td>
+                        @if (ViewBag.ShowRemoveButton)
                         {
-                            @Html.AntiForgeryToken()
-                            <fieldset>
-                                @Html.Hidden("provider", externalLogin.Provider)
-                                @Html.Hidden("providerUserId", externalLogin.ProviderUserId)
-                                <input type="submit" value="Remove" title="Remove this @externalLogin.ProviderDisplayName credential from your account" />
-                            </fieldset>
+                            using (Html.BeginForm("Disassociate", "Account"))
+                            {
+                                @Html.AntiForgeryToken()
+                                <fieldset>
+                                    @Html.Hidden("provider", externalLogin.Provider)
+                                    @Html.Hidden("providerUserId", externalLogin.ProviderUserId)
+                                    <input type="submit" value="Remove @externalLogin.ProviderDisplayName" class="btn" title="Remove this @externalLogin.ProviderDisplayName credential from your account" />
+                                </fieldset>
+                            }
                         }
-                    }
-                    else
-                    {
-                        @: &nbsp;
-                    }
-                </td>
-            </tr>
-        }
-        </tbody>
-    </table>
+                        else
+                        {
+                            @externalLogin.ProviderDisplayName
+                        }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        </fieldset>
 }

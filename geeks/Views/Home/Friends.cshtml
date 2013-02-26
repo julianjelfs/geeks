@@ -1,0 +1,50 @@
+﻿@model IEnumerable<geeks.Models.FriendModel>
+@{
+    ViewBag.Title = "Friends";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content">
+<h2 class="geek">Friends</h2>
+
+@if (!Model.Any())
+{
+    <p>Would you like to import friends from other accounts?</p>
+    
+    <div class="dropdown">
+        <a id="import-drop" href="#" role="button" class="dropdown-toggle btn" data-toggle="dropdown">Import <b class="caret"></b></a>
+        <ul class="dropdown-menu" role="menu" aria-labelledby="import-drop">
+            <li role="presentation">
+                @Html.ActionLink("Import from facebook", "ImportFacebook", "Import", routeValues:null, htmlAttributes: new {@role = "menuitem", @tabindex = "-1"})
+            </li>
+            <li role="presentation">
+                @Html.ActionLink("Import from google", "ImportGoogle", "Import", routeValues: null, htmlAttributes: new { @role = "menuitem", @tabindex = "-1" })
+            </li>
+            <li role="presentation">
+                @Html.ActionLink("Import from twitter", "ImportTwitter", "Import", routeValues: null, htmlAttributes: new { @role = "menuitem", @tabindex = "-1" })
+            </li>
+        </ul>
+
+    </div>
+}
+else
+{
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var ev in Model)
+            {
+                <tr>
+                    <td>@ev.Name</td>
+                    <td>@ev.Email</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+</div>
