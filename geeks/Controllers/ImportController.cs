@@ -1,9 +1,13 @@
 ﻿using System;
+using System.Linq;
 using System.Web.Mvc;
 using DotNetOpenAuth.Messaging;
 using DotNetOpenAuth.OAuth2;
 using Google.Contacts;
 using Google.GData.Client;
+using Google.GData.Extensions;
+using System.Collections.Generic;
+using geeks.Models;
 
 namespace geeks.Controllers
 {
@@ -48,16 +52,9 @@ namespace geeks.Controllers
 
         private ActionResult InitAuth()
         {
-            var state = new AuthorizationState();
-            string uri = Request.Url.AbsoluteUri;
-            uri = RemoveQueryStringFromUri(uri);
-            state.Callback = new Uri(uri);
-
-//            state.Scope.Add("https://www.googleapis.com/auth/userinfo.profile");
-//            state.Scope.Add("https://www.googleapis.com/auth/userinfo.email");
-//            state.Scope.Add("https://www.googleapis.com/auth/calendar");
+            var state = new AuthorizationState {Callback = new Uri(RemoveQueryStringFromUri(Request.Url.AbsoluteUri))};
             state.Scope.Add("https://www.google.com/m8/feeds");
-            OutgoingWebResponse r = client.PrepareRequestUserAuthorization(state);
+            var r = client.PrepareRequestUserAuthorization(state);
             return r.AsActionResult();
         }
 
@@ -73,17 +70,19 @@ namespace geeks.Controllers
 
         private ActionResult OAuthCallback()
         {
-            IAuthorizationState auth = client.ProcessUserAuthorization(Request);
+            var auth = client.ProcessUserAuthorization(Request);
             Session["auth"] = auth;
-
-
             var settings = new RequestSettings("<var>Geeks Dilemma</var>", auth.AccessToken);
-            // Add authorization token.
-            // ...
-
             var cr = new ContactsRequest(settings);
-            Feed<Contact> contacts = cr.GetContacts();
-            return null;
+            var contacts = cr.GetContacts();
+            ViewBag.ImportFrom = "Google";
+            return View("Import", (from contact in contacts.Entries
+                                   from email in contact.Emails
+                                   select new ImportModel {
+                                       Import = false,
+                                       EmailAddress = email.Address,
+                                       Name = contact.Name.FullName
+                                   }).ToList());
         }
 
 
@@ -91,7 +90,7 @@ namespace geeks.Controllers
         public ActionResult ImportFacebook()
         {
             ViewBag.ImportFrom = "Facebook";
-            return View("Import");
+            return View("Import");  
         }
 
         [Authorize]
@@ -99,6 +98,35 @@ namespace geeks.Controllers
         {
             ViewBag.ImportFrom = "Twitter";
             return View("Import");
+        }
+        
+        [Authorize]
+        public ActionResult Friends()
+        {
+            var user = (from u in RavenSession.Query<UserModel>()
+                        where u.UserName == User.Identity.Name
+                        select u).FirstOrDefault();
+
+            return View(user == null
+                              ? new List<FriendModel>()
+                              : user.Friends);
+        }
+
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public ActionResult PerformImport(List<ImportModel> model)
+        {
+            var user = (from u in RavenSession.Query<UserModel>()
+                       where u.UserName == User.Identity.Name
+                       select u).FirstOrDefault();
+            user = user ?? new UserModel {UserName = User.Identity.Name};
+
+            user.Friends = (from i in model
+                            select new FriendModel {Name = i.Name, Email = i.EmailAddress}).ToList();
+
+            RavenSession.Store(user);
+
+            return View("Friends", user.Friends);
         }
     }
 }

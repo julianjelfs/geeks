@@ -242,6 +242,7 @@
     <Compile Include="Models\AccountModels.cs" />
     <Compile Include="Models\Event.cs" />
     <Compile Include="Models\FriendModel.cs" />
+    <Compile Include="Models\ImportModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
