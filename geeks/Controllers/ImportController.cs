@@ -5,6 +5,7 @@ using DotNetOpenAuth.Messaging;
 using DotNetOpenAuth.OAuth2;
 using Google.Contacts;
 using Google.GData.Client;
+using Google.GData.Contacts;
 using Google.GData.Extensions;
 using System.Collections.Generic;
 using geeks.Models;
@@ -72,16 +73,23 @@ namespace geeks.Controllers
         {
             var auth = client.ProcessUserAuthorization(Request);
             Session["auth"] = auth;
-            var settings = new RequestSettings("<var>Geeks Dilemma</var>", auth.AccessToken);
-            var cr = new ContactsRequest(settings);
-            var contacts = cr.GetContacts();
+            var authFactory = new GAuthSubRequestFactory("cp", "Geeks Dilemma") {Token = auth.AccessToken};
+            var service = new ContactsService(authFactory.ApplicationName) {RequestFactory = authFactory};
+
+            //var settings = new RequestSettings("<var>Geeks Dilemma</var>", auth.AccessToken);
+            //var cr = new ContactsRequest(settings);
+            var query = new ContactsQuery(ContactsQuery.CreateContactsUri("default"));
+            query.NumberToRetrieve = 1000;
+            var contacts = service.Query(query);
             ViewBag.ImportFrom = "Google";
-            return View("Import", (from contact in contacts.Entries
-                                   from email in contact.Emails
+            return View("Import", (from ContactEntry entry in contacts.Entries
+                                   from email in entry.Emails
+                                   where entry.Name != null
+                                   where email != null
                                    select new ImportModel {
                                        Import = false,
                                        EmailAddress = email.Address,
-                                       Name = contact.Name.FullName
+                                       Name = entry.Name.FullName
                                    }).ToList());
         }
 
@@ -109,7 +117,7 @@ namespace geeks.Controllers
 
             return View(user == null
                               ? new List<FriendModel>()
-                              : user.Friends);
+                              : user.Friends.OrderBy(f => f.Name).ToList());
         }
 
         [Authorize]
@@ -123,7 +131,7 @@ namespace geeks.Controllers
 
 
             user.Friends = user.Friends.Union(from i in model
-                            where user.Friends.SingleOrDefault(f => f.Email == i.EmailAddress) == null
+                            where !user.Friends.Any(f => f.Email == i.EmailAddress)
                             select new FriendModel {Name = i.Name, Email = i.EmailAddress}).ToList();
 
             RavenSession.Store(user);
