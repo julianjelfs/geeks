@@ -63,7 +63,7 @@ namespace geeks.Controllers
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
-        public void DeleteFriend(string id)
+        public PartialViewResult DeleteFriend(string id)
         {
             var user = (from u in RavenSession.Query<UserModel>()
                         where u.UserName == User.Identity.Name
@@ -73,6 +73,24 @@ namespace geeks.Controllers
                 user.Friends.RemoveAll(f => f.Email == id);
                 RavenSession.Store(user);
             }
+            return PartialView("FriendsTable", FriendsInternal());
+        }
+
+        private IEnumerable<FriendModel> FriendsInternal()
+        {
+            var user = (from u in RavenSession.Query<UserModel>()
+                        where u.UserName == User.Identity.Name
+                        select u).FirstOrDefault();
+
+            return user == null
+                       ? new List<FriendModel>()
+                       : user.Friends.OrderBy(f => f.Name).ToList();
+        }
+        
+        [Authorize]
+        public ActionResult Friends()
+        {
+            return View(FriendsInternal());
         }
 
         [Authorize]

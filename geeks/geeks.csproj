@@ -296,10 +296,13 @@
     <Content Include="Views\Home\Event.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Views\Import\Friends.cshtml" />
+    <Content Include="Views\Home\Friends.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Import\Import.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Home\FriendsTable.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

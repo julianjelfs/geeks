@@ -82,6 +82,7 @@ namespace geeks.Controllers
             query.NumberToRetrieve = 1000;
             var contacts = service.Query(query);
             ViewBag.ImportFrom = "Google";
+
             return View("Import", (from ContactEntry entry in contacts.Entries
                                    from email in entry.Emails
                                    where entry.Name != null
@@ -108,18 +109,6 @@ namespace geeks.Controllers
             return View("Import");
         }
         
-        [Authorize]
-        public ActionResult Friends()
-        {
-            var user = (from u in RavenSession.Query<UserModel>()
-                        where u.UserName == User.Identity.Name
-                        select u).FirstOrDefault();
-
-            return View(user == null
-                              ? new List<FriendModel>()
-                              : user.Friends.OrderBy(f => f.Name).ToList());
-        }
-
         [Authorize]
         [ValidateAntiForgeryToken]
         public ActionResult PerformImport(List<ImportModel> model)
