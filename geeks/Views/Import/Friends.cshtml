@@ -6,34 +6,33 @@
 
 <div class="content">
     <h2 class="geek">Friends</h2>
-
-    @if (!Model.Any())
-    {
-        <p>Would you like to import friends from other accounts?</p>
     
-        <div class="dropdown">
-            <a id="import-drop" href="#" role="button" class="dropdown-toggle btn" data-toggle="dropdown">Import <b class="caret"></b></a>
-            <ul class="dropdown-menu" role="menu" aria-labelledby="import-drop">
-                <li role="presentation">
-                    @Html.ActionLink("Import from facebook", "ImportFacebook", "Import", routeValues:null, htmlAttributes: new {@role = "menuitem", @tabindex = "-1"})
-                </li>
-                <li role="presentation">
-                    @Html.ActionLink("Import from google", "OAuth", "Import", routeValues: null, htmlAttributes: new { @role = "menuitem", @tabindex = "-1" })
-                </li>
-                <li role="presentation">
-                    @Html.ActionLink("Import from twitter", "ImportTwitter", "Import", routeValues: null, htmlAttributes: new { @role = "menuitem", @tabindex = "-1" })
-                </li>
-            </ul>
+    <p>Import friends from other accounts?</p>
+    
+    <div class="dropdown">
+        <a id="import-drop" href="#" role="button" class="dropdown-toggle btn" data-toggle="dropdown">Import <b class="caret"></b></a>
+        <ul class="dropdown-menu" role="menu" aria-labelledby="import-drop">
+            <li role="presentation">
+                @Html.ActionLink("Import from facebook", "ImportFacebook", "Import", routeValues:null, htmlAttributes: new {@role = "menuitem", @tabindex = "-1"})
+            </li>
+            <li role="presentation">
+                @Html.ActionLink("Import from google", "OAuth", "Import", routeValues: null, htmlAttributes: new { @role = "menuitem", @tabindex = "-1" })
+            </li>
+            <li role="presentation">
+                @Html.ActionLink("Import from twitter", "ImportTwitter", "Import", routeValues: null, htmlAttributes: new { @role = "menuitem", @tabindex = "-1" })
+            </li>
+        </ul>
 
-        </div>
-    }
-    else
+    </div>
+    
+    @if (Model.Any())
     {
         <table class="table table-hover">
             <thead>
                 <tr>
                     <th>Name</th>
                     <th>Email</th>
+                    <th width="40px"></th>
                 </tr>
             </thead>
             <tbody>
@@ -42,18 +41,57 @@
                     <tr>
                         <td>@ev.Name</td>
                         <td>@ev.Email</td>
+                        <td>
+                            <a href="#delete-warning" role="button" class="delete-friend btn" data-friend-email="@ev.Email"><i class="icon-trash"></i></a>
+                        </td>
                     </tr>
                 }
             </tbody>
         </table>
+        
+        <div id="delete-warning" class="modal hide">
+            <div class="modal-header">
+                <h3 class="geek">Delete Friend</h3>
+            </div>
+            <div class="modal-body">
+                <p>
+                    Are you sure you want to delete this friend? You will not be able to invite them to events any more if you do.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">No</button>
+                <input id="delete-friend" type="button" class="btn" value="Yes"/>
+            </div>
+        </div>
+        
+        @Html.AntiForgeryToken()
     }
 </div>
 
 @section scripts{
     <script type="text/javascript">
-        $(function(){
+        $(function() {
+            var selected = null;
             $("#nav-bar li.active").removeClass("active");
             $("#friends-nav").addClass("active");
+            $("a.delete-friend").tooltip({
+                animation: true,
+                title: 'Delete this friend',
+                trigger: 'hover',
+                placement: 'right'
+            }).click(function(e) {
+                e.preventDefault();
+                selected = $(this).attr('data-friend-email');
+                $("#delete-warning").modal();
+            });
+            $("#delete-friend").click(function(e) {
+                e.preventDefault();
+                $.post("/Home/DeleteFriend/" + selected, {
+                        __RequestVerificationToken: $("input[name='__RequestVerificationToken']").val()
+                    }, function(data) {
+                        window.location.href = window.location.href;
+                    });
+            });
         });
     </script>
 }

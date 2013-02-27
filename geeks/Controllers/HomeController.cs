@@ -59,6 +59,21 @@ namespace geeks.Controllers
                 RavenSession.Delete(model);
             }
         }
+        
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public void DeleteFriend(string id)
+        {
+            var user = (from u in RavenSession.Query<UserModel>()
+                        where u.UserName == User.Identity.Name
+                        select u).FirstOrDefault();
+            if (user != null)
+            {
+                user.Friends.RemoveAll(f => f.Email == id);
+                RavenSession.Store(user);
+            }
+        }
 
         [Authorize]
         public ActionResult Events()

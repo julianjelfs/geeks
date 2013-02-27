@@ -32,11 +32,11 @@
                         </td>
                         <td>
                             @Html.HiddenFor(m => m[i].Name)
-                            @Html.LabelFor(m => m[i].Name)
+                            @Model[i].Name
                         </td>
                         <td>
                             @Html.HiddenFor(m => m[i].EmailAddress)
-                            @Html.LabelFor(m => m[i].EmailAddress)
+                            @Model[i].EmailAddress
                         </td>
                     </tr>
                 }

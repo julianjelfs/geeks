@@ -121,7 +121,9 @@ namespace geeks.Controllers
                        select u).FirstOrDefault();
             user = user ?? new UserModel {UserName = User.Identity.Name};
 
-            user.Friends = (from i in model
+
+            user.Friends = user.Friends.Union(from i in model
+                            where user.Friends.SingleOrDefault(f => f.Email == i.EmailAddress) == null
                             select new FriendModel {Name = i.Name, Email = i.EmailAddress}).ToList();
 
             RavenSession.Store(user);
