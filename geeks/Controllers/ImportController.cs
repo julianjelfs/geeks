@@ -3,6 +3,7 @@ using System.Linq;
 using System.Web.Mvc;
 using DotNetOpenAuth.Messaging;
 using DotNetOpenAuth.OAuth2;
+using Facebook;
 using Google.Contacts;
 using Google.GData.Client;
 using Google.GData.Contacts;
@@ -94,13 +95,22 @@ namespace geeks.Controllers
                                    }).ToList());
         }
 
-
+        /*
+         * This one is on hold for now
+         * https://trello.com/card/importing-contacts-from-facebook/5128e013fff24191630070f2/13
+         * 
         [Authorize]
         public ActionResult ImportFacebook()
         {
+            if (Session["facebookToken"] != null)
+            {
+                var client = new FacebookClient(Session["facebookToken"] as string);
+                dynamic me = client.Get("me/friends");
+            }
             ViewBag.ImportFrom = "Facebook";
-            return View("Import");  
+            return View("Import", new List<ImportModel>());  
         }
+         */
 
         [Authorize]
         public ActionResult ImportTwitter()
@@ -118,6 +128,7 @@ namespace geeks.Controllers
                        select u).FirstOrDefault();
             user = user ?? new UserModel {UserName = User.Identity.Name};
 
+            if(user.Friends == null) user.Friends = new List<FriendModel>();
 
             user.Friends = user.Friends.Union(from i in model
                             where !user.Friends.Any(f => f.Email == i.EmailAddress)

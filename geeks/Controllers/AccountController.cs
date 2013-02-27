@@ -217,6 +217,12 @@ namespace geeks.Controllers
         public ActionResult ExternalLoginCallback(string returnUrl)
         {
             AuthenticationResult result = OAuthWebSecurity.VerifyAuthentication(Url.Action("ExternalLoginCallback", new { ReturnUrl = returnUrl }));
+
+//            if (result.ExtraData.ContainsKey("accesstoken"))
+//            {
+//                Session["facebookToken"] = result.ExtraData["accesstoken"];
+//            }
+            
             if (!result.IsSuccessful)
             {
                 return RedirectToAction("ExternalLoginFailure");

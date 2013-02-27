@@ -13,9 +13,6 @@
         <a id="import-drop" href="#" role="button" class="dropdown-toggle btn" data-toggle="dropdown">Import <b class="caret"></b></a>
         <ul class="dropdown-menu" role="menu" aria-labelledby="import-drop">
             <li role="presentation">
-                @Html.ActionLink("Import from facebook", "ImportFacebook", "Import", routeValues:null, htmlAttributes: new {@role = "menuitem", @tabindex = "-1"})
-            </li>
-            <li role="presentation">
                 @Html.ActionLink("Import from google", "OAuth", "Import", routeValues: null, htmlAttributes: new { @role = "menuitem", @tabindex = "-1" })
             </li>
             <li role="presentation">
