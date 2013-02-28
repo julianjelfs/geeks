@@ -1,27 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using System.Web.Mvc;
-using WebMatrix.WebData;
+using Raven.Client;
 using geeks.Models;
 
 namespace geeks.Controllers
 {
     public class HomeController : RavenController
     {
-        public ActionResult Index()
+        public HomeController(IDocumentStore store) : base(store)
+        {
+        }
+
+        public virtual ActionResult Index()
         {
             return View();
         }
 
-        public ActionResult About()
+        public virtual ActionResult About()
         {
             return View();
         }
 
         [Authorize]
-        public ActionResult Event(int id)
+        public virtual ActionResult Event(int id)
         {
             if (id > 0)
             {
@@ -33,7 +35,7 @@ namespace geeks.Controllers
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
-        public ActionResult Event(EventModel model)
+        public virtual ActionResult Event(EventModel model)
         {
             if (ModelState.IsValid)
             {
@@ -63,7 +65,7 @@ namespace geeks.Controllers
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
-        public PartialViewResult DeleteFriend(string id)
+        public virtual PartialViewResult DeleteFriend(string id)
         {
             var user = (from u in RavenSession.Query<UserModel>()
                         where u.UserName == User.Identity.Name
@@ -88,13 +90,13 @@ namespace geeks.Controllers
         }
         
         [Authorize]
-        public ActionResult Friends()
+        public virtual ActionResult Friends()
         {
             return View(FriendsInternal());
         }
 
         [Authorize]
-        public ActionResult Events()
+        public virtual ActionResult Events()
         {
             return View(from ev in RavenSession.Query<EventModel>()
                         where ev.CreatedBy == User.Identity.Name

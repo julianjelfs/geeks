@@ -17,8 +17,6 @@ namespace geeks
 
     public class MvcApplication : System.Web.HttpApplication
     {
-        public static DocumentStore Store;
-
         protected void Application_Start()
         {
             AreaRegistration.RegisterAllAreas();
@@ -28,15 +26,6 @@ namespace geeks
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
             AuthConfig.RegisterAuth();
-
-            StartRaven();
-        }
-
-        private static void StartRaven()
-        {
-            Store = new DocumentStore {ConnectionStringName = "RavenDB"};
-            Store.Initialize();
-            IndexCreation.CreateIndexes(Assembly.GetCallingAssembly(), Store);
         }
     }
 }

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using DotNetOpenAuth.AspNet.Clients;
+using FlexProviders.Membership;
 using Microsoft.Web.WebPages.OAuth;
 using geeks.Models;
 
@@ -22,11 +24,15 @@ namespace geeks
             //    consumerKey: "",
             //    consumerSecret: "");
 
-            OAuthWebSecurity.RegisterFacebookClient(
-                appId: "124059391108141",
-                appSecret: "5d9eaa551aeea2f3e9e5c9fe728bd30b");
+//            OAuthWebSecurity.RegisterFacebookClient(
+//                appId: "124059391108141",
+//                appSecret: "5d9eaa551aeea2f3e9e5c9fe728bd30b");
+//
+//            OAuthWebSecurity.RegisterGoogleClient();
 
-            OAuthWebSecurity.RegisterGoogleClient();
+            FlexMembershipProvider.RegisterClient(
+                new GoogleOpenIdClient(),
+                "Google", new Dictionary<string, object>());
         }
     }
 }

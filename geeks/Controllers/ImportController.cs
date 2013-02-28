@@ -1,14 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
 using DotNetOpenAuth.Messaging;
 using DotNetOpenAuth.OAuth2;
-using Facebook;
-using Google.Contacts;
 using Google.GData.Client;
 using Google.GData.Contacts;
-using Google.GData.Extensions;
-using System.Collections.Generic;
+using Raven.Client;
 using geeks.Models;
 
 namespace geeks.Controllers
@@ -37,13 +35,17 @@ namespace geeks.Controllers
     {
         private static readonly WebServerClient client = AuthHelper.CreateClient();
 
+        public ImportController(IDocumentStore store) : base(store)
+        {
+        }
+
         [AllowAnonymous]
-        public ActionResult GoogleAuthCallback(string returnUrl)
+        public virtual ActionResult GoogleAuthCallback(string returnUrl)
         {
             return Redirect(returnUrl);
         }
 
-        public ActionResult OAuth()
+        public virtual ActionResult OAuth()
         {
             if (string.IsNullOrEmpty(Request.QueryString["code"]))
             {
@@ -56,7 +58,7 @@ namespace geeks.Controllers
         {
             var state = new AuthorizationState {Callback = new Uri(RemoveQueryStringFromUri(Request.Url.AbsoluteUri))};
             state.Scope.Add("https://www.google.com/m8/feeds");
-            var r = client.PrepareRequestUserAuthorization(state);
+            OutgoingWebResponse r = client.PrepareRequestUserAuthorization(state);
             return r.AsActionResult();
         }
 
@@ -72,7 +74,7 @@ namespace geeks.Controllers
 
         private ActionResult OAuthCallback()
         {
-            var auth = client.ProcessUserAuthorization(Request);
+            IAuthorizationState auth = client.ProcessUserAuthorization(Request);
             Session["auth"] = auth;
             var authFactory = new GAuthSubRequestFactory("cp", "Geeks Dilemma") {Token = auth.AccessToken};
             var service = new ContactsService(authFactory.ApplicationName) {RequestFactory = authFactory};
@@ -81,18 +83,19 @@ namespace geeks.Controllers
             //var cr = new ContactsRequest(settings);
             var query = new ContactsQuery(ContactsQuery.CreateContactsUri("default"));
             query.NumberToRetrieve = 1000;
-            var contacts = service.Query(query);
+            ContactsFeed contacts = service.Query(query);
             ViewBag.ImportFrom = "Google";
 
             return View("Import", (from ContactEntry entry in contacts.Entries
                                    from email in entry.Emails
                                    where entry.Name != null
                                    where email != null
-                                   select new ImportModel {
-                                       Import = false,
-                                       EmailAddress = email.Address,
-                                       Name = entry.Name.FullName
-                                   }).ToList());
+                                   select new ImportModel
+                                       {
+                                           Import = false,
+                                           EmailAddress = email.Address,
+                                           Name = entry.Name.FullName
+                                       }).ToList());
         }
 
         /*
@@ -113,26 +116,26 @@ namespace geeks.Controllers
          */
 
         [Authorize]
-        public ActionResult ImportTwitter()
+        public virtual ActionResult ImportTwitter()
         {
             ViewBag.ImportFrom = "Twitter";
             return View("Import");
         }
-        
+
         [Authorize]
         [ValidateAntiForgeryToken]
-        public ActionResult PerformImport(List<ImportModel> model)
+        public virtual ActionResult PerformImport(List<ImportModel> model)
         {
-            var user = (from u in RavenSession.Query<UserModel>()
-                       where u.UserName == User.Identity.Name
-                       select u).FirstOrDefault();
+            UserModel user = (from u in RavenSession.Query<UserModel>()
+                              where u.UserName == User.Identity.Name
+                              select u).FirstOrDefault();
             user = user ?? new UserModel {UserName = User.Identity.Name};
 
-            if(user.Friends == null) user.Friends = new List<FriendModel>();
+            if (user.Friends == null) user.Friends = new List<FriendModel>();
 
             user.Friends = user.Friends.Union(from i in model
-                            where !user.Friends.Any(f => f.Email == i.EmailAddress)
-                            select new FriendModel {Name = i.Name, Email = i.EmailAddress}).ToList();
+                                              where !user.Friends.Any(f => f.Email == i.EmailAddress)
+                                              select new FriendModel {Name = i.Name, Email = i.EmailAddress}).ToList();
 
             RavenSession.Store(user);
 

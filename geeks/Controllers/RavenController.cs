@@ -3,13 +3,19 @@ using Raven.Client;
 
 namespace geeks.Controllers
 {
-    public abstract class RavenController : Controller
+    public class RavenController : Controller
     {
-        public IDocumentSession RavenSession { get; protected set; }
+        private readonly IDocumentStore _store;
+        protected IDocumentSession RavenSession { get; private set; }
+
+        public RavenController(IDocumentStore store)
+        {
+            _store = store;
+        }
 
         protected override void OnActionExecuting(ActionExecutingContext filterContext)
         {
-            RavenSession = MvcApplication.Store.OpenSession();
+            RavenSession = _store.OpenSession();
         }
 
         protected override void OnActionExecuted(ActionExecutedContext filterContext)
