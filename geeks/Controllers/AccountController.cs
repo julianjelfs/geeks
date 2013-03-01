@@ -82,8 +82,16 @@ namespace geeks.Controllers
                 // Attempt to register the user
                 try
                 {
-                    var user = new User { Username = model.UserName, Password = model.Password };
+                    var user = new User
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            Name = model.Name,
+                            Username = model.EmailAddress, 
+                            Password = model.Password,
+                            Registered = true
+                        };
                     _membershipProvider.CreateAccount(user);
+                    _membershipProvider.Login(user.Username, user.Password);
                     return RedirectToAction("Index", "Home");
                 }
                 catch (FlexMembershipException e)
@@ -216,7 +224,12 @@ namespace geeks.Controllers
             if (User.Identity.IsAuthenticated)
             {
                 // If the current user is logged in add the new account
-                _oAuthProvider.CreateOAuthAccount(result.Provider, result.ProviderUserId, new User() { Username = User.Identity.Name });
+                _oAuthProvider.CreateOAuthAccount(result.Provider, result.ProviderUserId, new User()
+                    {
+                        Username = User.Identity.Name, 
+                        Registered = true,
+                        Id = Guid.NewGuid().ToString()
+                    });
                 return RedirectToLocal(returnUrl);
             }
             else
@@ -249,7 +262,12 @@ namespace geeks.Controllers
             {
                 if (!_membershipProvider.HasLocalAccount(model.UserName))
                 {
-                    _oAuthProvider.CreateOAuthAccount(provider, providerUserId, new User { Username = model.UserName });
+                    _oAuthProvider.CreateOAuthAccount(provider, providerUserId, new User
+                        {
+                            Username = model.UserName, 
+                            Registered = true,
+                            Id = Guid.NewGuid().ToString()
+                        });
                     _oAuthProvider.OAuthLogin(provider, providerUserId, persistCookie: false);
 
                     return RedirectToLocal(returnUrl);

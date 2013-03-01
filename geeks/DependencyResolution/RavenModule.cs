@@ -4,6 +4,8 @@ using Ninject.Modules;
 using Ninject.Web.Common;
 using Raven.Client;
 using Raven.Client.Document;
+using Raven.Client.Embedded;
+using Raven.Database.Server;
 
 namespace geeks.DependencyResolution
 {
@@ -22,7 +24,10 @@ namespace geeks.DependencyResolution
 
         private IDocumentStore InitDocStore(IContext context)
         {
-            return new DocumentStore {ConnectionStringName = "RavenDB"}.Initialize();
+            return new DocumentStore
+                {
+                    ConnectionStringName = "LocalRavenDB"
+                }.Initialize();
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
 using Raven.Client;
@@ -67,26 +68,14 @@ namespace geeks.Controllers
         [ValidateAntiForgeryToken]
         public virtual PartialViewResult DeleteFriend(string id)
         {
-            var user = (from u in RavenSession.Query<UserModel>()
-                        where u.UserName == User.Identity.Name
-                        select u).FirstOrDefault();
-            if (user != null)
-            {
-                user.Friends.RemoveAll(f => f.Email == id);
-                RavenSession.Store(user);
-            }
+            GetCurrentUser().Friends.RemoveAll(f => f.UserId == id);
+            RavenSession.SaveChanges();
             return PartialView("FriendsTable", FriendsInternal());
         }
 
-        private IEnumerable<FriendModel> FriendsInternal()
+        private IEnumerable<UserFriend> FriendsInternal()
         {
-            var user = (from u in RavenSession.Query<UserModel>()
-                        where u.UserName == User.Identity.Name
-                        select u).FirstOrDefault();
-
-            return user == null
-                       ? new List<FriendModel>()
-                       : user.Friends.OrderBy(f => f.Name).ToList();
+            return UsersFromFriends(GetCurrentUserId());
         }
         
         [Authorize]

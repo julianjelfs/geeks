@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Web.Mvc;
 using DotNetOpenAuth.Messaging;
@@ -126,20 +127,44 @@ namespace geeks.Controllers
         [ValidateAntiForgeryToken]
         public virtual ActionResult PerformImport(List<ImportModel> model)
         {
-            UserModel user = (from u in RavenSession.Query<UserModel>()
-                              where u.UserName == User.Identity.Name
-                              select u).FirstOrDefault();
-            user = user ?? new UserModel {UserName = User.Identity.Name};
+            var user = GetCurrentUser();
 
-            if (user.Friends == null) user.Friends = new List<FriendModel>();
+            var emails = from m in model.Distinct() select m.EmailAddress;
 
-            user.Friends = user.Friends.Union(from i in model
-                                              where !user.Friends.Any(f => f.Email == i.EmailAddress)
-                                              select new FriendModel {Name = i.Name, Email = i.EmailAddress}).ToList();
+            //try to replace this one with map-reduce
+            var users = new Dictionary<string, User>();
+            foreach (var u in RavenSession.Query<User>().Take(500))  //this will only return 128 docs
+            {
+                if(emails.Contains(u.Username))
+                    users.Add(u.Username, u);
+            }
 
-            RavenSession.Store(user);
+            using (var bulkInsert = Store.BulkInsert())
+            {
+                foreach (var importModel in model)
+                {
+                    if (importModel.EmailAddress == User.Identity.Name) continue;
+                    if (users.ContainsKey(importModel.EmailAddress)) continue;
 
-            return View("Friends", user.Friends);
+                    var newUser = new User
+                        {
+                            Username = importModel.EmailAddress,
+                            Name = importModel.Name,
+                            Id = Guid.NewGuid().ToString()
+                        };
+                    bulkInsert.Store(newUser);
+                    users.Add(newUser.Username, newUser);
+                }
+
+                user.Friends = user.Friends.Union(from i in model
+                    where !user.Friends.Any(f => f.UserId == users[i.EmailAddress].Id)
+                    select new Friend
+                        {
+                            UserId = users[i.EmailAddress].Id
+                        }).ToList();
+            }
+
+            return RedirectToAction("Friends", "Home");
         }
     }
 }

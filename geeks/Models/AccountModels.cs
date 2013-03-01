@@ -49,8 +49,8 @@ namespace geeks.Models
     public class RegisterModel
     {
         [Required]
-        [Display(Name = "User name")]
-        public string UserName { get; set; }
+        [Display(Name = "Name")]
+        public string Name { get; set; }
         
         [Required]
         [Display(Name = "Email address")]

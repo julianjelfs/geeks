@@ -1,4 +1,4 @@
-﻿@model IEnumerable<geeks.Models.FriendModel>
+﻿@model IEnumerable<geeks.Models.UserFriend>
 
 <table class="table table-hover">
     <thead>
@@ -15,7 +15,7 @@
                 <td>@ev.Name</td>
                 <td>@ev.Email</td>
                 <td>
-                    <a href="#delete-warning" role="button" class="delete-friend btn" data-friend-email="@ev.Email"><i class="icon-trash"></i></a>
+                    <a href="#delete-warning" role="button" class="delete-friend btn" data-friend-email="@ev.UserId"><i class="icon-trash"></i></a>
                 </td>
             </tr>
         }

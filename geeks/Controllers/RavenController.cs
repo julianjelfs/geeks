@@ -1,21 +1,46 @@
-﻿using System.Web.Mvc;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web.Mvc;
 using Raven.Client;
+using geeks.Models;
 
 namespace geeks.Controllers
 {
     public class RavenController : Controller
     {
-        private readonly IDocumentStore _store;
+        protected IDocumentStore Store { get; private set; }
         protected IDocumentSession RavenSession { get; private set; }
 
         public RavenController(IDocumentStore store)
         {
-            _store = store;
+            Store = store;
         }
 
         protected override void OnActionExecuting(ActionExecutingContext filterContext)
         {
-            RavenSession = _store.OpenSession();
+            RavenSession = Store.OpenSession();
+        }
+
+        protected string GetCurrentUserId()
+        {
+            if (Session["UserId"] == null)
+            {
+                var user = RavenSession.Query<User>()
+                                .SingleOrDefault(u => u.Username == User.Identity.Name);
+
+                if (user == null)
+                {
+                    throw new ApplicationException(string.Format("Unknown user {0}", User.Identity.Name));
+                }
+                Session["UserId"] = user.Id;
+            }
+            return Session["UserId"] as string;
+        }
+
+        protected User GetCurrentUser()
+        {
+            return RavenSession.Load<User>(GetCurrentUserId());
         }
 
         protected override void OnActionExecuted(ActionExecutedContext filterContext)
@@ -31,6 +56,22 @@ namespace geeks.Controllers
                 if (RavenSession != null)
                     RavenSession.SaveChanges();
             }
-        }    
+        }
+
+        protected IEnumerable<UserFriend> UsersFromFriends(string userId)
+        {
+            var user = RavenSession.Include<User>(u=>u.Friends.Select(f=>f.UserId))
+                       .Load<User>(userId);
+
+            return (from f in user.Friends
+                        let u = RavenSession.Load<User>(f.UserId)
+                        select new UserFriend
+                            {
+                                UserId = u.Id, 
+                                Name = u.Name, 
+                                Email = u.Username, 
+                                Rating = f.Rating
+                            }).OrderBy(friend => friend.Name);
+        }
     }
 }

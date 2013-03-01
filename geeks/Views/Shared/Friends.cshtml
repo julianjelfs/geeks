@@ -1,4 +1,4 @@
-﻿@model IEnumerable<geeks.Models.FriendModel>
+﻿@model IEnumerable<geeks.Models.UserFriend>
 @{
     ViewBag.Title = "Friends";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -38,8 +38,8 @@
                 </p>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">No</button>
-                <input id="delete-friend" type="button" class="btn" value="Yes"/>
+                <button accesskey="N" class="btn btn-primary" data-dismiss="modal" aria-hidden="true">No</button>
+                <input accesskey="Y" id="delete-friend" type="button" class="btn" value="Yes"/>
             </div>
         </div>
         
@@ -65,12 +65,13 @@
                     selected = $(this).attr('data-friend-email');
                     $("#delete-warning").modal();
                 });
-                $("#delete-friend").click(function(e) {
+                $("#delete-friend").unbind("click").click(function(e) {
                     e.preventDefault();
-                    $.post("/Home/DeleteFriend/" + selected, {
+                    $.post("Home/DeleteFriend/" + selected, {
                             __RequestVerificationToken: $("input[name='__RequestVerificationToken']").val()
                         }, function(data) {
-                            $(data).appendTo($("#table-placeholder").empty());
+                            $("#table-placeholder").empty();
+                            $(data).appendTo("#table-placeholder");
                             setupDeleteLinks();
                             $('#delete-warning').modal('hide');
                         });
