@@ -1,5 +1,7 @@
 ﻿@model IEnumerable<geeks.Models.UserFriend>
 
+@Html.Partial("FriendsPager")
+
 <table class="table table-hover">
     <thead>
         <tr>
@@ -21,3 +23,5 @@
         }
     </tbody>
 </table>
+
+@Html.Partial("FriendsPager")

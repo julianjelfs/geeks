@@ -58,6 +58,18 @@ namespace geeks.tests
         }
 
         [Test]
+        public void CustomIndex()
+        {
+            var users = _session.Query<User>("FriendNameAndEmailIndex")
+                                .SingleOrDefault(user => user.Username == "julian.jelfs@googlemail.com");
+
+            foreach (var friend in users.Friends)
+            {
+                Console.WriteLine("Name: {0}", _session.Load<User>(friend.UserId));
+            }
+        }
+
+        [Test]
         public void whatever()
         {
             using(var bi = _store.BulkInsert())

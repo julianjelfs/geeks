@@ -275,6 +275,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Indexes\FriendNameAndEmailIndex.cs" />
     <Compile Include="Models\AccountModels.cs" />
     <Compile Include="Models\Event.cs" />
     <Compile Include="Models\ImportModel.cs" />
@@ -355,6 +356,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Scripts\jquery-1.9.1.min.map" />
+    <Content Include="Views\Shared\FriendsPager.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />

@@ -5,7 +5,9 @@ using Ninject.Web.Common;
 using Raven.Client;
 using Raven.Client.Document;
 using Raven.Client.Embedded;
+using Raven.Client.Indexes;
 using Raven.Database.Server;
+using geeks.Indexes;
 
 namespace geeks.DependencyResolution
 {
@@ -24,10 +26,12 @@ namespace geeks.DependencyResolution
 
         private IDocumentStore InitDocStore(IContext context)
         {
-            return new DocumentStore
+            var store = new DocumentStore
                 {
                     ConnectionStringName = "LocalRavenDB"
                 }.Initialize();
+            IndexCreation.CreateIndexes(typeof(FriendNameAndEmailIndex).Assembly, store);
+            return store;
         }
     }
 }

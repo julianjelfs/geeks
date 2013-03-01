@@ -1,0 +1,41 @@
+﻿<div class="pagination pagination-small pagination-centered">
+    <ul>
+        @if (ViewBag.PageIndex == 0)
+        {
+            <li class="disabled"><a href="#">Prev</a></li>
+        }
+        else
+        {
+            <li>
+                @Html.ActionLink("Prev", "Friends", "Home", routeValues: new { pageIndex = ViewBag.PageIndex - 1 }, htmlAttributes: null)
+            </li>
+        }
+        @for (var i = 1; i <= ViewBag.NumberOfPages; i++)
+        {
+            var active = (i - 1) == ViewBag.PageIndex;
+          
+            if (active)
+            {
+                <li class="active">
+                    @Html.ActionLink(i.ToString(), "Friends", "Home", routeValues: new { pageIndex = i - 1 }, htmlAttributes: null)
+                </li>
+            }
+            else
+            {
+                <li>
+                    @Html.ActionLink(i.ToString(), "Friends", "Home", routeValues: new { pageIndex = i - 1 }, htmlAttributes: null)
+                </li>
+            }
+        }
+        @if (ViewBag.PageIndex == ViewBag.NumberOfPages - 1)
+        {
+            <li class="disabled"><a href="#">Next</a></li>
+        }
+        else
+        {
+            <li>
+                @Html.ActionLink("Next", "Friends", "Home", routeValues: new { pageIndex = ViewBag.PageIndex + 1 }, htmlAttributes: null)
+            </li>
+        }
+    </ul>
+</div>

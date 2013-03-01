@@ -58,20 +58,21 @@ namespace geeks.Controllers
             }
         }
 
-        protected IEnumerable<UserFriend> UsersFromFriends(string userId)
+        protected IEnumerable<UserFriend> UsersFromFriends(string userId, int pageIndex, int pageSize, out int totalPages)
         {
             var user = RavenSession.Include<User>(u=>u.Friends.Select(f=>f.UserId))
                        .Load<User>(userId);
 
-            return (from f in user.Friends
-                        let u = RavenSession.Load<User>(f.UserId)
-                        select new UserFriend
-                            {
-                                UserId = u.Id, 
-                                Name = u.Name, 
-                                Email = u.Username, 
-                                Rating = f.Rating
-                            }).OrderBy(friend => friend.Name);
+            var result = (from f in user.Friends
+                            let u = RavenSession.Load<User>(f.UserId)
+                            select new UserFriend
+                                {
+                                    UserId = u.Id, Name = u.Name, Email = u.Username, Rating = f.Rating
+                                }).OrderBy(friend => friend.Name);
+
+            totalPages = (int)Math.Ceiling((double)result.Count() / pageSize);
+
+            return result.Skip(pageIndex*pageSize).Take(pageSize);
         }
     }
 }

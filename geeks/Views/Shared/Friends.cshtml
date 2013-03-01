@@ -5,11 +5,9 @@
 }
 
 <div class="content">
-    <h2 class="geek">Friends</h2>
+    <h2 class="geek pull-left">Friends</h2>
     
-    <p>Import friends from other accounts?</p>
-    
-    <div class="dropdown">
+    <div class="dropdown pull-right">
         <a id="import-drop" href="#" role="button" class="dropdown-toggle btn" data-toggle="dropdown">Import <b class="caret"></b></a>
         <ul class="dropdown-menu" role="menu" aria-labelledby="import-drop">
             <li role="presentation">
@@ -67,7 +65,7 @@
                 });
                 $("#delete-friend").unbind("click").click(function(e) {
                     e.preventDefault();
-                    $.post("Home/DeleteFriend/" + selected, {
+                    $.post("DeleteFriend/" + selected, {
                             __RequestVerificationToken: $("input[name='__RequestVerificationToken']").val()
                         }, function(data) {
                             $("#table-placeholder").empty();

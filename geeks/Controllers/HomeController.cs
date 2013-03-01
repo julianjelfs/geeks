@@ -66,22 +66,30 @@ namespace geeks.Controllers
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
-        public virtual PartialViewResult DeleteFriend(string id)
+        public virtual PartialViewResult DeleteFriend(string id, int pageIndex = 0, int pageSize = 10)
         {
             GetCurrentUser().Friends.RemoveAll(f => f.UserId == id);
             RavenSession.SaveChanges();
-            return PartialView("FriendsTable", FriendsInternal());
+            ViewBag.PageIndex = pageIndex;
+            int total = 0;
+            var friends = FriendsInternal(pageIndex, pageSize, out total);
+            ViewBag.NumberOfPages = total;
+            return PartialView("FriendsTable", friends);
         }
 
-        private IEnumerable<UserFriend> FriendsInternal()
+        private IEnumerable<UserFriend> FriendsInternal(int pageIndex, int pageSize, out int totalPages)
         {
-            return UsersFromFriends(GetCurrentUserId());
+            return UsersFromFriends(GetCurrentUserId(), pageIndex, pageSize, out totalPages);
         }
         
         [Authorize]
-        public virtual ActionResult Friends()
+        public virtual ActionResult Friends(int pageIndex = 0, int pageSize = 10)
         {
-            return View(FriendsInternal());
+            ViewBag.PageIndex = pageIndex;
+            int total = 0;
+            var friends = FriendsInternal(pageIndex, pageSize, out total);
+            ViewBag.NumberOfPages = total;
+            return View(friends);
         }
 
         [Authorize]
