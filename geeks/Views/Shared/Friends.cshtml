@@ -5,10 +5,32 @@
 }
 
 <div class="content">
-    <h2 class="geek pull-left">Friends</h2>
+    <div class="span4">
+        <h2 class="geek">Friends</h2>
+        
+    </div>
     
-    <div class="dropdown pull-right">
-        <a id="import-drop" href="#" role="button" class="dropdown-toggle btn" data-toggle="dropdown">Import <b class="caret"></b></a>
+    <div class="btn-group pull-right">
+        @if (ViewBag.PageIndex == 0)
+        {
+            <a class="btn disabled" href="#">Prev</a>
+        }
+        else
+        {
+            @Html.ActionLink("Prev", "Friends", "Home", routeValues: new { pageIndex = ViewBag.PageIndex - 1 }, htmlAttributes: new {@class = "btn"})
+        }
+
+        @if (ViewBag.PageIndex == ViewBag.NumberOfPages - 1)
+        {
+            <a class="btn disabled"href="#">Next</a>
+        }
+        else
+        {
+            @Html.ActionLink("Next", "Friends", "Home", routeValues: new { pageIndex = ViewBag.PageIndex + 1 }, htmlAttributes: new {@class="btn"})
+        }
+        <a href="#add-friend-form" id="add-friend-btn" class="btn"><i id="add-friend" title="Add a new friend" class="icon icon-plus"></i></a>
+        <a href="#delete-all-warning" class="delete-all-friends btn"><i id="delete-all" title="Delete All Friends" class="icon-trash"></i></a>
+        <a id="import-drop" href="#" class=" btn dropdown-toggle" data-toggle="dropdown">Import <b class="caret"></b></a>
         <ul class="dropdown-menu" role="menu" aria-labelledby="import-drop">
             <li role="presentation">
                 @Html.ActionLink("Import from google", "OAuth", "Import", routeValues: null, htmlAttributes: new { @role = "menuitem", @tabindex = "-1" })
@@ -17,7 +39,6 @@
                 @Html.ActionLink("Import from twitter", "ImportTwitter", "Import", routeValues: null, htmlAttributes: new { @role = "menuitem", @tabindex = "-1" })
             </li>
         </ul>
-
     </div>
     
     @if (Model.Any())
@@ -41,6 +62,35 @@
             </div>
         </div>
         
+        <div id="delete-all-warning" class="modal hide fade">
+            <div class="modal-header">
+                <h3 class="geek">Delete All Friends</h3>
+            </div>
+            <div class="modal-body">
+                <p>
+                    Are you sure you want to delete all of your friends? You will not be able to invite them to create events with no friends to invite.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button accesskey="N" class="btn btn-primary" data-dismiss="modal" aria-hidden="true">No</button>
+                <input accesskey="Y" id="delete-all-confirm" type="button" class="btn" value="Yes"/>
+            </div>
+        </div>
+        
+        <div id="add-friend-form" class="modal hide fade">
+            <div class="modal-header">
+                <h3 class="geek">Add a new friend</h3>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="friend-name" placeholder="Friend's Name" value=""/>
+                <input type="text" id="friend-email" placeholder="Friend's Email Address" value=""/>
+            </div>
+            <div class="modal-footer">
+                <button accesskey="A" id="add-friend-submit" class="btn btn-primary">Add</button>
+                <button accesskey="C" class="btn" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+
         @Html.AntiForgeryToken()
     }
 </div>
@@ -51,6 +101,47 @@
             var selected = null;
             $("#nav-bar li.active").removeClass("active");
             $("#friends-nav").addClass("active");
+
+            $("#add-friend-btn").click(function(e) {
+                e.preventDefault();
+                $("#friend-name").val('').focus();
+                $("#friend-email").val('');
+                $("#add-friend-form").modal();
+            });
+
+            $("#add-friend,#delete-all").tooltip({
+                animation: true,
+                placement: 'top'
+            });
+
+            $("a.delete-all-friends").click(function(e) {
+                e.preventDefault();
+                $("#delete-all-warning").modal();
+            });
+
+            $("#add-friend-submit").click(function(e) {
+                e.preventDefault();
+                $.post("AddFriend", {
+                        __RequestVerificationToken: $("input[name='__RequestVerificationToken']").val(),
+                        name : $("#friend-name").val(),
+                        email : $("#friend-email").val()
+                    }, function(data) {
+                        $("#table-placeholder").empty()[0].innerHTML = data;
+                        setupDeleteLinks();
+                        $('#add-friend-form').modal('hide');
+                    });
+            });
+            
+            $("#delete-all-confirm").click(function(e) {
+                e.preventDefault();
+                $.post("DeleteAllFriends", {
+                        __RequestVerificationToken: $("input[name='__RequestVerificationToken']").val()
+                    }, function(data) {
+                        $("#table-placeholder").empty()[0].innerHTML = data;
+                        setupDeleteLinks();
+                        $('#delete-all-warning').modal('hide');
+                    });
+            });
 
             function setupDeleteLinks() {
                 $("a.delete-friend").tooltip({
@@ -68,8 +159,7 @@
                     $.post("DeleteFriend/" + selected, {
                             __RequestVerificationToken: $("input[name='__RequestVerificationToken']").val()
                         }, function(data) {
-                            $("#table-placeholder").empty();
-                            $(data).appendTo("#table-placeholder");
+                            $("#table-placeholder").empty()[0].innerHTML = data;
                             setupDeleteLinks();
                             $('#delete-warning').modal('hide');
                         });

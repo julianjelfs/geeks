@@ -90,6 +90,7 @@ div.content {
 	background-color: #f9f9f9;
 	padding:20px;
 	border: 1px solid rgb(221, 221, 221);
+	min-height: 100px;
 }
 
 div.footer {

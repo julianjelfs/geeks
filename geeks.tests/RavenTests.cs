@@ -6,6 +6,7 @@ using System.Text;
 using NUnit.Framework;
 using Raven.Client;
 using Raven.Client.Document;
+using Raven.Client.Linq;
 using geeks.Models;
 
 namespace geeks.tests
@@ -54,6 +55,25 @@ namespace geeks.tests
             foreach (var friend in user.Friends)
             {
                 Console.WriteLine("FriendName: {0}", _session.Load<User>(friend.UserId).Name);
+            }
+        }
+
+        [Test]
+        public void UsersByEmail()
+        {
+            var emails = new HashSet<string>
+                {
+                    "james.kane@gmail.com",
+                    "kallina.jelfs@gmail.com",
+                    "trotmanrog@gmail.com"
+                };
+
+            var users = _session.Query<User>()
+                                .Where(u => u.Username.In(emails));
+
+            foreach (var user in users)
+            {
+                Console.WriteLine("User: {0}", user);
             }
         }
 

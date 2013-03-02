@@ -4,7 +4,7 @@
     ViewBag.Title = "Log in";
 }
 
-<div class="row content">
+<div class="row-fluid content">
     <div class="span5">
         @using (Html.BeginForm(new { ReturnUrl = ViewBag.ReturnUrl })) {
             @Html.AntiForgeryToken()

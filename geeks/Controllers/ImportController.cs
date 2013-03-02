@@ -9,6 +9,7 @@ using Google.GData.Client;
 using Google.GData.Contacts;
 using Raven.Client;
 using geeks.Models;
+using Raven.Client.Linq;
 
 namespace geeks.Controllers
 {
@@ -128,16 +129,14 @@ namespace geeks.Controllers
         public virtual ActionResult PerformImport(List<ImportModel> model)
         {
             var user = GetCurrentUser();
+            
+            model = model.Where(m => m.EmailAddress != User.Identity.Name
+                                     && m.Import).ToList();
 
-            var emails = from m in model.Distinct() select m.EmailAddress;
-
-            //try to replace this one with map-reduce
-            var users = new Dictionary<string, User>();
-            foreach (var u in RavenSession.Query<User>().Take(500))  //this will only return 128 docs
-            {
-                if(emails.Contains(u.Username))
-                    users.Add(u.Username, u);
-            }
+            var emails = new HashSet<string>(from m in model.Distinct() select m.EmailAddress);
+            var users = RavenSession.Query<User>()
+                            .Where(u => u.Username.In(emails))
+                                    .ToDictionary(u => u.Username);
 
             using (var bulkInsert = Store.BulkInsert())
             {
@@ -157,11 +156,11 @@ namespace geeks.Controllers
                 }
 
                 user.Friends = user.Friends.Union(from i in model
-                    where !user.Friends.Any(f => f.UserId == users[i.EmailAddress].Id)
-                    select new Friend
-                        {
-                            UserId = users[i.EmailAddress].Id
-                        }).ToList();
+                                                  where !user.Friends.Any(f => f.UserId == users[i.EmailAddress].Id)
+                                                  select new Friend
+                                                      {
+                                                          UserId = users[i.EmailAddress].Id
+                                                      }).ToList();
             }
 
             return RedirectToAction("Friends", "Home");

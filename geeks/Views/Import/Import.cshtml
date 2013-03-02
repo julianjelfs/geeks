@@ -11,7 +11,7 @@
     {
         @Html.AntiForgeryToken()
 
-        <button class="btn" type="submit">Import All</button>
+        <button id="import-all" class="btn" type="submit">Import All</button>
         <button class="btn" type="submit">Import Selected</button>
 
         <table class="table table-hover">
@@ -45,3 +45,14 @@
     }
 
 </div>
+
+@section scripts{
+    <script type="text/javascript">
+        $(function() {
+            $("#import-all").click(function(e) {
+                $(":checkbox").prop("checked", true);
+            });
+
+        });
+    </script>
+}
