@@ -36,6 +36,14 @@ namespace geeks.Controllers
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
+        public ActionResult SearchFriends(string friendSearch)
+        {
+            return RedirectToAction("Friends", new { friendSearch });
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
         public virtual ActionResult Event(EventModel model)
         {
             if (ModelState.IsValid)
@@ -115,7 +123,7 @@ namespace geeks.Controllers
         {
             ViewBag.PageIndex = 0;
             int total = 0;
-            var friends = FriendsInternal(0, 10, out total);
+            var friends = FriendsInternal(0, 10, out total, null);
             ViewBag.NumberOfPages = total;
             return PartialView("FriendsTable", friends);
         }
@@ -130,18 +138,19 @@ namespace geeks.Controllers
             return FirstPageOfFriends();
         }
 
-        private IEnumerable<UserFriend> FriendsInternal(int pageIndex, int pageSize, out int totalPages)
+        private IEnumerable<UserFriend> FriendsInternal(int pageIndex, int pageSize, out int totalPages, string friendSearch)
         {
-            return UsersFromFriends(GetCurrentUserId(), pageIndex, pageSize, out totalPages);
+            return UsersFromFriends(GetCurrentUserId(), pageIndex, pageSize, out totalPages, friendSearch);
         }
         
         [Authorize]
-        public virtual ActionResult Friends(int pageIndex = 0, int pageSize = 10)
+        public virtual ActionResult Friends(int pageIndex = 0, int pageSize = 10, string friendSearch = null)
         {
             ViewBag.PageIndex = pageIndex;
             int total = 0;
-            var friends = FriendsInternal(pageIndex, pageSize, out total);
+            var friends = FriendsInternal(pageIndex, pageSize, out total, friendSearch);
             ViewBag.NumberOfPages = total;
+            ViewBag.SearchTerm = friendSearch;
             return View(friends);
         }
 

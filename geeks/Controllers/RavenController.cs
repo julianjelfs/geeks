@@ -58,13 +58,20 @@ namespace geeks.Controllers
             }
         }
 
-        protected IEnumerable<UserFriend> UsersFromFriends(string userId, int pageIndex, int pageSize, out int totalPages)
+        protected IEnumerable<UserFriend> UsersFromFriends(string userId, 
+            int pageIndex, 
+            int pageSize, 
+            out int totalPages,
+            string friendSearch)
         {
             var user = RavenSession.Include<User>(u=>u.Friends.Select(f=>f.UserId))
                        .Load<User>(userId);
 
             var result = (from f in user.Friends
                             let u = RavenSession.Load<User>(f.UserId)
+                            where string.IsNullOrEmpty(friendSearch)
+                                || u.Username.Contains(friendSearch)
+                                || u.Name.Contains(friendSearch)
                             select new UserFriend
                                 {
                                     UserId = u.Id, Name = u.Name, Email = u.Username, Rating = f.Rating

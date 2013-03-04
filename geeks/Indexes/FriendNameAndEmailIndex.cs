@@ -7,16 +7,24 @@ using geeks.Models;
 
 namespace geeks.Indexes
 {
+    public class UserAndFriend
+    {
+        public string Username { get; set; }
+        public string FriendUsername { get; set; }
+        public string FriendName { get; set; }    
+    }
+
     public class FriendNameAndEmailIndex : AbstractIndexCreationTask<User>
     {
         public FriendNameAndEmailIndex()
         {
             Map = users => from u in users
-                           select new
+                           from f in u.Friends
+                           select new UserAndFriend
                                {
-                                   u.Username,
-                                   Friends = from f in u.Friends
-                                             select LoadDocument<User>(f.UserId)
+                                   Username = u.Username,
+                                   FriendUsername = LoadDocument<User>(f.UserId).Username,
+                                   FriendName = LoadDocument<User>(f.UserId).Name
                                };
         }
     }

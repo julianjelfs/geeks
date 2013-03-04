@@ -7,6 +7,7 @@ using NUnit.Framework;
 using Raven.Client;
 using Raven.Client.Document;
 using Raven.Client.Linq;
+using geeks.Indexes;
 using geeks.Models;
 
 namespace geeks.tests
@@ -75,6 +76,31 @@ namespace geeks.tests
             {
                 Console.WriteLine("User: {0}", user);
             }
+        }
+
+        [Test]
+        public void FriendSearch()
+        {
+            var search = "kallina";
+            //var friends = 
+            var user = _session
+                .Query<User>()
+                .Include<User>(u => u.Friends.Select(f => f.UserId))
+                .SingleOrDefault(u => u.Username == "julian.jelfs@googlemail.com");
+
+            var matches = from f in user.Friends
+                          let friendUser = _session.Load<User>(f.UserId)
+                          where friendUser.Username.Contains(search)
+                                || friendUser.Name.Contains(search)
+                          select friendUser;
+
+            foreach (var match in matches)
+            {
+                Console.WriteLine(match);
+            }
+
+
+
         }
 
         [Test]
