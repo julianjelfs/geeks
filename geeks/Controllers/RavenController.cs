@@ -70,8 +70,8 @@ namespace geeks.Controllers
             var result = (from f in user.Friends
                             let u = RavenSession.Load<User>(f.UserId)
                             where string.IsNullOrEmpty(friendSearch)
-                                || u.Username.Contains(friendSearch)
-                                || u.Name.Contains(friendSearch)
+                                || (u.Username != null && u.Username.Contains(friendSearch))
+                                || (u.Name != null && u.Name.Contains(friendSearch))
                             select new UserFriend
                                 {
                                     UserId = u.Id, Name = u.Name, Email = u.Username, Rating = f.Rating

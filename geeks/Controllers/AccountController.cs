@@ -40,6 +40,7 @@ namespace geeks.Controllers
         [ValidateAntiForgeryToken]
         public virtual ActionResult Login(LoginModel model, string returnUrl)
         {
+            Session["UserId"] = null;
             if (ModelState.IsValid && _membershipProvider.Login(model.UserName, model.Password, model.RememberMe))
             {
                 return RedirectToLocal(returnUrl);
@@ -56,6 +57,7 @@ namespace geeks.Controllers
         [HttpPost]
         public virtual ActionResult LogOff()
         {
+            Session["UserId"] = null;
             _membershipProvider.Logout();
             return RedirectToAction("Index", "Home");
         }
@@ -92,6 +94,7 @@ namespace geeks.Controllers
                         };
                     _membershipProvider.CreateAccount(user);
                     _membershipProvider.Login(user.Username, user.Password);
+                    Session["UserId"] = null;
                     return RedirectToAction("Index", "Home");
                 }
                 catch (FlexMembershipException e)
@@ -210,6 +213,8 @@ namespace geeks.Controllers
         [AllowAnonymous]
         public virtual ActionResult ExternalLoginCallback(string returnUrl)
         {
+            Session["UserId"] = null;
+
             AuthenticationResult result = _oAuthProvider.VerifyOAuthAuthentication(Url.Action("ExternalLoginCallback", new { ReturnUrl = returnUrl }));
             if (!result.IsSuccessful)
             {
@@ -252,6 +257,8 @@ namespace geeks.Controllers
         {
             string provider = null;
             string providerUserId = null;
+
+            Session["UserId"] = null;
 
             if (User.Identity.IsAuthenticated || !_encoder.TryDeserializeOAuthProviderUserId(model.ExternalLoginData, out provider, out providerUserId))
             {
