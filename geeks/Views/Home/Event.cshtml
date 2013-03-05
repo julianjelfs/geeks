@@ -6,25 +6,59 @@
 }
 
 <div class="content">
-@using (Html.BeginForm()) {
-    @Html.AntiForgeryToken()
-    @Html.ValidationSummary(true)
+    @using (Html.BeginForm()) {
+        @Html.AntiForgeryToken()
+        @Html.ValidationSummary(true)
 
-    <fieldset>
-        <legend class="geek">Enter details to create a new event</legend>
-        @Html.TextBoxFor(m => m.Title, htmlAttributes: new { @class = "input-xxlarge input-block-level", @placeholder = "Title" })
-        @Html.ValidationMessageFor(m => m.Title)
-        @Html.TextAreaFor(m => m.Description, htmlAttributes: new { @class = "input-xxlarge input-block-level", @placeholder = "Description" })
-        @Html.ValidationMessageFor(m => m.Description)
-        @Html.TextBoxFor(m => m.Date, htmlAttributes: new { @class = "input-xxlarge input-block-level", @placeholder = "Date and time" })
-        @Html.ValidationMessageFor(m => m.Date)
-        <br/>
-        @Html.TextBoxFor(m => m.Venue, htmlAttributes: new { @class = "input-xxlarge input-block-level", @placeholder = "Venue" })
-        @Html.ValidationMessageFor(m => m.Venue)
-        <br/>
-        <button class="btn" type="submit">Save</button>
-        <br/>
-        @Html.ActionLink("Back to list", "Events", "Home")
-    </fieldset>
-}
+        <div class="row-fluid">
+            <div class="span6">
+                <fieldset>
+                    <legend class="geek">Enter details to create a new event</legend>
+                    @Html.TextBoxFor(m => m.Title, htmlAttributes: new { @class = "input-xxlarge input-block-level", @placeholder = "Title", @style="width:100%" })
+                    @Html.ValidationMessageFor(m => m.Title)
+                    @Html.TextAreaFor(m => m.Description, htmlAttributes: new { @class = "input-xxlarge input-block-level", @placeholder = "Description", @style = "width:100%" })
+                    @Html.ValidationMessageFor(m => m.Description)
+                    @Html.TextBoxFor(m => m.Date, htmlAttributes: new { @class = "input-xxlarge input-block-level", @placeholder = "Date and time", @style = "width:100%" })
+                    @Html.ValidationMessageFor(m => m.Date)
+                    <br/>
+                    @Html.TextBoxFor(m => m.Venue, htmlAttributes: new { @class = "input-xxlarge input-block-level", @placeholder = "Venue", @style = "width:100%" })
+                    @Html.ValidationMessageFor(m => m.Venue)
+                    <br/>
+                    <button class="btn" type="submit">Save</button>
+                    <br/>
+                    @Html.ActionLink("Back to list", "Events", "Home")
+                </fieldset>
+            </div>
+            <div class="span6">
+                <fieldset>
+                    <legend class="geek">Who's invited</legend>
+                    <input class="typeahead" type="text" data-provide="typeahead" autocomplete="false" style="width:100%" />
+                    @Html.Partial("Invitees")
+                </fieldset>
+            </div>
+        </div>
+    }
 </div>
+
+@section scripts{
+    <script type="text/javascript">
+        $(function() {
+            var map = {};
+            $('.typeahead').typeahead({
+                updater: function(item) {
+                    //
+                },
+                source: function(query, process) {
+                    return $.get('@Url.Action("LookupFriends", "Home")', { query: query }, function(data) {
+                        var emails = [];
+                        map = data;
+                        for (var prop in data) {
+                            emails.push(prop);
+                        }
+                        return process(emails);
+                    });
+                }
+            });
+        });
+    </script>
+}

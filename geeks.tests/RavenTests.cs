@@ -79,6 +79,22 @@ namespace geeks.tests
         }
 
         [Test]
+        public void EventsAndInvitees()
+        {
+            var events = _session.Query<Event>().Include<Event>(e => e.InviteeIds);
+
+            foreach (var ev in events)
+            {
+                Console.WriteLine("Event:{0}", ev.Title);
+                foreach (var id in ev.InviteeIds)
+                {
+                    var user = _session.Load<User>(id);
+                    Console.WriteLine("Invitee:{0}", user);
+                }
+            }
+        }
+
+        [Test]
         public void FriendSearch()
         {
             var search = "kallina";

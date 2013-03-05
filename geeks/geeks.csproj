@@ -357,6 +357,7 @@
   <ItemGroup>
     <None Include="Scripts\jquery-1.9.1.min.map" />
     <Content Include="Views\Shared\FriendsPager.cshtml" />
+    <Content Include="Views\Home\Invitees.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />

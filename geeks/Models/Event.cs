@@ -7,8 +7,41 @@ using System.Web.Mvc;
 
 namespace geeks.Models
 {
+    public class Event
+    {
+        public Event()
+        {
+            
+        }
+
+        public Event(EventModel model)
+        {
+            Id = model.Id;
+            Title = model.Title;
+            Description = model.Description;
+            Date = model.Date;
+            Venue = model.Venue;
+            CreatedBy = model.CreatedBy;
+            InviteeIds = from i in model.Invitees
+                         select i.UserId;
+        }
+
+        public int Id { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public DateTime Date { get; set; }
+        public string Venue { get; set; }
+        public string CreatedBy { get; set; }
+        public IEnumerable<string> InviteeIds { get; set; }
+    }
+
     public class EventModel
     {
+        public EventModel()
+        {
+            Invitees = new List<UserFriend>();
+        }
+
         public int Id { get; set; }
 
         [Required]
@@ -34,5 +67,7 @@ namespace geeks.Models
         [DataType(DataType.Text)]
         [Display(Name = "Created By")]
         public string CreatedBy { get; set; }
+
+        public IEnumerable<UserFriend> Invitees { get; set; } 
     }
 }

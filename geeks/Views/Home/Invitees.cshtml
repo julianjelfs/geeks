@@ -1,0 +1,11 @@
+﻿@model geeks.Models.EventModel
+
+<div class="well-large">
+    @if (Model.Invitees != null && Model.Invitees.Any())
+    {
+        foreach (var friend in Model.Invitees)
+        {
+            <div>@friend.Email</div>
+        }
+    }
+</div>

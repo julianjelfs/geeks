@@ -23,22 +23,44 @@ namespace geeks.Controllers
             return View();
         }
 
-        [Authorize]
-        public virtual ActionResult Event(int id)
-        {
-            if (id > 0)
-            {
-                return View(RavenSession.Load<EventModel>(id));
-            }
-            return View();
-        }
-
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
         public ActionResult SearchFriends(string friendSearch)
         {
             return RedirectToAction("Friends", new { friendSearch });
+        }
+
+        [Authorize]
+        public virtual ActionResult Event(int id)
+        {
+            if (id > 0)
+            {
+                var ev = RavenSession.Include<Event>(e => e.InviteeIds).Load<Event>(id);
+                return View(EventModelFromEvent(ev));
+            }
+            return View(new EventModel{ CreatedBy = GetCurrentUserId()});
+        }
+
+        private EventModel EventModelFromEvent(Event ev)
+        {
+            return new EventModel
+                {
+                    Id = ev.Id,
+                    CreatedBy = ev.CreatedBy,
+                    Date = ev.Date,
+                    Description = ev.Description,
+                    Title = ev.Title,
+                    Venue = ev.Venue,
+                    Invitees = from i in ev.InviteeIds
+                               let user = RavenSession.Load<User>(i)
+                               select new UserFriend
+                                   {
+                                       Email = user.Username,
+                                       UserId = user.Id,
+                                       Name = user.Name
+                                   }
+                };
         }
 
         [HttpPost]
@@ -51,12 +73,23 @@ namespace geeks.Controllers
                 //save the event
                 if (model.Id == 0)
                 {
-                    model.CreatedBy = User.Identity.Name;
+                    model.CreatedBy = GetCurrentUserId();
                 }
-                RavenSession.Store(model);
+                RavenSession.Store(new Event(model));
                 return RedirectToAction("Events");
             }
             return View();
+        }
+
+        [Authorize]
+        public virtual ActionResult Events()
+        {
+            var evs = RavenSession.Query<Event>()
+                                  .Include<Event>(e => e.InviteeIds)
+                                  .Where(e => e.CreatedBy == GetCurrentUserId())
+                                  .ToList();
+            var models = (from e in evs select EventModelFromEvent(e)).ToList();
+            return View(models);
         }
 
         [HttpPost]
@@ -70,7 +103,7 @@ namespace geeks.Controllers
                 RavenSession.Delete(model);
             }
         }
-        
+
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
@@ -80,7 +113,7 @@ namespace geeks.Controllers
             RavenSession.SaveChanges();
             return FirstPageOfFriends();
         }
-        
+
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
@@ -142,7 +175,7 @@ namespace geeks.Controllers
         {
             return UsersFromFriends(GetCurrentUserId(), pageIndex, pageSize, out totalPages, friendSearch);
         }
-        
+
         [Authorize]
         public virtual ActionResult Friends(int pageIndex = 0, int pageSize = 10, string friendSearch = null)
         {
@@ -155,11 +188,14 @@ namespace geeks.Controllers
         }
 
         [Authorize]
-        public virtual ActionResult Events()
+        public JsonResult LookupFriends(string query)
         {
-            return View(from ev in RavenSession.Query<EventModel>()
-                        where ev.CreatedBy == User.Identity.Name
-                        select ev);
+            var totalPages = 0;
+            var matches = UsersFromFriends(GetCurrentUserId(), 0, 100, out totalPages, query);
+            var dict = new Dictionary<string, string>();
+            foreach (var match in matches.Where(match => !dict.ContainsKey(match.Email)))
+                dict.Add(match.Email, match.UserId);
+            return Json(dict,  JsonRequestBehavior.AllowGet);
         }
     }
 }
