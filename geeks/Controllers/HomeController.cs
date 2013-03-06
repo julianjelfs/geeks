@@ -32,9 +32,22 @@ namespace geeks.Controllers
         }
 
         [Authorize]
-        public virtual ActionResult Event(int id)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public PartialViewResult AddFriendToEvent(string eventId, string userId)
         {
-            if (id > 0)
+            var ev = RavenSession.Include<Event>(e => e.InviteeIds).Load<Event>(eventId);
+            var inv = new List<string>(ev.InviteeIds);
+            inv.Add(userId);
+            ev.InviteeIds = inv;
+            RavenSession.Store(ev);
+            return PartialView("Invitees", EventModelFromEvent(ev));
+        }
+
+        [Authorize]
+        public virtual ActionResult Event(string id)
+        {
+            if (!string.IsNullOrEmpty(id))
             {
                 var ev = RavenSession.Include<Event>(e => e.InviteeIds).Load<Event>(id);
                 return View(EventModelFromEvent(ev));
@@ -52,14 +65,14 @@ namespace geeks.Controllers
                     Description = ev.Description,
                     Title = ev.Title,
                     Venue = ev.Venue,
-                    Invitees = from i in ev.InviteeIds
+                    Invitees = (from i in ev.InviteeIds
                                let user = RavenSession.Load<User>(i)
                                select new UserFriend
                                    {
                                        Email = user.Username,
                                        UserId = user.Id,
                                        Name = user.Name
-                                   }
+                                   }).ToList()
                 };
         }
 
@@ -71,7 +84,7 @@ namespace geeks.Controllers
             if (ModelState.IsValid)
             {
                 //save the event
-                if (model.Id == 0)
+                if (string.IsNullOrEmpty(model.Id))
                 {
                     model.CreatedBy = GetCurrentUserId();
                 }

@@ -26,7 +26,7 @@ namespace geeks.Models
                          select i.UserId;
         }
 
-        public int Id { get; set; }
+        public string Id { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
         public DateTime Date { get; set; }
@@ -42,7 +42,7 @@ namespace geeks.Models
             Invitees = new List<UserFriend>();
         }
 
-        public int Id { get; set; }
+        public string Id { get; set; }
 
         [Required]
         [DataType(DataType.Text)]
@@ -68,6 +68,6 @@ namespace geeks.Models
         [Display(Name = "Created By")]
         public string CreatedBy { get; set; }
 
-        public IEnumerable<UserFriend> Invitees { get; set; } 
+        public List<UserFriend> Invitees { get; set; } 
     }
 }

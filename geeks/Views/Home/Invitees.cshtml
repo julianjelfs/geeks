@@ -1,11 +1,12 @@
 ﻿@model geeks.Models.EventModel
 
-<div class="well-large">
+<div class="well">
     @if (Model.Invitees != null && Model.Invitees.Any())
     {
-        foreach (var friend in Model.Invitees)
+        for(var i=0; i<Model.Invitees.Count(); i++)
         {
-            <div>@friend.Email</div>
+            @Html.HiddenFor(model => model.Invitees[i].UserId)
+            <div>@Model.Invitees[i].Email</div>
         }
     }
 </div>
