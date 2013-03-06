@@ -33,8 +33,9 @@
                 <fieldset>
                     <legend class="geek">Who's invited</legend>
                     <input class="typeahead" type="text" data-provide="typeahead" autocomplete="false" style="width:100%" />
-                    <div id="friends-placeholder"></div>
-                    @Html.Partial("Invitees")
+                    <div id="friends-placeholder">
+                        @Html.Partial("Invitees")
+                    </div>
                 </fieldset>
             </div>
         </div>
@@ -44,6 +45,19 @@
 @section scripts{
     <script type="text/javascript">
         $(function() {
+            (function bindRemoveHandlers() {
+                $("button.close", "#invitees").click(function() {
+                    $.post('@Url.Action("RemoveFriendFromEvent","Home")', {
+                            __RequestVerificationToken: $("input[name='__RequestVerificationToken']").val(),
+                            userId: $(this).attr("data-user-id"),
+                            eventId: '@Model.Id'
+                        }, function(data) {
+                            $("#friends-placeholder").empty()[0].innerHTML = data;
+                            bindRemoveHandlers();
+                        });
+                });
+            })();
+            
             var map = {};
             $('.typeahead').typeahead({
                 updater: function(item) {

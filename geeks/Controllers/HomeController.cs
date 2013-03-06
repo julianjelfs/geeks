@@ -34,6 +34,19 @@ namespace geeks.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
+        public PartialViewResult RemoveFriendFromEvent(string eventId, string userId)
+        {
+            var ev = RavenSession.Include<Event>(e => e.InviteeIds).Load<Event>(eventId);
+            var inv = new List<string>(ev.InviteeIds);
+            inv.Remove(userId);
+            ev.InviteeIds = inv;
+            RavenSession.Store(ev);
+            return PartialView("Invitees", EventModelFromEvent(ev));
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public PartialViewResult AddFriendToEvent(string eventId, string userId)
         {
             var ev = RavenSession.Include<Event>(e => e.InviteeIds).Load<Event>(eventId);
@@ -60,7 +73,7 @@ namespace geeks.Controllers
             return new EventModel
                 {
                     Id = ev.Id,
-                    CreatedBy = ev.CreatedBy,
+                    CreatedBy = RavenSession.Load<User>(ev.CreatedBy).Username,
                     Date = ev.Date,
                     Description = ev.Description,
                     Title = ev.Title,
@@ -99,6 +112,7 @@ namespace geeks.Controllers
         {
             var evs = RavenSession.Query<Event>()
                                   .Include<Event>(e => e.InviteeIds)
+                                  .Include<Event>(e => e.CreatedBy)
                                   .Where(e => e.CreatedBy == GetCurrentUserId())
                                   .ToList();
             var models = (from e in evs select EventModelFromEvent(e)).ToList();
