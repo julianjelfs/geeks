@@ -22,8 +22,11 @@ namespace geeks.Models
             Date = model.Date;
             Venue = model.Venue;
             CreatedBy = model.CreatedBy;
-            InviteeIds = from i in model.Invitees
-                         select i.UserId;
+            if (model.Invitees != null)
+            {
+                InviteeIds = from i in model.Invitees
+                             select i.UserId;
+            }
         }
 
         public string Id { get; set; }
@@ -39,6 +42,7 @@ namespace geeks.Models
     {
         public EventModel()
         {
+            Id = Guid.NewGuid().ToString();
             Invitees = new List<UserFriend>();
         }
 

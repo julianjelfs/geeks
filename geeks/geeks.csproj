@@ -296,6 +296,9 @@
     <Content Include="js\bootstrap.min.js" />
     <Content Include="js\events.js" />
     <Content Include="js\jquery-1.9.1.min.js" />
+    <Content Include="js\handlebars.js" />
+    <Content Include="js\handlebars.min.js" />
+    <Content Include="js\handlebars.runtime.js" />
     <Content Include="Scripts\jquery-1.9.1-vsdoc.js" />
     <Content Include="Scripts\jquery-1.9.1.js" />
     <Content Include="Scripts\jquery-1.9.1.min.js" />
@@ -355,6 +358,8 @@
     <Content Include="Views\Shared\FriendsTable.cshtml" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="App_Readme\Handlebarsjs_LICENSE" />
+    <None Include="App_Readme\Handlebarsjs_README.md" />
     <None Include="Scripts\jquery-1.9.1.min.map" />
     <Content Include="Views\Shared\FriendsPager.cshtml" />
     <Content Include="Views\Home\Invitees.cshtml" />

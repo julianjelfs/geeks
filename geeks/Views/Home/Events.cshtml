@@ -8,73 +8,77 @@
 <div class="content">
     <h2 class="geek">Events</h2>
     
-    @Html.ActionLink("Create an event", "Event", "Home", routeValues: new { id = 0 }, htmlAttributes: new { @id = "add-event", @class = "btn" })
+    @Html.ActionLink("Create an event", "Event", "Home", htmlAttributes: new { @id = "add-event", @class = "btn" })
     
     <p></p>
     
-    <table class="table table-hover">
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Venue</th>
-                <th>Created By</th>
-                <th width="40px"></th>
-                <th width="40px"></th>
-                <th width="40px"></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var ev in Model)
-            {
+    @if (Model.Any())
+    {
+
+        <table class="table table-hover">
+            <thead>
                 <tr>
-                    <td>@ev.Title</td>
-                    <td>@ev.Venue</td>
-                    <td>@ev.CreatedBy</td>
-                    <td>
-                        @Html.ActionLink("Edit", "Event", "Home", routeValues:new {id=@ev.Id}, htmlAttributes: new { @id = "edit-event", @class = "btn btn-block" })
-                    </td>
-                    <td>
-                        <a href="#delete-warning" role="button" class="delete-event btn" data-eventid="@ev.Id"><i class="icon-trash"></i></a>
-                    </td>
-                    <td>
-                        <a href="#reschedule" role="button" class="reschedule-event btn" data-toggle="modal"><i class="icon-calendar"></i></a>
-                    </td>
+                    <th>Title</th>
+                    <th>Venue</th>
+                    <th>Created By</th>
+                    <th width="40px"></th>
+                    <th width="40px"></th>
+                    <th width="40px"></th>
                 </tr>
-            }
-        </tbody>
-    </table>
-    
-    <div id="delete-warning" class="modal hide fade">
-        <div class="modal-header">
-            <h3 class="geek">Cancel Event</h3>
+            </thead>
+            <tbody>
+                @foreach (var ev in Model)
+                {
+                    <tr>
+                        <td>@ev.Title</td>
+                        <td>@ev.Venue</td>
+                        <td>@ev.CreatedBy</td>
+                        <td>
+                            @Html.ActionLink("Edit", "Event", "Home", routeValues: new {id = @ev.Id}, htmlAttributes: new {@id = "edit-event", @class = "btn btn-block"})
+                        </td>
+                        <td>
+                            <a href="#delete-warning" role="button" class="delete-event btn" data-eventid="@ev.Id"><i class="icon-trash"></i></a>
+                        </td>
+                        <td>
+                            <a href="#reschedule" role="button" class="reschedule-event btn" data-toggle="modal"><i class="icon-calendar"></i></a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div id="delete-warning" class="modal hide fade">
+            <div class="modal-header">
+                <h3 class="geek">Cancel Event</h3>
+            </div>
+            <div class="modal-body">
+                <p>
+                    Are you sure you want to cancel this event? 
+                    If you proceed, a notification email will be sent to 
+                    everyone that you invited.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">No</button>
+                <input id="delete-event" type="button" class="btn" value="Yes"/>
+            </div>
         </div>
-        <div class="modal-body">
-            <p>
-                Are you sure you want to cancel this event? 
-                If you proceed, a notification email will be sent to 
-                everyone that you invited.
-            </p>
+
+        <div id="reschedule" class="modal hide fade">
+            <div class="modal-header">
+                <h3 class="geek">Reschedule Event</h3>
+            </div>
+            <div class="modal-body">
+                <p>
+                    We'll have a calendar here to pick a new date and time 
+                    and then it will send out change emails.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Done</button>
+            </div>
         </div>
-        <div class="modal-footer">
-            <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">No</button>
-            <input id="delete-event" type="button" class="btn" value="Yes"/>
-        </div>
-    </div>
-    
-    <div id="reschedule" class="modal hide fade">
-        <div class="modal-header">
-            <h3 class="geek">Reschedule Event</h3>
-        </div>
-        <div class="modal-body">
-            <p>
-                We'll have a calendar here to pick a new date and time 
-                and then it will send out change emails.
-            </p>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Done</button>
-        </div>
-    </div>
+    }
     
     @Html.AntiForgeryToken()
 

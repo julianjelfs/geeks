@@ -96,11 +96,7 @@ namespace geeks.Controllers
         {
             if (ModelState.IsValid)
             {
-                //save the event
-                if (string.IsNullOrEmpty(model.Id))
-                {
-                    model.CreatedBy = GetCurrentUserId();
-                }
+                model.CreatedBy = GetCurrentUserId();
                 RavenSession.Store(new Event(model));
                 return RedirectToAction("Events");
             }

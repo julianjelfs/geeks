@@ -12,7 +12,8 @@ namespace geeks
 
             bundles.Add(new ScriptBundle("~/bundles/script").Include(
                         "~/js/jquery-{version}.min.js",
-                        "~/js/bootstrap.js"));
+                        "~/js/bootstrap.js",
+                        "~/js/handlebars.min.js"));
 
             /*bundles.Add(new ScriptBundle("~/bundles/jqueryui").Include(
                         "~/Scripts/jquery-ui-{version}.js"));

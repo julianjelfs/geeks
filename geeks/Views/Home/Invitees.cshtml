@@ -5,10 +5,10 @@
     {
         for(var i=0; i<Model.Invitees.Count(); i++)
         {
-            @Html.HiddenFor(model => model.Invitees[i].UserId)
             <div class="alert alert-info">
                 <button type="button" class="close" data-user-id="@Model.Invitees[i].UserId" data-dismiss="alert">&times;</button>
                 @Model.Invitees[i].Email
+                @Html.HiddenFor(model => model.Invitees[i].UserId)
             </div>
         }
     }
