@@ -96,3 +96,7 @@ div.content {
 div.footer {
 	margin-top: 40px;
 }
+
+span.email-label {
+	padding: 10px;
+}

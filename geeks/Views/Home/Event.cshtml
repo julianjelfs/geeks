@@ -30,10 +30,18 @@
                 </fieldset>
             </div>
             <div class="span6">
-                <fieldset>
+                <fieldset ng-app>
                     <legend class="geek">Who's invited</legend>
-                    <input class="typeahead" type="text" data-provide="typeahead" autocomplete="false" style="width:100%" />
-                    <div id="friends-placeholder" />
+                    <input class="typeahead" type="text" placeholder="Type here to find friends to add" data-provide="typeahead" autocomplete="false" style="width:98%" />
+                    <div ng-controller="InviteesCtrl" id="friends-placeholder">
+                        <div id="invitees" class="well well-small">
+                            <div ng-repeat="invitee in invitees" class="alert alert-info">
+                                <button ng-click="remove(invitee.userId)" type="button" class="close" data-dismiss="alert">&times;</button>
+                                {{invitee.email}}
+                                <input type='hidden' name='Invitees[{{$index}}].UserId' value='{{invitee.userId}}' />
+                            </div>
+                        </div>
+                    </div>
                 </fieldset>
             </div>
         </div>
@@ -41,55 +49,44 @@
 </div>
 
 @section scripts{
-    <script id="invitees-template" type="text/x-handlebars-template">
-        <div id="invitees" class="well well-small">
-            {{#each invitees}}
-                <div class="alert alert-info">
-                    <button type="button" class="close" data-user-id="{{this.userId}}" data-dismiss="alert">&times;</button>
-                    {{this.email}}
-                    <input type='hidden' name='Invitees[{{@@index}}].UserId' value='{{this.userId}}' />
-                </div>
-            {{/each}}
-        </div>
-    </script>
-
     <script type="text/javascript">
-        $(function() {
-            var context = { invitees: [] };
+        function InviteesCtrl($scope) {
+            $scope.invitees = [];
             @if (Model.Invitees.Any())
             {
-                for(var i=0; i<Model.Invitees.Count; i++)
+                for (var i = 0; i < Model.Invitees.Count; i++)
                 {
                     <text>
-                    context.invitees.push({
-                        email : '@Model.Invitees[i].Email',
-                        userId : '@Model.Invitees[i].UserId'
-                    });
+                    $scope.invitees.push({ userId: '@Model.Invitees[i].UserId', email: '@Model.Invitees[i].Email' });
                     </text>
                 }
             }
-
-            var source = $("#invitees-template").html();
-            var template = Handlebars.compile(source);
-            $("#friends-placeholder")[0].innerHTML = template(context);
             
-            $("button.close", "#invitees").click(function() {
-                var userId = $(this).attr("data-user-id");
-                context.invitees = $.grep(context.invitees, function(item) {
+            $scope.add = function(obj) {
+                $scope.invitees.push({
+                        email : obj.email,
+                        userId : obj.userId
+                    });
+            };
+
+            $scope.remove = function(userId) {
+                $scope.invitees = $.grep($scope.invitees, function(item) {
                     return item.userId != userId;
                 });
-                $("#friends-placeholder")[0].innerHTML = template(context);
-            });
-
+            };
+        }
+        
+        $(function() {
             var map = {};
             $('.typeahead').typeahead({
                 updater: function(item) {
-                    context.invitees.push({
-                        userId: map[item],
-                        email: item,
-                        index: (context.invitees.length + 1)
+                    var scope = angular.element("#friends-placeholder").scope();
+                    scope.$apply(function() {
+                        scope.add({
+                            userId: map[item],
+                            email: item
+                        });
                     });
-                    $("#friends-placeholder")[0].innerHTML = template(context);
                     return "";
                 },
                 source: function(query, process) {
