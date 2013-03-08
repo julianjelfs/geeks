@@ -10,6 +10,24 @@
         
     </div>
     
+    <div id="rank-friend" class="popover">
+        <div class="popover-title">Rank your friend</div>
+        <div class="popover-content">
+            <div class="btn-group">
+                <button class="btn">1</button>
+                <button class="btn">2</button>
+                <button class="btn">3</button>
+                <button class="btn">4</button>
+                <button class="btn">5</button>
+                <button class="btn">6</button>
+                <button class="btn">7</button>
+                <button class="btn">8</button>
+                <button class="btn">9</button>
+                <button class="btn">10</button>
+            </div>
+        </div>
+    </div>
+    
     <div class="btn-group pull-right">
         
         @if (ViewBag.PageIndex == 0)
@@ -109,8 +127,34 @@
     <script type="text/javascript">
         $(function() {
             var selected = null;
+            var rankHtml = "<div class='btn-group'>";
+            var rankButton = "<button class='rank btn'><i class='icon-star-empty'></i></button>";
+            for (var i = 0; i < 10; i++) {
+                rankHtml += rankButton;
+            }
+            rankHtml += "</div>";
             $("#nav-bar li.active").removeClass("active");
             $("#friends-nav").addClass("active");
+            $("button.rank-friend").popover({
+                content : rankHtml,
+                placement : "top",
+                trigger : "manual",
+                html : true,
+                title : ''
+            }).unbind("click").click(function() {
+                $(this).popover("show");
+                $("button.rank").mouseover(function() {
+                    var index = $(this).index();
+                    $(this).parent().children().each(function(i) {
+                        var icon = $("i", this).removeClass("icon-star icon-star-empty");
+                        icon.addClass(i < index+1 ? "icon-star" : "icon-star-empty");
+                    });
+                }).click(function() {
+                    $("button.rank-friend").popover("hide");    
+                });
+            });
+
+            
 
             $("#add-friend-btn").click(function(e) {
                 e.preventDefault();
