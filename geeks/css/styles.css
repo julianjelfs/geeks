@@ -104,3 +104,8 @@ span.email-label {
 #table-placeholder .popover {
 	max-width: 420px;
 }
+
+span.rank {
+	margin-right: 3px;
+	cursor: pointer;
+}

@@ -38,6 +38,7 @@
                             <div ng-repeat="invitee in invitees" class="alert alert-info">
                                 <button ng-click="remove(invitee.userId)" type="button" class="close" data-dismiss="alert">&times;</button>
                                 {{invitee.email}}
+                                <span class="pull-right badge {{badgeClass(invitee)}}">{{invitee.rating}}</span>
                                 <input type='hidden' name='Invitees[{{$index}}].UserId' value='{{invitee.userId}}' />
                             </div>
                         </div>
@@ -50,6 +51,9 @@
 
 @section scripts{
     <script type="text/javascript">
+        $("#nav-bar li.active").removeClass("active");
+        $("#events-nav").addClass("active");
+    
         function InviteesCtrl($scope) {
             $scope.invitees = [];
             @if (Model.Invitees.Any())
@@ -57,16 +61,25 @@
                 for (var i = 0; i < Model.Invitees.Count; i++)
                 {
                     <text>
-                    $scope.invitees.push({ userId: '@Model.Invitees[i].UserId', email: '@Model.Invitees[i].Email' });
+                    $scope.invitees.push({ 
+                        userId: '@Model.Invitees[i].UserId', 
+                        email: '@Model.Invitees[i].Email', 
+                        rating: '@Model.Invitees[i].Rating'
+                    });
                     </text>
                 }
             }
+
+            $scope.badgeClass = function(invitee) {
+                return invitee.rating > 0 ? "badge-warning" : "";
+            };
             
             $scope.add = function(obj) {
                 $scope.invitees.push({
-                        email : obj.email,
-                        userId : obj.userId
-                    });
+                    email : obj.email,
+                    userId : obj.userId,
+                    rating : obj.rating
+                });
             };
 
             $scope.remove = function(userId) {
@@ -83,8 +96,9 @@
                     var scope = angular.element("#friends-placeholder").scope();
                     scope.$apply(function() {
                         scope.add({
-                            userId: map[item],
-                            email: item
+                            userId: map[item].userId,
+                            email: item,
+                            rating : map[item].rating
                         });
                     });
                     return "";

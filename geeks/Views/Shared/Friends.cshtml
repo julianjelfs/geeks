@@ -23,7 +23,7 @@
 
         @if (ViewBag.PageIndex == ViewBag.NumberOfPages - 1)
         {
-            <a class="btn disabled"href="#">Next</a>
+            <a class="btn disabled" href="#">Next</a>
         }
         else
         {
@@ -108,35 +108,43 @@
 @section scripts{
     <script type="text/javascript">
         $(function() {
-            var selected = null;
-            var rankHtml = "<div class='btn-group'>";
-            var rankButton = "<button class='rank btn'><i class='icon-star-empty'></i></button>";
+            var selected, rankButton, rank = null;
+            var rankHtml = "<div>";
+            var rankButton = "<span class='rank badge'>{x}</span>";
             for (var i = 0; i < 10; i++) {
-                rankHtml += rankButton;
+                rankHtml += rankButton.replace("{x}",i+1);
             }
             rankHtml += "</div>";
             $("#nav-bar li.active").removeClass("active");
             $("#friends-nav").addClass("active");
             $("button.rank-friend").popover({
-                content : rankHtml,
-                placement : "top",
-                trigger : "manual",
-                html : true,
-                title : ''
+                content: rankHtml,
+                placement: "top",
+                trigger: "manual",
+                html: true,
+                title: ''
             }).unbind("click").click(function() {
-                $(this).popover("show");
-                $("button.rank").mouseover(function() {
+                rankButton = $(this);
+                selected = rankButton.popover("show").attr('data-userId');
+                $("span.rank").mouseover(function() {
                     var index = $(this).index();
                     $(this).parent().children().each(function(i) {
-                        var icon = $("i", this).removeClass("icon-star icon-star-empty");
-                        icon.addClass(i < index+1 ? "icon-star" : "icon-star-empty");
+                        var icon = $(this).removeClass("badge-warning");
+                        if(i < index + 1) icon.addClass("badge-warning");
                     });
                 }).click(function() {
-                    $("button.rank-friend").popover("hide");    
+                    rank = ($(this).index() + 1);
+                    $.post('@Url.Action("RateFriend", "Home")', {
+                        __RequestVerificationToken: $("input[name='__RequestVerificationToken']").val(),
+                        id: selected,
+                        rating: rank
+                    }, function(data) {
+                        $("button.rank-friend").popover("hide");
+                        $("span", rankButton).text(rank).addClass("badge-warning");
+                    });
                 });
             });
 
-            
 
             $("#add-friend-btn").click(function(e) {
                 e.preventDefault();
@@ -159,15 +167,15 @@
                 e.preventDefault();
                 $.post("AddFriend", {
                         __RequestVerificationToken: $("input[name='__RequestVerificationToken']").val(),
-                        name : $("#friend-name").val(),
-                        email : $("#friend-email").val()
+                        name: $("#friend-name").val(),
+                        email: $("#friend-email").val()
                     }, function(data) {
                         $("#table-placeholder").empty()[0].innerHTML = data;
                         setupDeleteLinks();
                         $('#add-friend-form').modal('hide');
                     });
             });
-            
+
             $("#delete-all-confirm").click(function(e) {
                 e.preventDefault();
                 $.post("DeleteAllFriends", {

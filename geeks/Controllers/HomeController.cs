@@ -32,43 +32,17 @@ namespace geeks.Controllers
         }
 
         [Authorize]
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public PartialViewResult RemoveFriendFromEvent(string eventId, string userId)
-        {
-            var ev = RavenSession.Include<Event>(e => e.InviteeIds).Load<Event>(eventId);
-            var inv = new List<string>(ev.InviteeIds);
-            inv.Remove(userId);
-            ev.InviteeIds = inv;
-            RavenSession.Store(ev);
-            return PartialView("Invitees", EventModelFromEvent(ev));
-        }
-
-        [Authorize]
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public PartialViewResult AddFriendToEvent(string eventId, string userId)
-        {
-            var ev = RavenSession.Include<Event>(e => e.InviteeIds).Load<Event>(eventId);
-            var inv = new List<string>(ev.InviteeIds);
-            inv.Add(userId);
-            ev.InviteeIds = inv;
-            RavenSession.Store(ev);
-            return PartialView("Invitees", EventModelFromEvent(ev));
-        }
-
-        [Authorize]
         public virtual ActionResult Event(string id)
         {
             if (!string.IsNullOrEmpty(id))
             {
                 var ev = RavenSession.Include<Event>(e => e.InviteeIds).Load<Event>(id);
-                return View(EventModelFromEvent(ev));
+                return View(EventModelFromEvent(ev, GetCurrentUser()));
             }
             return View(new EventModel{ CreatedBy = GetCurrentUserId()});
         }
 
-        private EventModel EventModelFromEvent(Event ev)
+        private EventModel EventModelFromEvent(Event ev, User currentUser = null)
         {
             return new EventModel
                 {
@@ -80,13 +54,22 @@ namespace geeks.Controllers
                     Venue = ev.Venue,
                     Invitees = (from i in ev.InviteeIds
                                let user = RavenSession.Load<User>(i)
+                               let friend = GetFriendFromUser(currentUser, i)
                                select new UserFriend
                                    {
                                        Email = user.Username,
                                        UserId = user.Id,
-                                       Name = user.Name
+                                       Name = user.Name,
+                                       Rating = friend == null ? 0 : friend.Rating
                                    }).ToList()
                 };
+        }
+
+        private Friend GetFriendFromUser(User user, string friendUserId)
+        {
+            if (user == null)
+                return null;
+            return user.Friends.SingleOrDefault(f => f.UserId == friendUserId);
         }
 
         [HttpPost]
@@ -155,6 +138,21 @@ namespace geeks.Controllers
             RavenSession.SaveChanges();
             return FirstPageOfFriends();
         }
+        
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public virtual void RateFriend(string id, string rating)
+        {
+            var me = RavenSession.Query<User>()
+                        .SingleOrDefault(u => u.Username == User.Identity.Name);
+
+            var friend = me.Friends.SingleOrDefault(f => f.UserId == id);
+            if (friend != null)
+            {
+                friend.Rating = Convert.ToInt32(rating);
+            }
+        }
 
         private User AddNewUserIfNecessary(string name, string email)
         {
@@ -215,9 +213,12 @@ namespace geeks.Controllers
         {
             var totalPages = 0;
             var matches = UsersFromFriends(GetCurrentUserId(), 0, 100, out totalPages, query);
-            var dict = new Dictionary<string, string>();
+            var dict = new Dictionary<string, object>();
             foreach (var match in matches.Where(match => !dict.ContainsKey(match.Email)))
-                dict.Add(match.Email, match.UserId);
+                dict.Add(match.Email, new {
+                    userId = match.UserId,
+                    rating = match.UserId
+                });
             return Json(dict,  JsonRequestBehavior.AllowGet);
         }
     }
