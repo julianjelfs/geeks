@@ -299,6 +299,7 @@
     <Content Include="js\handlebars.js" />
     <Content Include="js\handlebars.min.js" />
     <Content Include="js\handlebars.runtime.js" />
+    <Content Include="js\ranking.js" />
     <Content Include="Scripts\angular-bootstrap-prettify.js" />
     <Content Include="Scripts\angular-bootstrap-prettify.min.js" />
     <Content Include="Scripts\angular-bootstrap.js" />

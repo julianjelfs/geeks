@@ -101,11 +101,15 @@ span.email-label {
 	padding: 10px;
 }
 
-#table-placeholder .popover {
+#table-placeholder .popover, #invitees .popover {
 	max-width: 420px;
 }
 
 span.rank {
 	margin-right: 3px;
+	cursor: pointer;
+}
+
+span.rank-friend {
 	cursor: pointer;
 }

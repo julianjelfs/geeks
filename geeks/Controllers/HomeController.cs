@@ -217,7 +217,7 @@ namespace geeks.Controllers
             foreach (var match in matches.Where(match => !dict.ContainsKey(match.Email)))
                 dict.Add(match.Email, new {
                     userId = match.UserId,
-                    rating = match.UserId
+                    rating = match.Rating
                 });
             return Json(dict,  JsonRequestBehavior.AllowGet);
         }
