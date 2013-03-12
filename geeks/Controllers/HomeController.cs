@@ -22,6 +22,16 @@ namespace geeks.Controllers
         {
             return View();
         }
+        
+        public virtual ActionResult Calendar()
+        {
+            return View();
+        }
+        
+        public virtual ActionResult Map()
+        {
+            return View();
+        }
 
         [HttpPost]
         [Authorize]
@@ -47,7 +57,8 @@ namespace geeks.Controllers
             return new EventModel
                 {
                     Id = ev.Id,
-                    CreatedBy = RavenSession.Load<User>(ev.CreatedBy).Username,
+                    CreatedByUserName = RavenSession.Load<User>(ev.CreatedBy).Username,
+                    CreatedBy = ev.CreatedBy,
                     Date = ev.Date,
                     Description = ev.Description,
                     Title = ev.Title,
@@ -83,7 +94,7 @@ namespace geeks.Controllers
                 RavenSession.Store(new Event(model));
                 return RedirectToAction("Events");
             }
-            return View();
+            return View(EventModelFromEvent(new Event(model)));
         }
 
         [Authorize]

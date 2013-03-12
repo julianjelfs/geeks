@@ -71,6 +71,10 @@ namespace geeks.Models
         [DataType(DataType.Text)]
         [Display(Name = "Created By")]
         public string CreatedBy { get; set; }
+        
+        [DataType(DataType.Text)]
+        [Display(Name = "Created By")]
+        public string CreatedByUserName { get; set; }
 
         public List<UserFriend> Invitees { get; set; } 
     }

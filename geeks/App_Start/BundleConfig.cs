@@ -8,13 +8,15 @@ namespace geeks
         // For more information on Bundling, visit http://go.microsoft.com/fwlink/?LinkId=254725
         public static void RegisterBundles(BundleCollection bundles)
         {
-            bundles.Add(new StyleBundle("~/bundles/css").Include("~/css/bootstrap.css", "~/css/styles.css"));
+            bundles.Add(new StyleBundle("~/bundles/css").Include("~/css/bootstrap.css", "~/css/styles.css", "~/css/calendar.css"));
 
             bundles.Add(new ScriptBundle("~/bundles/script").Include(
-                        "~/js/jquery-{version}.min.js",
+                        "~/js/jquery-{version}.js",
                         "~/js/bootstrap.js",
-                        "~/js/handlebars.min.js",
-                        "~/js/angular.min.js"));
+                        "~/js/angular.js",
+                        "~/js/angular-ui.js",
+                        "~/js/jquery.validate.min.js",
+                        "~/js/jquery.validate.unobtrusive.min.js"));
 
             /*bundles.Add(new ScriptBundle("~/bundles/jqueryui").Include(
                         "~/Scripts/jquery-ui-{version}.js"));
@@ -44,7 +46,7 @@ namespace geeks
                         "~/Content/themes/base/jquery.ui.progressbar.css",
                         "~/Content/themes/base/jquery.ui.theme.css"));*/
 
-            BundleTable.EnableOptimizations = true; 
+            //BundleTable.EnableOptimizations = true; 
         }
     }
 }

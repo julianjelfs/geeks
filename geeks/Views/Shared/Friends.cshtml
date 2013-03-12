@@ -108,6 +108,9 @@
 @section scripts{
     <script src="../js/ranking.js" type="text/javascript"></script>
     <script type="text/javascript">
+        $("#nav-bar li.active").removeClass("active");
+        $("#friends-nav").addClass("active");
+        
         $(function() {
             var selected = null;
 
@@ -115,8 +118,8 @@
 
             $("#add-friend-btn").click(function(e) {
                 e.preventDefault();
-                $("#friend-name").val('').focus();
-                $("#friend-email").val('');
+                $("#friend-name").val('').removeClass("input-validation-error").focus();
+                $("#friend-email").removeClass("input-validation-error").val('');
                 $("#add-friend-form").modal();
             });
 
@@ -132,10 +135,23 @@
 
             $("#add-friend-submit").click(function(e) {
                 e.preventDefault();
+                var name = $("#friend-name").removeClass("input-validation-error").val();
+                var email = $("#friend-email").removeClass("input-validation-error").val();
+                var valid = true;
+                if (name.length === 0) {
+                    $("#friend-name").addClass("input-validation-error").attr("title", "Enter your friend's name");
+                    valid = false;
+                }
+                if (email.length === 0) {
+                    $("#friend-email").addClass("input-validation-error").attr("title", "Enter your friend's email");
+                    valid = false;
+                }
+                if (!valid)
+                    return;
                 $.post("AddFriend", {
                         __RequestVerificationToken: $("input[name='__RequestVerificationToken']").val(),
-                        name: $("#friend-name").val(),
-                        email: $("#friend-email").val()
+                        name: name,
+                        email: email, 
                     }, function(data) {
                         $("#table-placeholder").empty()[0].innerHTML = data;
                         setupDeleteLinks();

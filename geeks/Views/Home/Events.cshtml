@@ -1,4 +1,5 @@
-﻿@model IEnumerable<geeks.Models.EventModel>
+﻿@using geeks.Models
+@model IEnumerable<geeks.Models.EventModel>
 
 @{
     ViewBag.Title = "Events";
@@ -8,13 +9,12 @@
 <div class="content">
     <h2 class="geek">Events</h2>
     
-    @Html.ActionLink("Create an event", "Event", "Home", htmlAttributes: new { @id = "add-event", @class = "btn" })
+    @Html.ActionLink("Create an event", "Event", "Home", htmlAttributes: new {@id = "add-event", @class = "btn"})
     
     <p></p>
     
     @if (Model.Any())
     {
-
         <table class="table table-hover">
             <thead>
                 <tr>
@@ -27,12 +27,12 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var ev in Model)
+                @foreach (EventModel ev in Model)
                 {
                     <tr>
                         <td>@ev.Title</td>
                         <td>@ev.Venue</td>
-                        <td>@ev.CreatedBy</td>
+                        <td>@ev.CreatedByUserName</td>
                         <td>
                             @Html.ActionLink("Edit", "Event", "Home", routeValues: new {id = @ev.Id}, htmlAttributes: new {@id = "edit-event", @class = "btn btn-block"})
                         </td>

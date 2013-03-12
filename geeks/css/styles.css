@@ -113,3 +113,14 @@ span.rank {
 span.rank-friend {
 	cursor: pointer;
 }
+
+.input-validation-error { border-color: #f00 !important }
+.input-validation-valid  { /* Optional: you can set whatever style you want */ }
+.field-validation-error { color: #f00 }
+.field-validation-valid { display: none }
+.validation-summary-errors { font-weight: bold; color: #f00 }
+.validation-summary-valid { display: none }
+
+div.map {
+	height: 500px;
+}

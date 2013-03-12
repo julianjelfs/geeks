@@ -1,0 +1,18 @@
+﻿@using (Html.BeginForm("AddFriend", "Home"))
+{
+    @Html.AntiForgeryToken()
+    
+    <div id="add-friend-form" class="modal hide fade">
+        <div class="modal-header">
+            <h3 class="geek">Add a new friend</h3>
+        </div>
+        <div class="modal-body">
+            <input type="text" name="Name" id="friend-name" placeholder="Friend's Name" value=""/>
+            <input type="text" id="friend-email" name="Email" placeholder="Friend's Email Address" value=""/>
+        </div>
+        <div class="modal-footer">
+            <button accesskey="A" type="submit" id="add-friend-submit" class="btn btn-primary">Add</button>
+            <button accesskey="C" class="btn" data-dismiss="modal">Cancel</button>
+        </div>
+    </div>
+}

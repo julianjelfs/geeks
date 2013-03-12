@@ -2,20 +2,21 @@
 <!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
 <!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
 <!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-        <title>@ViewBag.Title - Geek's Dilemma</title>
-        <meta name="description" content="">
-        <meta name="viewport" content="width=device-width">
+<!--[if gt IE 8]><!--> <html class="no-js" > <!--<![endif]-->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>@ViewBag.Title - Geek's Dilemma</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
 
-        <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+    <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
         
-        @Styles.Render("~/bundles/css")
-        <link href='http://fonts.googleapis.com/css?family=Russo+One|Press+Start+2P|Audiowide' rel='stylesheet' type='text/css'>
-    </head>
-<body>
+    @Styles.Render("~/bundles/css")
+    <link href='http://fonts.googleapis.com/css?family=Russo+One|Press+Start+2P|Audiowide' rel='stylesheet' type='text/css'>
+    <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>
+</head>
+<body ng-app="geeks">
     <div class="container-fluid">
 
         <div class="row-fluid">
@@ -32,6 +33,9 @@
                         <li id="friends-nav">
                             @Html.ActionLink("Friends", "Friends", "Home")
                         </li>
+                        <li id="map-nav">
+                            @Html.ActionLink("Map", "Map", "Home")
+                        </li>
                         <li id="about-nav">
                             @Html.ActionLink("About", "About", "Home")
                         </li>
@@ -42,7 +46,7 @@
                         }
                         else
                         {
-                            <li id="logoff-nav" class="pull-right">@Html.ActionLink("Log Off", "LogOff", "Account", routeValues: null, htmlAttributes: new { @id = "logOff", @class = "postLink" })</li>
+                            <li id="logoff-nav" class="pull-right">@Html.ActionLink("Log Off", "LogOff", "Account", routeValues: null, htmlAttributes: new {@id = "logOff", @class = "postLink"})</li>
                             <li id="manage-nav" class="pull-right">@Html.ActionLink(User.Identity.Name, "Manage", "Account")</li>
                         }
                     </ul>
@@ -61,28 +65,34 @@
             <p class="span10 offset1">&copy; @DateTime.Now.Year - Geek's Dilemma</p>
         </div>
     </div>
+    
+    
         
     @Scripts.Render("~/bundles/script")
     
     @RenderSection("scripts", required: false)
 
     <script type="text/javascript">
-    
-      $(function(){
-        $("a.postLink").click(function(e){
-            e.preventDefault();
-            $.post($(this).attr("href"),function(data) {
-                window.location.href = window.location.href;
+
+        angular.module('geeks', ['ui']);
+        
+        $(function() {
+
+
+            $("a.postLink").click(function(e) {
+                e.preventDefault();
+                $.post($(this).attr("href"), function(data) {
+                    window.location.href = window.location.href;
+                });
+            });
+            $("#manage-nav").tooltip({
+                animation: true,
+                title: 'Manager your account settings',
+                trigger: 'hover',
+                placement: 'bottom',
+                delay: 200
             });
         });
-          $("#manage-nav").tooltip({
-            animation : true,
-            title : 'Manager your account settings',
-            trigger : 'hover',
-            placement : 'bottom',
-            delay : 200
-          });
-      });    
     </script>
 
 </body>

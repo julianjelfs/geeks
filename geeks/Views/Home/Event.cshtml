@@ -14,15 +14,15 @@
             <div class="span6">
                 <fieldset>
                     <legend class="geek">Enter details to create a new event</legend>
-                    @Html.TextBoxFor(m => m.Title, htmlAttributes: new { @class = "input-xxlarge input-block-level", @placeholder = "Title", @style="width:100%" })
                     @Html.ValidationMessageFor(m => m.Title)
-                    @Html.TextAreaFor(m => m.Description, htmlAttributes: new { @class = "input-xxlarge input-block-level", @placeholder = "Description", @style = "width:100%" })
+                    @Html.TextBoxFor(m => m.Title, htmlAttributes: new { @class = "input-xxlarge input-block-level", @placeholder = "Title", @style="width:100%" })
                     @Html.ValidationMessageFor(m => m.Description)
-                    @Html.TextBoxFor(m => m.Date, htmlAttributes: new { @class = "input-xxlarge input-block-level", @placeholder = "Date and time", @style = "width:100%" })
+                    @Html.TextAreaFor(m => m.Description, htmlAttributes: new { @class = "input-xxlarge input-block-level", @placeholder = "Description", @style = "width:100%" })
                     @Html.ValidationMessageFor(m => m.Date)
+                    @Html.TextBoxFor(m => m.Date, htmlAttributes: new { @class = "input-xxlarge input-block-level", @placeholder = "Date and time", @style = "width:100%" })
                     <br/>
-                    @Html.TextBoxFor(m => m.Venue, htmlAttributes: new { @class = "input-xxlarge input-block-level", @placeholder = "Venue", @style = "width:100%" })
                     @Html.ValidationMessageFor(m => m.Venue)
+                    @Html.TextBoxFor(m => m.Venue, htmlAttributes: new { @class = "input-xxlarge input-block-level", @placeholder = "Venue", @style = "width:100%" })
                     <br/>
                     <button class="btn" type="submit">Save</button>
                     <br/>
@@ -30,7 +30,7 @@
                 </fieldset>
             </div>
             <div class="span6">
-                <fieldset ng-app>
+                <fieldset>
                     <legend class="geek">Who's invited</legend>
                     <input class="typeahead" type="text" placeholder="Type here to find friends to add" data-provide="typeahead" autocomplete="false" style="width:98%" />
                     <div ng-controller="InviteesCtrl" id="friends-placeholder">

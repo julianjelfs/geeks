@@ -11,6 +11,18 @@ namespace geeks.Models
 
         public string ExternalLoginData { get; set; }
     }
+    
+    public class AddFriendModel
+    {
+        [Required]
+        [Display(Name = "Name")]
+        public string Name { get; set; }
+        
+        [Required]
+        [Display(Name = "Email")]
+        [DataType(DataType.EmailAddress)]
+        public string Email { get; set; }
+    }
 
     public class LocalPasswordModel
     {
