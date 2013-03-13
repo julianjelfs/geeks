@@ -124,3 +124,5 @@ span.rank-friend {
 div.map {
 	height: 500px;
 }
+
+#map-canvas img{max-width:none}
