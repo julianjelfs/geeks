@@ -11,7 +11,8 @@ namespace geeks.Models
     {
         public Event()
         {
-            
+            Latitude = 51.509;
+            Longitude = -0.115;
         }
 
         public Event(EventModel model)
@@ -22,6 +23,8 @@ namespace geeks.Models
             Date = model.Date;
             Venue = model.Venue;
             CreatedBy = model.CreatedBy;
+            Longitude = model.Longitude;
+            Latitude = model.Latitude;
             if (model.Invitees != null)
             {
                 InviteeIds = from i in model.Invitees
@@ -36,6 +39,9 @@ namespace geeks.Models
         public string Venue { get; set; }
         public string CreatedBy { get; set; }
         public IEnumerable<string> InviteeIds { get; set; }
+
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
     }
 
     public class EventModel
@@ -44,6 +50,9 @@ namespace geeks.Models
         {
             Id = Guid.NewGuid().ToString();
             Invitees = new List<UserFriend>();
+            Latitude = 51.509;
+            Longitude = -0.115;
+            Date = DateTime.Today;
         }
 
         public string Id { get; set; }
@@ -67,6 +76,9 @@ namespace geeks.Models
         [DataType(DataType.MultilineText)]
         [Display(Name = "Venue")]
         public string Venue { get; set; }
+
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
         
         [DataType(DataType.Text)]
         [Display(Name = "Created By")]

@@ -72,6 +72,8 @@ angular.module('ui.directives').directive('uiEvent', ['$parse',
                     model.assign(scope, map);
 
                     bindMapEvents(scope, mapEvents, map, elm);
+
+                    scope.$emit("linked");
                 }
             };
         }]);

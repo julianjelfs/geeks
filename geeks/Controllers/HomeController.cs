@@ -28,11 +28,6 @@ namespace geeks.Controllers
             return View();
         }
         
-        public virtual ActionResult Map()
-        {
-            return View();
-        }
-
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
@@ -62,6 +57,8 @@ namespace geeks.Controllers
                     Date = ev.Date,
                     Description = ev.Description,
                     Title = ev.Title,
+                    Latitude = ev.Latitude,
+                    Longitude = ev.Longitude,
                     Venue = ev.Venue,
                     Invitees = (from i in ev.InviteeIds
                                let user = RavenSession.Load<User>(i)

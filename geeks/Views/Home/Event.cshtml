@@ -10,6 +10,8 @@
         @Html.AntiForgeryToken()
         @Html.ValidationSummary(true)
         @Html.HiddenFor(model => model.CreatedBy)
+        <input id="Longitude" name="Longitude" type="hidden" value="{{theEvent.position.nb}}" />
+        <input id="Latitude" name="Latitude" type="hidden" value="{{theEvent.position.mb}}" />
         <div class="row-fluid">
             <div class="span6">
                 <fieldset>
@@ -24,15 +26,13 @@
                     @Html.ValidationMessageFor(m => m.Venue)
                     @Html.TextBoxFor(m => m.Venue, htmlAttributes: new { @class = "input-xxlarge input-block-level", @placeholder = "Venue", @style = "width:100%" })
                     <br/>
-                    
+
                     <div id="map-canvas" ui-map="eventMap" class="map"
-                         ui-event="{'map-click': 'addMarker($event)' }"
+                         ui-event="{'map-click': 'moveMarker($event)' }"
                          ui-options="mapOptions">
                     </div>
-
-                    <button class="btn" type="submit">Save</button>
                     <br/>
-                    @Html.ActionLink("Back to list", "Events", "Home")
+                    <button class="btn" type="submit">Save</button>
                 </fieldset>
                 
             </div>
@@ -48,6 +48,7 @@
                                 <span title="Rate your friend" data-userId="{{invitee.userId}}" class="rank-friend pull-right badge {{badgeClass(invitee)}}">{{invitee.rating}}</span>
                                 <input type='hidden' name='Invitees[{{$index}}].UserId' value='{{invitee.userId}}' />
                             </div>
+                            <span ng-show="unratedFriends()">Make sure you rate all friends that you invite for the best result</span>
                         </div>
                     </div>
                 </fieldset>
@@ -67,28 +68,25 @@
         });
         
         function EventCtrl($scope) {
-            $scope.myMarkers = [];
+            $scope.zoom = 12;
+            
+            $scope.$on("linked", function() {
+                $scope.theEvent = new google.maps.Marker({
+                    map: $scope.eventMap,
+                    position: new google.maps.LatLng(@Model.Latitude, @Model.Longitude)
+                });
+            });
 
             $scope.mapOptions = {
-                center: new google.maps.LatLng(51.509, -0.115),
-                zoom: 12,
+                center: new google.maps.LatLng(@Model.Latitude, @Model.Longitude),
+                zoom: $scope.zoom,
                 mapTypeId: google.maps.MapTypeId.ROADMAP
             };
 
-            $scope.addMarker = function($event) {
-                $scope.myMarkers.push(new google.maps.Marker({
-                    map: $scope.eventMap,
-                    position: $event.latLng
-                }));
+            $scope.moveMarker = function($event) {
+                $scope.theEvent.setPosition($event.latLng);
             };
-
-            $scope.openMarkerInfo = function(marker) {
-                $scope.currentMarker = marker;
-                $scope.currentMarkerLat = marker.getPosition().lat();
-                $scope.currentMarkerLng = marker.getPosition().lng();
-                $scope.myInfoWindow.open($scope.myMap, marker);
-            };
-
+            
             $scope.setMarkerPosition = function(marker, lat, lng) {
                 marker.setPosition(new google.maps.LatLng(lat, lng));
             };
@@ -107,6 +105,13 @@
                     </text>
                 }
             };
+
+            $scope.unratedFriends = function() {
+                return $.grep($scope.invitees, function(item) {
+                    return item.rating == 0;
+                }).length > 0;
+            };
+
             $scope.badgeClass = function(invitee) {
                 return invitee.rating > 0 ? "badge-warning" : "";
             };
@@ -117,6 +122,9 @@
                     userId : obj.userId,
                     rating : obj.rating
                 });
+                setTimeout(function() {
+                    enablePopovers('@Url.Action("RateFriend", "Home")', 'span');
+                }, 100);
             };
 
             $scope.remove = function(userId) {
