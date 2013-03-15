@@ -10,6 +10,7 @@ using Microsoft.Practices.ServiceLocation;
 using NinjectAdapter;
 using geeks.DependencyResolution;
 using geeks.Models;
+using geeks.Services;
 
 [assembly: WebActivator.PreApplicationStartMethod(typeof(geeks.App_Start.NinjectWebCommon), "Start")]
 [assembly: WebActivator.ApplicationShutdownMethodAttribute(typeof(geeks.App_Start.NinjectWebCommon), "Stop")]
@@ -65,6 +66,7 @@ namespace geeks.App_Start
 
             kernel.Bind<IFlexUserStore>().To<FlexMembershipUserStore<User, Role>>();
             kernel.Bind<IFlexRoleStore>().ToMethod(c => (IFlexRoleStore)c.Kernel.Get<IFlexUserStore>());
+            kernel.Bind<IEmailer>().To<Emailer>();
 
             RegisterServices(kernel);
             return kernel;

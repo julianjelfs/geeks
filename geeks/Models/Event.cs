@@ -7,6 +7,12 @@ using System.Web.Mvc;
 
 namespace geeks.Models
 {
+    public class Invitation
+    {
+        public string UserId { get; set; }
+        public bool EmailSent { get; set; }
+    }
+
     public class Event
     {
         public Event()
@@ -25,10 +31,14 @@ namespace geeks.Models
             CreatedBy = model.CreatedBy;
             Longitude = model.Longitude;
             Latitude = model.Latitude;
-            if (model.Invitees != null)
+            if (model.Invitations != null)
             {
-                InviteeIds = from i in model.Invitees
-                             select i.UserId;
+                Invitations = from i in model.Invitations
+                             select new Invitation
+                                 {
+                                     UserId = i.UserId,
+                                     EmailSent = i.EmailSent
+                                 };
             }
         }
 
@@ -38,7 +48,7 @@ namespace geeks.Models
         public DateTime Date { get; set; }
         public string Venue { get; set; }
         public string CreatedBy { get; set; }
-        public IEnumerable<string> InviteeIds { get; set; }
+        public IEnumerable<Invitation> Invitations { get; set; }
 
         public double Latitude { get; set; }
         public double Longitude { get; set; }
@@ -49,7 +59,7 @@ namespace geeks.Models
         public EventModel()
         {
             Id = Guid.NewGuid().ToString();
-            Invitees = new List<UserFriend>();
+            Invitations = new List<InvitationModel>();
             Latitude = 51.509;
             Longitude = -0.115;
             Date = DateTime.Today;
@@ -88,6 +98,6 @@ namespace geeks.Models
         [Display(Name = "Created By")]
         public string CreatedByUserName { get; set; }
 
-        public List<UserFriend> Invitees { get; set; } 
+        public List<InvitationModel> Invitations { get; set; } 
     }
 }

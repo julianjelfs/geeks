@@ -18,7 +18,7 @@
         }
         else
         {
-            @Html.ActionLink("Prev", "Friends", "Home", routeValues: new { pageIndex = ViewBag.PageIndex - 1, friendSearch = ViewBag.SearchTerm }, htmlAttributes: new {@class = "btn"})
+            @Html.ActionLink("Prev", "Friends", "Home", routeValues: new { pageIndex = ViewBag.PageIndex - 1, friendSearch = ViewBag.SearchTerm, unratedFriends = ViewBag.Unrated }, htmlAttributes: new {@class = "btn"})
         }
 
         @if (ViewBag.PageIndex == ViewBag.NumberOfPages - 1)
@@ -27,7 +27,7 @@
         }
         else
         {
-            @Html.ActionLink("Next", "Friends", "Home", routeValues: new { pageIndex = ViewBag.PageIndex + 1, friendSearch = ViewBag.SearchTerm }, htmlAttributes: new { @class = "btn" })
+            @Html.ActionLink("Next", "Friends", "Home", routeValues: new { pageIndex = ViewBag.PageIndex + 1, friendSearch = ViewBag.SearchTerm, unratedFriends = ViewBag.Unrated }, htmlAttributes: new { @class = "btn" })
         }
         <a href="#add-friend-form" id="add-friend-btn" class="btn"><i id="add-friend" title="Add a new friend" class="icon icon-plus"></i></a>
         <a href="#delete-all-warning" class="delete-all-friends btn"><i id="delete-all" title="Delete All Friends" class="icon-trash"></i></a>
@@ -42,12 +42,20 @@
         </ul>
     </div>
     
-    @using (Html.BeginForm("SearchFriends", "Home"))
+    @using (Html.BeginForm("SearchFriends", "Home", FormMethod.Post, new{@id="searchForm"}))
     {
         @Html.AntiForgeryToken()
-        <div class="input-append pull-right" style="margin-right: 10px">
+        
+        <div class="input-append pull-right" style="margin-left:10px;margin-right: 10px">
+            
             <input id="friendSearch" name="friendSearch" type="text" placeholder="Search" value="@ViewBag.SearchTerm" />
             <button type="submit" class="btn"><i title="Search for friends" class="icon icon-search"></i></button>
+        </div>
+        
+        <div class="pull-right">
+            <text>Unrated Friends : </text>
+            <input id="unratedFriends" name="unratedFriends" type="hidden" value="@ViewBag.Unrated" />
+            <input id="unrated-checkbox" onclick="$('#unratedFriends').val($('#unrated-checkbox').is(':checked'));$('#searchForm').submit()" type="checkbox" checked="@ViewBag.Unrated" />
         </div>
     }
     
@@ -78,7 +86,7 @@
             </div>
             <div class="modal-body">
                 <p>
-                    Are you sure you want to delete all of your friends? You will not be able to invite them to create events with no friends to invite.
+                    Are you sure you want to delete all of your friends? You will not be able to invite them to events and you will lose all your ratings.
                 </p>
             </div>
             <div class="modal-footer">

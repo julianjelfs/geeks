@@ -14,10 +14,17 @@ namespace geeks
             routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
 
             routes.MapRoute(
+                name: "Default2",
+                url: "event/{id}",
+                defaults: new { controller = "Home", action = "event", id = UrlParameter.Optional }
+                );
+
+            routes.MapRoute(
                 name: "Default",
                 url: "{controller}/{action}/{id}",
                 defaults: new { controller = "Home", action = "Index", id = UrlParameter.Optional }
             );
+
 
             routes.MapRoute(
                 name: "friends",
@@ -30,7 +37,7 @@ namespace geeks
                 url: "home/deletefriend/{id}/{pageIndex}/{pageSize}",
                 defaults: new { pageIndex = UrlParameter.Optional, pageSize = UrlParameter.Optional }
             );
-            
+
             /*routes.MapRoute(
                 name: "hostname",
                 url: "{host}/{controller}/{action}/{id}",

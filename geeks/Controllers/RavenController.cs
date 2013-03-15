@@ -62,16 +62,18 @@ namespace geeks.Controllers
             int pageIndex, 
             int pageSize, 
             out int totalPages,
-            string friendSearch)
+            string friendSearch,
+            bool unratedFriends)
         {
             var user = RavenSession.Include<User>(u=>u.Friends.Select(f=>f.UserId))
                        .Load<User>(userId);
 
             var result = (from f in user.Friends
                             let u = RavenSession.Load<User>(f.UserId)
-                            where string.IsNullOrEmpty(friendSearch)
+                            where (string.IsNullOrEmpty(friendSearch)
                                 || (u.Username != null && u.Username.Contains(friendSearch))
-                                || (u.Name != null && u.Name.Contains(friendSearch))
+                                || (u.Name != null && u.Name.Contains(friendSearch)))
+                                && (f.Rating == 0 || !unratedFriends)
                             select new UserFriend
                                 {
                                     UserId = u.Id, Name = u.Name, Email = u.Username, Rating = f.Rating

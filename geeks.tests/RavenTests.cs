@@ -81,14 +81,14 @@ namespace geeks.tests
         [Test]
         public void EventsAndInvitees()
         {
-            var events = _session.Query<Event>().Include<Event>(e => e.InviteeIds);
+            var events = _session.Query<Event>().Include<Event>(e => e.Invitations);
 
             foreach (var ev in events)
             {
                 Console.WriteLine("Event:{0}", ev.Title);
-                foreach (var id in ev.InviteeIds)
+                foreach (var inv in ev.Invitations)
                 {
-                    var user = _session.Load<User>(id);
+                    var user = _session.Load<User>(inv.UserId);
                     Console.WriteLine("Invitee:{0}", user);
                 }
             }

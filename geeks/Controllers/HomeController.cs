@@ -4,13 +4,18 @@ using System.Linq;
 using System.Web.Mvc;
 using Raven.Client;
 using geeks.Models;
+using geeks.Services;
+using Raven.Client.Linq;
 
 namespace geeks.Controllers
 {
     public class HomeController : RavenController
     {
-        public HomeController(IDocumentStore store) : base(store)
+        private readonly IEmailer _emailer;
+
+        public HomeController(IDocumentStore store, IEmailer emailer) : base(store)
         {
+            _emailer = emailer;
         }
 
         public virtual ActionResult Index()
@@ -31,9 +36,9 @@ namespace geeks.Controllers
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
-        public ActionResult SearchFriends(string friendSearch)
+        public ActionResult SearchFriends(string friendSearch, bool unratedFriends)
         {
-            return RedirectToAction("Friends", new { friendSearch });
+            return RedirectToAction("Friends", new { friendSearch, unratedFriends });
         }
 
         [Authorize]
@@ -41,7 +46,7 @@ namespace geeks.Controllers
         {
             if (!string.IsNullOrEmpty(id))
             {
-                var ev = RavenSession.Include<Event>(e => e.InviteeIds).Load<Event>(id);
+                var ev = RavenSession.Include<Event>(e => e.Invitations).Load<Event>(id);
                 return View(EventModelFromEvent(ev, GetCurrentUser()));
             }
             return View(new EventModel{ CreatedBy = GetCurrentUserId()});
@@ -60,15 +65,16 @@ namespace geeks.Controllers
                     Latitude = ev.Latitude,
                     Longitude = ev.Longitude,
                     Venue = ev.Venue,
-                    Invitees = (from i in ev.InviteeIds
-                               let user = RavenSession.Load<User>(i)
-                               let friend = GetFriendFromUser(currentUser, i)
-                               select new UserFriend
+                    Invitations = (from i in ev.Invitations
+                               let user = RavenSession.Load<User>(i.UserId)
+                               let friend = GetFriendFromUser(currentUser, i.UserId)
+                               select new InvitationModel
                                    {
                                        Email = user.Username,
                                        UserId = user.Id,
                                        Name = user.Name,
-                                       Rating = friend == null ? 0 : friend.Rating
+                                       Rating = friend == null ? 0 : friend.Rating,
+                                       EmailSent = i.EmailSent
                                    }).ToList()
                 };
         }
@@ -88,17 +94,37 @@ namespace geeks.Controllers
             if (ModelState.IsValid)
             {
                 model.CreatedBy = GetCurrentUserId();
-                RavenSession.Store(new Event(model));
+                RavenSession.Store(SendEmailToInvitees(new Event(model)));
                 return RedirectToAction("Events");
             }
             return View(EventModelFromEvent(new Event(model)));
+        }
+
+        private Event SendEmailToInvitees(Event ev)
+        {
+            var invitees = ev.Invitations.ToArray();
+
+            _emailer.Invite(GetCurrentUser(), 
+                RavenSession.Query<User>()
+                    .Where(u => u.Id.In(from i in invitees
+                                            where !i.EmailSent
+                                            select i.UserId)), 
+                                            ev);
+
+
+            foreach (var invitee in invitees.Where(i => !i.EmailSent))
+            {
+                invitee.EmailSent = true;
+            }
+            ev.Invitations = invitees;
+            return ev;
         }
 
         [Authorize]
         public virtual ActionResult Events()
         {
             var evs = RavenSession.Query<Event>()
-                                  .Include<Event>(e => e.InviteeIds)
+                                  .Include<Event>(e => e.Invitations)
                                   .Include<Event>(e => e.CreatedBy)
                                   .Where(e => e.CreatedBy == GetCurrentUserId())
                                   .ToList();
@@ -185,7 +211,7 @@ namespace geeks.Controllers
         {
             ViewBag.PageIndex = 0;
             int total = 0;
-            var friends = FriendsInternal(0, 10, out total, null);
+            var friends = FriendsInternal(0, 10, out total, null, false);
             ViewBag.NumberOfPages = total;
             return PartialView("FriendsTable", friends);
         }
@@ -200,19 +226,20 @@ namespace geeks.Controllers
             return FirstPageOfFriends();
         }
 
-        private IEnumerable<UserFriend> FriendsInternal(int pageIndex, int pageSize, out int totalPages, string friendSearch)
+        private IEnumerable<UserFriend> FriendsInternal(int pageIndex, int pageSize, out int totalPages, string friendSearch, bool unratedFriends)
         {
-            return UsersFromFriends(GetCurrentUserId(), pageIndex, pageSize, out totalPages, friendSearch);
+            return UsersFromFriends(GetCurrentUserId(), pageIndex, pageSize, out totalPages, friendSearch, unratedFriends);
         }
 
         [Authorize]
-        public virtual ActionResult Friends(int pageIndex = 0, int pageSize = 10, string friendSearch = null)
+        public virtual ActionResult Friends(int pageIndex = 0, int pageSize = 10, string friendSearch = null, bool unratedFriends = false)
         {
             ViewBag.PageIndex = pageIndex;
             int total = 0;
-            var friends = FriendsInternal(pageIndex, pageSize, out total, friendSearch);
+            var friends = FriendsInternal(pageIndex, pageSize, out total, friendSearch, unratedFriends);
             ViewBag.NumberOfPages = total;
             ViewBag.SearchTerm = friendSearch;
+            ViewBag.Unrated = unratedFriends;
             return View(friends);
         }
 
@@ -220,7 +247,7 @@ namespace geeks.Controllers
         public JsonResult LookupFriends(string query)
         {
             var totalPages = 0;
-            var matches = UsersFromFriends(GetCurrentUserId(), 0, 100, out totalPages, query);
+            var matches = UsersFromFriends(GetCurrentUserId(), 0, 100, out totalPages, query, false);
             var dict = new Dictionary<string, object>();
             foreach (var match in matches.Where(match => !dict.ContainsKey(match.Email)))
                 dict.Add(match.Email, new {

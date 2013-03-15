@@ -46,7 +46,8 @@
                                 <button ng-click="remove(invitee.userId)" type="button" class="close" data-dismiss="alert">&times;</button>
                                 {{invitee.email}}
                                 <span title="Rate your friend" data-userId="{{invitee.userId}}" class="rank-friend pull-right badge {{badgeClass(invitee)}}">{{invitee.rating}}</span>
-                                <input type='hidden' name='Invitees[{{$index}}].UserId' value='{{invitee.userId}}' />
+                                <input type='hidden' name='Invitations[{{$index}}].UserId' value='{{invitee.userId}}' />
+                                <input type='hidden' name='Invitations[{{$index}}].EmailSent' value='{{invitee.emailSent}}' />
                             </div>
                             <span ng-show="unratedFriends()">Make sure you rate all friends that you invite for the best result</span>
                         </div>
@@ -92,15 +93,16 @@
             };
             
             $scope.invitees = [];
-            @if (Model.Invitees.Any())
+            @if (Model.Invitations.Any())
             {
-                for (var i = 0; i < Model.Invitees.Count; i++)
+                for (var i = 0; i < Model.Invitations.Count; i++)
                 {
                     <text>
                     $scope.invitees.push({ 
-                        userId: '@Model.Invitees[i].UserId', 
-                        email: '@Model.Invitees[i].Email', 
-                        rating: '@Model.Invitees[i].Rating'
+                        userId: '@Model.Invitations[i].UserId', 
+                        email: '@Model.Invitations[i].Email', 
+                        rating: '@Model.Invitations[i].Rating',
+                        emailSent: @Model.Invitations[i].EmailSent.ToString().ToLower()
                     });
                     </text>
                 }
@@ -120,7 +122,8 @@
                 $scope.invitees.push({
                     email : obj.email,
                     userId : obj.userId,
-                    rating : obj.rating
+                    rating : obj.rating,
+                    emailSent : obj.emailSent
                 });
                 setTimeout(function() {
                     enablePopovers('@Url.Action("RateFriend", "Home")', 'span');
@@ -143,7 +146,8 @@
                         scope.add({
                             userId: map[item].userId,
                             email: item,
-                            rating : map[item].rating
+                            rating : map[item].rating,
+                            emailSent : false
                         });
                     });
                     enablePopovers();
