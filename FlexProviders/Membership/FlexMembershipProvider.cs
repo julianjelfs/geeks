@@ -90,6 +90,13 @@ namespace FlexProviders.Membership
             user.Password = _encoder.Encode(user.Password, user.Salt);
             _userStore.Add(user);
         }
+        
+        public void AddCredentialsToAccount(IFlexMembershipUser user)
+        {
+            user.Salt = user.Salt ?? _encoder.GenerateSalt();
+            user.Password = _encoder.Encode(user.Password, user.Salt);
+            _userStore.Save(user);
+        }
 
         /// <summary>
         ///   Updates the account.

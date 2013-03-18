@@ -12,7 +12,7 @@
 
             <fieldset>
                 <legend class="geek">Log in using a local account</legend>
-                @Html.LabelFor(m => m.UserName, "User name or email")
+                @Html.LabelFor(m => m.UserName, "User name (which is your email address)")
                 @Html.TextBoxFor(m => m.UserName)
                 @Html.ValidationMessageFor(m => m.UserName)
                 @Html.LabelFor(m => m.Password)
@@ -25,7 +25,7 @@
                 <button class="btn" type="submit">Log In</button>
             </fieldset>
             <p>
-                @Html.ActionLink("Register", "Register") if you don't have an account.
+                @Html.ActionLink("Register", "Register", routeValues:new {ReturnUrl = ViewBag.ReturnUrl}) if you don't have an account.
             </p>
         }
     </div>

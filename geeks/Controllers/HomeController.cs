@@ -42,7 +42,7 @@ namespace geeks.Controllers
         }
 
         [Authorize]
-        public virtual ActionResult Event(string id)
+        public virtual ActionResult Event(string id, string userId)
         {
             if (!string.IsNullOrEmpty(id))
             {
@@ -103,17 +103,14 @@ namespace geeks.Controllers
         private Event SendEmailToInvitees(Event ev)
         {
             var invitees = ev.Invitations.ToArray();
-
-            _emailer.Invite(GetCurrentUser(), 
-                RavenSession.Query<User>()
-                    .Where(u => u.Id.In(from i in invitees
-                                            where !i.EmailSent
-                                            select i.UserId)), 
-                                            ev);
-
+            var users = RavenSession.Query<User>()
+                                    .Where(u => u.Username.In(from i in invitees
+                                                              where !i.EmailSent
+                                                              select i.UserId));
 
             foreach (var invitee in invitees.Where(i => !i.EmailSent))
             {
+                _emailer.Invite(GetCurrentUser(), RavenSession.Load<User>(invitee.UserId), ev);
                 invitee.EmailSent = true;
             }
             ev.Invitations = invitees;

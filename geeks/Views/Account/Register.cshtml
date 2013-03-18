@@ -4,7 +4,8 @@
 }
 
 <div class="content">
-@using (Html.BeginForm()) {
+@using (Html.BeginForm(new { ReturnUrl = ViewBag.ReturnUrl }))
+{
     @Html.AntiForgeryToken()
     @Html.ValidationSummary()
 

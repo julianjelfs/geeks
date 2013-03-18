@@ -9,12 +9,12 @@ namespace geeks.Services
 {
     public interface IEmailer
     {
-        bool Invite(User organiser, IEnumerable<User> users, Event ev);
+        bool Invite(User organiser, User user, Event ev);
     }
 
     public class FakeEmailer : IEmailer
     {
-        public bool Invite(User organiser, IEnumerable<User> users, Event ev)
+        public bool Invite(User organiser, User user, Event ev)
         {
             return true;
         }
@@ -22,13 +22,10 @@ namespace geeks.Services
 
     public class Emailer : IEmailer
     {
-        public bool Invite(User organiser, IEnumerable<User> users, Event ev)
+        public bool Invite(User organiser, User user, Event ev)
         {
             var message = new MailMessage();
-            foreach (var user in users)
-            {
-                message.Bcc.Add(user.Username);
-            }
+            message.To.Add(user.Username);
             message.From = new MailAddress("robot@geeksdilemma.com");
             message.Subject = string.Format("You have been invited to a Geeks Dilemma event by {0}", DisplayName(organiser));
             message.Body = @"Your friend " + DisplayName(organiser) + @" is organising an event and you're invited. " +
@@ -40,7 +37,7 @@ namespace geeks.Services
                 "To see the details including who else is invitee and to say whether or not you can go, click here:"+
                 Environment.NewLine +
                 Environment.NewLine +
-                "http://localhost/geeks/event/" + ev.Id;
+                "http://localhost/geeks/event/" + ev.Id  + "/" + user.Id;
             var smtp = new SmtpClient();
             //try
             //{

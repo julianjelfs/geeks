@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Web.Mvc;
 using DotNetOpenAuth.AspNet;
 using FlexProviders.Membership;
@@ -28,8 +29,36 @@ namespace geeks.Controllers
         [AllowAnonymous]
         public virtual ActionResult Login(string returnUrl)
         {
+            var u = ExtractUserFromReturnUrl(returnUrl);
+            LoginModel user = null;
+            if (u != null)
+            {
+                user = new LoginModel
+                {
+                    UserName = u.Username
+                };
+            }
+
             ViewBag.ReturnUrl = returnUrl;
-            return View();
+            return View(user);
+        }
+
+        /// <summary>
+        /// when we get here we may have come in by clicking on an event link. If
+        /// so the return url should be /geeks/event/{eventId}/{userId}
+        /// </summary>
+        private User ExtractUserFromReturnUrl(string returnUrl)
+        {
+            if (string.IsNullOrEmpty(returnUrl))
+                return null;
+
+            var pattern = @"^/geeks/event/.+/(.+)$";
+            var match = Regex.Match(returnUrl, pattern, RegexOptions.IgnoreCase);
+            if (match.Success)
+            {
+                return RavenSession.Load<User>(match.Groups[1].Value);
+            }
+            return null;
         }
 
         //
@@ -66,8 +95,20 @@ namespace geeks.Controllers
         // GET: /Account/Register
 
         [AllowAnonymous]
-        public virtual ActionResult Register()
+        public virtual ActionResult Register(string returnUrl)
         {
+            ViewBag.ReturnUrl = returnUrl;
+            RegisterModel user;
+            var u = ExtractUserFromReturnUrl(returnUrl);
+            if (u != null)
+            {
+                user = new RegisterModel
+                    {
+                        Name = u.Name,
+                        EmailAddress = u.Username
+                    };
+                return View(user);
+            }
             return View();
         }
 
@@ -77,25 +118,26 @@ namespace geeks.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public virtual ActionResult Register(RegisterModel model)
+        public virtual ActionResult Register(RegisterModel model, string returnUrl)
         {
             if (ModelState.IsValid)
             {
                 // Attempt to register the user
                 try
                 {
-                    var user = new User
+                    var user = ExtractUserFromReturnUrl(returnUrl);
+                    user = user ?? new User
                         {
                             Id = Guid.NewGuid().ToString(),
                             Name = model.Name,
-                            Username = model.EmailAddress, 
-                            Password = model.Password,
-                            Registered = true
+                            Username = model.EmailAddress
                         };
-                    _membershipProvider.CreateAccount(user);
-                    _membershipProvider.Login(user.Username, user.Password);
+                    user.Password = model.Password;
+                    user.Registered = true;
+                    _membershipProvider.AddCredentialsToAccount(user);
+                    _membershipProvider.Login(user.Username, model.Password);
                     Session["UserId"] = null;
-                    return RedirectToAction("Index", "Home");
+                    return RedirectToLocal(returnUrl);
                 }
                 catch (FlexMembershipException e)
                 {

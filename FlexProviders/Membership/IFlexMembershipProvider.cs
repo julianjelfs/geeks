@@ -28,6 +28,12 @@ namespace FlexProviders.Membership
         void CreateAccount(IFlexMembershipUser user);
 
         /// <summary>
+        ///   Takes an existing account and adds hashed password to it
+        /// </summary>
+        /// <param name="user"> The user. </param>
+        void AddCredentialsToAccount(IFlexMembershipUser user);
+
+        /// <summary>
         ///   Updates the account.
         /// </summary>
         /// <param name="user"> The user. </param>
