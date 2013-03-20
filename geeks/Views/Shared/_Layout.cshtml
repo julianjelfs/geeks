@@ -25,7 +25,7 @@
                 <div class="row-fluid">
                     <ul id="nav-bar" class="nav nav-tabs">
                         <li id="home-nav">
-                            @Html.ActionLink("Home", "Index", "Home")
+                            @Html.ActionLink("Home", "Index", "Home", null, htmlAttributes: new Dictionary<string, object> { { "data-pjax", true } })
                         </li>
                         <li id="events-nav">
                             @Html.ActionLink("Events", "Events", "Home")
@@ -34,7 +34,7 @@
                             @Html.ActionLink("Friends", "Friends", "Home")
                         </li>
                         <li id="about-nav">
-                            @Html.ActionLink("About", "About", "Home")
+                            @Html.ActionLink("About", "About", "Home", null, htmlAttributes: new Dictionary<string, object> { {"data-pjax", true}} )
                         </li>
                         @if (!Request.IsAuthenticated)
                         {
@@ -54,8 +54,8 @@
             </div>
         </div>
         <div class="row-fluid">
-            <div class="span10 offset1">
-                @RenderBody()
+            <div id="body-placeholder" class="span10 offset1">
+                    @RenderBody()
             </div>
         </div>
         <div class="row-fluid footer">
@@ -74,7 +74,7 @@
         angular.module('geeks', ['ui']);
         
         $(function() {
-
+            $(document).pjax("a[data-pjax]", "#body-placeholder");
 
             $("a.postLink").click(function(e) {
                 e.preventDefault();

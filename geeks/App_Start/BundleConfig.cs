@@ -12,6 +12,7 @@ namespace geeks
 
             bundles.Add(new ScriptBundle("~/bundles/script").Include(
                         "~/js/jquery-{version}.js",
+                        "~/js/jquery.pjax.js",
                         "~/js/bootstrap.js",
                         "~/js/angular.js",
                         "~/js/angular-ui.js",

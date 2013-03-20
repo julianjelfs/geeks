@@ -485,6 +485,7 @@
     <Content Include="Scripts\jquery-1.9.1-vsdoc.js" />
     <Content Include="js\jquery-1.9.1.js" />
     <Content Include="Scripts\jquery-1.9.1.min.js" />
+    <Content Include="js\jquery.pjax.js" />
     <Content Include="Scripts\jquery.unobtrusive-ajax.js" />
     <Content Include="Scripts\jquery.unobtrusive-ajax.min.js" />
     <Content Include="Scripts\jquery.validate-vsdoc.js" />
@@ -551,6 +552,7 @@
     <Content Include="Views\Shared\FriendsPager.cshtml" />
     <Content Include="Views\Shared\AddFriend.cshtml" />
     <Content Include="Views\Home\Calendar.cshtml" />
+    <Content Include="Views\Shared\_PjaxLayout.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
