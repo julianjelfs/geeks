@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>jQuery.Pjax</id>
+    <version>1.1.0.10</version>
+    <title>jQuery.Pjax</title>
+    <authors>Chris Wanstrath</authors>
+    <owners>Chris Wanstrath</owners>
+    <licenseUrl>https://github.com/defunkt/jquery-pjax/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/defunkt/jquery-pjax</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>pushState + ajax = pjax
+
+pjax loads HTML from your server into the current page without a full reload. It's ajax with real permalinks, page titles, and a working back button that fully degrades.
+
+pjax enhances the browsing experience - nothing more.
+
+You can find a demo on http://pjax.heroku.com/
+
+This is a build for commit https://github.com/defunkt/jquery-pjax/commit/14fc9d2adf8e4db3d04945ff4d189613bd970525</description>
+    <summary>pushState + ajax = pjax
+
+pjax enhances the browsing
+
+This is a build for commit https://github.com/defunkt/jquery-pjax/commit/14fc9d2adf8e4db3d04945ff4d189613bd970525</summary>
+    <releaseNotes />
+    <copyright />
+    <language />
+    <references />
+  </metadata>
+</package>
