@@ -1,4 +1,5 @@
-﻿using Ninject;
+﻿using System.Web.Http;
+using Ninject;
 using Ninject.Activation;
 using Ninject.Modules;
 using Ninject.Web.Common;
@@ -7,6 +8,7 @@ using Raven.Client.Document;
 using Raven.Client.Embedded;
 using Raven.Client.Indexes;
 using Raven.Database.Server;
+using geeks.Controllers;
 using geeks.Indexes;
 
 namespace geeks.DependencyResolution
@@ -31,6 +33,7 @@ namespace geeks.DependencyResolution
                     ConnectionStringName = "LocalRavenDB"
                 }.Initialize();
             IndexCreation.CreateIndexes(typeof(FriendNameAndEmailIndex).Assembly, store);
+
             return store;
         }
     }

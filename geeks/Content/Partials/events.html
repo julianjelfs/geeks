@@ -1,19 +1,11 @@
-﻿@using geeks.Models
-@model IEnumerable<geeks.Models.EventModel>
-
-@{
-    ViewBag.Title = "Events";
-}
-
+﻿
 <div class="content">
     <h2 class="geek">Events</h2>
     
-    @Html.ActionLink("Create an event", "Event", "Home", htmlAttributes: new {@id = "add-event", @class = "btn"})
+    <a class="btn">Create an event</a>
     
     <p></p>
     
-    @if (Model.Any())
-    {
         <table class="table table-hover">
             <thead>
                 <tr>
@@ -26,28 +18,20 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (EventModel ev in Model)
-                {
-                    var desc = string.IsNullOrEmpty(ev.Description) 
-                        ? "" 
-                        : ev.Description.Length > 40
-                            ? ev.Description.Substring(0, 40)
-                            : ev.Description;
-                    <tr>
-                        <td>@desc</td>
-                        <td>@ev.Venue</td>
-                        <td>@ev.CreatedByUserName</td>
-                        <td>
-                            @Html.ActionLink("Edit", "Event", "Home", routeValues: new {id = @ev.Id}, htmlAttributes: new {@id = "edit-event", @class = "btn btn-block"})
-                        </td>
-                        <td>
-                            <a href="#delete-warning" role="button" class="delete-event btn" data-eventid="@ev.Id"><i class="icon-trash"></i></a>
-                        </td>
-                        <td>
-                            <a href="#reschedule" role="button" class="reschedule-event btn" data-toggle="modal"><i class="icon-calendar"></i></a>
-                        </td>
-                    </tr>
-                }
+                <tr>
+                    <td>@desc</td>
+                    <td>@ev.Venue</td>
+                    <td>@ev.CreatedByUserName</td>
+                    <td>
+                        <a class="btn">Edit</a>
+                    </td>
+                    <td>
+                        <a href="#delete-warning" role="button" class="delete-event btn" data-eventid="@ev.Id"><i class="icon-trash"></i></a>
+                    </td>
+                    <td>
+                        <a href="#reschedule" role="button" class="reschedule-event btn" data-toggle="modal"><i class="icon-calendar"></i></a>
+                    </td>
+                </tr>
             </tbody>
         </table>
 
@@ -82,12 +66,5 @@
                 <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Done</button>
             </div>
         </div>
-    }
-    
-    @Html.AntiForgeryToken()
 
 </div>
-
-@section scripts{
-    @Scripts.Render("~/js/events.js")
-}

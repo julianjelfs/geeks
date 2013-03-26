@@ -24,7 +24,6 @@ namespace geeks.Models
         public Event(EventModel model)
         {
             Id = model.Id;
-            Title = model.Title;
             Description = model.Description;
             Date = model.Date;
             Venue = model.Venue;
@@ -43,7 +42,6 @@ namespace geeks.Models
         }
 
         public string Id { get; set; }
-        public string Title { get; set; }
         public string Description { get; set; }
         public DateTime Date { get; set; }
         public string Venue { get; set; }
@@ -67,11 +65,6 @@ namespace geeks.Models
 
         public string Id { get; set; }
 
-        [Required]
-        [DataType(DataType.Text)]
-        [Display(Name = "Title")]
-        public string Title { get; set; }
-        
         [Required]
         [DataType(DataType.MultilineText)]
         [Display(Name = "Description")]
@@ -97,6 +90,8 @@ namespace geeks.Models
         [DataType(DataType.Text)]
         [Display(Name = "Created By")]
         public string CreatedByUserName { get; set; }
+
+        public bool MyEvent { get; set; }
 
         public List<InvitationModel> Invitations { get; set; } 
     }

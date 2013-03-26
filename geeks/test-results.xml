@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<testsuites>
+  <testsuite name="IE 7.0 (Windows)" package="undefined" timestamp="2013-03-22T09:16:45" id="0" hostname="jelfs64" tests="0" errors="1" failures="0" time="0">
+    <properties>
+      <property name="browser.fullName" value="Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; WOW64; Trident/6.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; .NET4.0C; .NET4.0E; InfoPath.3)"/>
+    </properties>
+    <system-out><![CDATA[IE 7.0 (Windows) ERROR
+	'angular' is undefined
+	at C:/Users/julianj/Documents/Visual Studio 2010/Projects/geeks/geeks/js/angular-ui.js:9
+,IE 7.0 (Windows) ERROR
+	'angular' is undefined
+	at C:/Users/julianj/Documents/Visual Studio 2010/Projects/geeks/geeks/js/angular-ui.js:9
+,IE 7.0 (Windows) ERROR
+	'angular' is undefined
+	at C:/Users/julianj/Documents/Visual Studio 2010/Projects/geeks/geeks/js/angular-ui.js:9
+
+]]></system-out>
+    <system-err/>
+  </testsuite>
+</testsuites>

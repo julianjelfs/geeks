@@ -8,16 +8,19 @@
     @using (Html.BeginForm())
     {
         @Html.AntiForgeryToken()
-        @Html.ValidationSummary(true)
+        @Html.ValidationSummary(false)
         @Html.HiddenFor(model => model.CreatedBy)
-        <input id="Longitude" name="Longitude" type="hidden" value="{{theEvent.position.nb}}" />
-        <input id="Latitude" name="Latitude" type="hidden" value="{{theEvent.position.mb}}" />
+
+        <input id="Longitude" name="Longitude" type="text" style="display:none"  ng-model="theEvent.position.lb" value="@Model.Longitude" />
+        <input id="Latitude" name="Latitude" type="text" style="display:none" ng-model="theEvent.position.kb" value="@Model.Latitude" />
+        
         <div class="row-fluid">
             <div class="span6">
-                <fieldset>
+                @{
+                    var disabled = Model.MyEvent ? "" : "disabled";
+                }
+                <fieldset @disabled>
                     <legend class="geek">Enter details to create a new event</legend>
-                    @Html.ValidationMessageFor(m => m.Title)
-                    @Html.TextBoxFor(m => m.Title, htmlAttributes: new {@class = "input-xxlarge input-block-level", @placeholder = "Title", @style = "width:100%"})
                     @Html.ValidationMessageFor(m => m.Description)
                     @Html.TextAreaFor(m => m.Description, htmlAttributes: new {@class = "input-xxlarge input-block-level", @placeholder = "Description", @style = "width:100%"})
                     @Html.ValidationMessageFor(m => m.Date)
@@ -39,13 +42,16 @@
             <div class="span6">
                 <fieldset>
                     <legend class="geek">Who's invited</legend>
-                    <input class="typeahead" type="text" placeholder="Type here to find friends to add" data-provide="typeahead" autocomplete="false" style="width: 98%" />
+                    @if (Model.MyEvent)
+                    {
+                        <input class="typeahead" type="text" placeholder="Type here to find friends to add" data-provide="typeahead" autocomplete="false" style="width: 98%" />
+                    }
                     <div id="friends-placeholder">
                         <div id="invitees" class="well well-small">
                             <div ng-repeat="invitee in invitees" class="alert alert-info">
-                                <button ng-click="remove(invitee.userId)" type="button" class="close" data-dismiss="alert">&times;</button>
+                                <button ng-show="invitee.canRemove" ng-click="remove(invitee.userId)" type="button" class="close" data-dismiss="alert">&times;</button>
                                 {{invitee.email}}
-                                <span title="Rate your friend" data-userId="{{invitee.userId}}" class="rank-friend pull-right badge {{badgeClass(invitee)}}">{{invitee.rating}}</span>
+                                <span ng-show="invitee.canRate" title="Rate your friend" data-userId="{{invitee.userId}}" class="rank-friend pull-right badge {{badgeClass(invitee)}}">{{invitee.rating}}</span>
                                 <input type='hidden' name='Invitations[{{$index}}].UserId' value='{{invitee.userId}}' />
                                 <input type='hidden' name='Invitations[{{$index}}].EmailSent' value='{{invitee.emailSent}}' />
                             </div>
@@ -64,10 +70,7 @@
         $("#nav-bar li.active").removeClass("active");
         $("#events-nav").addClass("active");
         
-        //angular.module('geeks', ['ui']);
-
         $(function() {
-            angular.bootstrap(document);
             enablePopovers('@Url.Action("RateFriend", "Home")', 'span');
         });
 
@@ -105,7 +108,9 @@
                         userId: '@Model.Invitations[i].UserId', 
                         email: '@Model.Invitations[i].Email', 
                         rating: '@Model.Invitations[i].Rating',
-                        emailSent: @Model.Invitations[i].EmailSent.ToString().ToLower()
+                        emailSent: @Model.Invitations[i].EmailSent.ToString().ToLower(),
+                        canRate: @Model.Invitations[i].CanRate.ToString().ToLower(),
+                        canRemove: @Model.MyEvent.ToString().ToLower()
                     });
                     </text>
                 }
@@ -126,7 +131,9 @@
                     email: obj.email,
                     userId: obj.userId,
                     rating: obj.rating,
-                    emailSent: obj.emailSent
+                    emailSent: obj.emailSent,
+                    canRate: obj.canRate,
+                    canRemove : @Model.MyEvent.ToString().ToLower()
                 });
                 setTimeout(function() {
                     enablePopovers('@Url.Action("RateFriend", "Home")', 'span');
@@ -150,7 +157,8 @@
                             userId: map[item].userId,
                             email: item,
                             rating: map[item].rating,
-                            emailSent: false
+                            emailSent: false,
+                            canRate: map[item].canRate
                         });
                     });
                     enablePopovers();

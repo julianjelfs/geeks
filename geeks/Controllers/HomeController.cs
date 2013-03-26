@@ -36,7 +36,7 @@ namespace geeks.Controllers
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
-        public ActionResult SearchFriends(string friendSearch, bool unratedFriends)
+        public ActionResult SearchFriends(string friendSearch, bool unratedFriends = false)
         {
             return RedirectToAction("Friends", new { friendSearch, unratedFriends });
         }
@@ -44,12 +44,30 @@ namespace geeks.Controllers
         [Authorize]
         public virtual ActionResult Event(string id, string userId)
         {
+            var user = GetCurrentUser();
+
             if (!string.IsNullOrEmpty(id))
             {
                 var ev = RavenSession.Include<Event>(e => e.Invitations).Load<Event>(id);
-                return View(EventModelFromEvent(ev, GetCurrentUser()));
+                return View(EventModelFromEvent(ev, user));
             }
-            return View(new EventModel{ CreatedBy = GetCurrentUserId()});
+            return View(new EventModel
+                {
+                    CreatedBy = GetCurrentUserId(),
+                    MyEvent = true,
+                    Invitations = new List<InvitationModel>
+                        {
+                            new InvitationModel
+                                {
+                                    UserId = user.Id,
+                                    Email = user.Username,
+                                    EmailSent = true,
+                                    Name = user.Name,
+                                    Rating = 0,
+                                    CanRate = false
+                                }
+                        }
+                });
         }
 
         private EventModel EventModelFromEvent(Event ev, User currentUser = null)
@@ -59,9 +77,9 @@ namespace geeks.Controllers
                     Id = ev.Id,
                     CreatedByUserName = RavenSession.Load<User>(ev.CreatedBy).Username,
                     CreatedBy = ev.CreatedBy,
+                    MyEvent = currentUser != null && ev.CreatedBy == currentUser.Id,
                     Date = ev.Date,
                     Description = ev.Description,
-                    Title = ev.Title,
                     Latitude = ev.Latitude,
                     Longitude = ev.Longitude,
                     Venue = ev.Venue,
@@ -74,7 +92,8 @@ namespace geeks.Controllers
                                        UserId = user.Id,
                                        Name = user.Name,
                                        Rating = friend == null ? 0 : friend.Rating,
-                                       EmailSent = i.EmailSent
+                                       EmailSent = i.EmailSent,
+                                       CanRate = currentUser == null || currentUser.Id != user.Id
                                    }).ToList()
                 };
         }
@@ -120,11 +139,13 @@ namespace geeks.Controllers
         [Authorize]
         public virtual ActionResult Events()
         {
+            //find events that I am invited to
             var evs = RavenSession.Query<Event>()
                                   .Include<Event>(e => e.Invitations)
                                   .Include<Event>(e => e.CreatedBy)
-                                  .Where(e => e.CreatedBy == GetCurrentUserId())
+                                  .Where(e => e.Invitations.Any(i => i.UserId == GetCurrentUserId()))
                                   .ToList();
+
             var models = (from e in evs select EventModelFromEvent(e)).ToList();
             return View(models);
         }
@@ -244,12 +265,14 @@ namespace geeks.Controllers
         public JsonResult LookupFriends(string query)
         {
             var totalPages = 0;
-            var matches = UsersFromFriends(GetCurrentUserId(), 0, 100, out totalPages, query, false);
+            var currentUserId = GetCurrentUserId();
+            var matches = UsersFromFriends(currentUserId, 0, 100, out totalPages, query, false);
             var dict = new Dictionary<string, object>();
             foreach (var match in matches.Where(match => !dict.ContainsKey(match.Email)))
                 dict.Add(match.Email, new {
                     userId = match.UserId,
-                    rating = match.Rating
+                    rating = match.Rating,
+                    canRate = currentUserId != match.UserId
                 });
             return Json(dict,  JsonRequestBehavior.AllowGet);
         }

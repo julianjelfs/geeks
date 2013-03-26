@@ -268,6 +268,7 @@
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\AccountController.cs" />
+    <Compile Include="Controllers\EventController.cs" />
     <Compile Include="Controllers\ImportController.cs" />
     <Compile Include="Controllers\RavenController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
@@ -287,6 +288,7 @@
   <ItemGroup>
     <Content Include="Content\angular-ui.css" />
     <Content Include="Content\angular-ui.min.css" />
+    <Content Include="Content\Partials\events.html" />
     <Content Include="Content\select2.css" />
     <Content Include="Content\select2.png" />
     <Content Include="Content\select2x2.png" />
@@ -305,8 +307,10 @@
     <Content Include="js\events.js" />
     <Content Include="js\fullcalendar-gcal.js" />
     <Content Include="js\fullcalendar.js" />
+    <Content Include="js\geeks.js" />
     <Content Include="js\jquery-1.9.1.min.js" />
     <Content Include="js\ranking.js" />
+    <Content Include="Content\Partials\index.html" />
     <Content Include="Scripts\angular-bootstrap-prettify.js" />
     <Content Include="Scripts\angular-bootstrap-prettify.min.js" />
     <Content Include="Scripts\angular-bootstrap.js" />
@@ -553,6 +557,7 @@
     <Content Include="Views\Shared\AddFriend.cshtml" />
     <Content Include="Views\Home\Calendar.cshtml" />
     <Content Include="Views\Shared\_PjaxLayout.cshtml" />
+    <Content Include="Views\Shared\_AngularLayout.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />

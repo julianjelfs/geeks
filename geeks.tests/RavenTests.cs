@@ -85,7 +85,7 @@ namespace geeks.tests
 
             foreach (var ev in events)
             {
-                Console.WriteLine("Event:{0}", ev.Title);
+                Console.WriteLine("Event:{0}", ev.Description);
                 foreach (var inv in ev.Invitations)
                 {
                     var user = _session.Load<User>(inv.UserId);

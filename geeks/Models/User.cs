@@ -26,6 +26,7 @@ namespace geeks.Models
         public string Email { get; set; }
         public int Rating { get; set; }
         public bool EmailSent { get; set; }
+        public bool CanRate { get; set; }
     }
 
     public class User : IFlexMembershipUser

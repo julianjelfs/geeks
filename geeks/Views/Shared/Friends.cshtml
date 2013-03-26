@@ -41,7 +41,7 @@
         </ul>
     </div>
     
-    @using (Html.BeginForm("SearchFriends", "Home", FormMethod.Post, new{@id="searchForm"}))
+    @using (Html.BeginForm("SearchFriends", "Home", new { unratedFriends = ViewBag.Unrated }, FormMethod.Post, new { @id="searchForm"}))
     {
         @Html.AntiForgeryToken()
         

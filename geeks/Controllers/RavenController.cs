@@ -1,12 +1,53 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Web;
+using System.Web.Http;
+using System.Web.Http.Controllers;
 using System.Web.Mvc;
+using Microsoft.Practices.ServiceLocation;
 using Raven.Client;
 using geeks.Models;
 
 namespace geeks.Controllers
 {
+    public class RavenApiController : ApiController
+    {
+        public IDocumentSession RavenSession { get; set; }
+
+        public override Task<HttpResponseMessage> ExecuteAsync(
+            HttpControllerContext controllerContext, 
+            CancellationToken cancellationToken)
+        {
+            RavenSession = ServiceLocator.Current.GetInstance<IDocumentStore>().OpenSession();
+            return base.ExecuteAsync(controllerContext, cancellationToken)
+                .ContinueWith(task =>
+                    {
+                        using (RavenSession)
+                        {
+                            if(task.Status != TaskStatus.Faulted && RavenSession != null)
+                                RavenSession.SaveChanges();
+                        }
+                        return task;
+                    }).Unwrap();
+        }
+
+        protected string GetCurrentUserId()
+        {
+            var user = RavenSession.Query<User>()
+                            .SingleOrDefault(u => u.Username == User.Identity.Name);
+
+            if (user == null)
+            {
+                throw new ApplicationException(string.Format("Unknown user {0}", User.Identity.Name));
+            }
+            return user.Id;
+        }
+    }
+
     public class RavenController : Controller
     {
         protected IDocumentStore Store { get; private set; }

@@ -17,7 +17,8 @@ namespace geeks
                         "~/js/angular.js",
                         "~/js/angular-ui.js",
                         "~/js/jquery.validate.min.js",
-                        "~/js/jquery.validate.unobtrusive.min.js"));
+                        "~/js/jquery.validate.unobtrusive.min.js," +
+                        "~/js/geeks.js"));
 
             /*bundles.Add(new ScriptBundle("~/bundles/jqueryui").Include(
                         "~/Scripts/jquery-ui-{version}.js"));
