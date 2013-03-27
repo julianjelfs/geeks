@@ -1,0 +1,19 @@
+﻿<div class='modal hide fade' style="width:300px">
+    <div class='modal-header'>
+        <button type="button" class="close" data-dismiss="modal" ng-click="dismiss()" aria-hidden="true">&times;</button>
+        <h3 class="geek">{{buttonText()}}</h3>
+    </div>
+    
+    <div class='modal-body'>
+        <form ng-submit="submit()" class="form">
+            <input type="text" ng-show="registering" ng-model="name" class="input-large" placeholder="Name">
+            <input type="text" ng-model="email" class="input-large" placeholder="Email Address">
+            <input type="password" ng-model="password" class="input-large" placeholder="Password">
+            <input type="password" ng-show="registering" ng-model="confirm" class="input-large" placeholder="Confirm Password">
+            <button type="submit" class="btn btn-danger">{{buttonText()}}</button>
+            <a ng-click="register()" ng-show="!registering">Register</a>
+        </form>
+        
+    </div>
+    
+</div>

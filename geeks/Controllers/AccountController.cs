@@ -35,7 +35,7 @@ namespace geeks.Controllers
             {
                 user = new LoginModel
                 {
-                    UserName = u.Username
+                    EmailAddress = u.Username
                 };
             }
 
@@ -66,29 +66,58 @@ namespace geeks.Controllers
 
         [HttpPost]
         [AllowAnonymous]
-        [ValidateAntiForgeryToken]
-        public virtual ActionResult Login(LoginModel model, string returnUrl)
+//        [ValidateAntiForgeryToken]
+        public virtual HttpStatusCodeResult Login(LoginModel model, string returnUrl)
         {
             Session["UserId"] = null;
-            if (ModelState.IsValid && _membershipProvider.Login(model.UserName, model.Password, model.RememberMe))
+            if (ModelState.IsValid && _membershipProvider.Login(model.EmailAddress, model.Password,false))
             {
-                return RedirectToLocal(returnUrl);
+                return new HttpStatusCodeResult(200);
+            }
+            return new HttpStatusCodeResult(401);
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+//        [ValidateAntiForgeryToken]
+        public virtual HttpStatusCodeResult Register(RegisterModel model, string returnUrl)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    //var user = ExtractUserFromReturnUrl(returnUrl);
+                    var user = new User
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Name = model.Name,
+                        Username = model.EmailAddress,
+                        Password = model.Password,
+                        Registered = true
+                    };
+                    _membershipProvider.CreateAccount(user);
+                    _membershipProvider.Login(user.Username, model.Password);
+                    Session["UserId"] = null;
+                    return new HttpStatusCodeResult(200);
+                }
+                catch (FlexMembershipException e)
+                {
+                    ModelState.AddModelError("", ErrorCodeToString(e.StatusCode));
+                }
             }
 
-            // If we got this far, something failed, redisplay form
-            ModelState.AddModelError("", "The user name or password provided is incorrect.");
-            return RedirectToAction("Login", new {model, returnUrl});
+            return new HttpStatusCodeResult(401);
         }
 
         //
         // POST: /Account/LogOff
 
         [HttpPost]
-        public virtual ActionResult LogOff()
+        public virtual HttpStatusCodeResult LogOff()
         {
             Session["UserId"] = null;
             _membershipProvider.Logout();
-            return RedirectToAction("Index", "Home");
+            return new HttpStatusCodeResult(200);
         }
 
         //
@@ -115,39 +144,7 @@ namespace geeks.Controllers
         //
         // POST: /Account/Register
 
-        [HttpPost]
-        [AllowAnonymous]
-        [ValidateAntiForgeryToken]
-        public virtual ActionResult Register(RegisterModel model, string returnUrl)
-        {
-            if (ModelState.IsValid)
-            {
-                // Attempt to register the user
-                try
-                {
-                    var user = ExtractUserFromReturnUrl(returnUrl);
-                    user = user ?? new User
-                        {
-                            Id = Guid.NewGuid().ToString(),
-                            Name = model.Name,
-                            Username = model.EmailAddress
-                        };
-                    user.Password = model.Password;
-                    user.Registered = true;
-                    _membershipProvider.AddCredentialsToAccount(user);
-                    _membershipProvider.Login(user.Username, model.Password);
-                    Session["UserId"] = null;
-                    return RedirectToLocal(returnUrl);
-                }
-                catch (FlexMembershipException e)
-                {
-                    ModelState.AddModelError("", ErrorCodeToString(e.StatusCode));
-                }
-            }
-
-            // If we got this far, something failed, redisplay form
-            return View(model);
-        }
+        
 
         //
         // POST: /Account/Disassociate

@@ -23,9 +23,9 @@ namespace geeks.Controllers
             return View();
         }
 
-        public virtual ActionResult About()
+        public virtual PartialViewResult About()
         {
-            return View();
+            return PartialView();
         }
         
         public virtual ActionResult Calendar()
@@ -137,7 +137,7 @@ namespace geeks.Controllers
         }
 
         [Authorize]
-        public virtual ActionResult Events()
+        public virtual PartialViewResult Events()
         {
             //find events that I am invited to
             var evs = RavenSession.Query<Event>()
@@ -147,7 +147,7 @@ namespace geeks.Controllers
                                   .ToList();
 
             var models = (from e in evs select EventModelFromEvent(e)).ToList();
-            return View(models);
+            return PartialView(models);
         }
 
         [HttpPost]
@@ -164,18 +164,14 @@ namespace geeks.Controllers
 
         [HttpPost]
         [Authorize]
-        [ValidateAntiForgeryToken]
-        public virtual PartialViewResult DeleteAllFriends(string id)
+        public virtual void DeleteAllFriends(string id)
         {
             GetCurrentUser().Friends.Clear();
-            RavenSession.SaveChanges();
-            return FirstPageOfFriends();
         }
 
         [HttpPost]
         [Authorize]
-        [ValidateAntiForgeryToken]
-        public virtual PartialViewResult AddFriend(string name, string email)
+        public virtual void AddFriend(string name, string email)
         {
             var user = AddNewUserIfNecessary(name, email);
 
@@ -186,9 +182,6 @@ namespace geeks.Controllers
             var friend = me.Friends.SingleOrDefault(f => RavenSession.Load<User>(f.UserId).Username == email);
             if (friend == null)
                 me.Friends.Add(new Friend {UserId = user.Id});
-
-            RavenSession.SaveChanges();
-            return FirstPageOfFriends();
         }
         
         [HttpPost]
@@ -225,23 +218,11 @@ namespace geeks.Controllers
             return user;
         }
 
-        private PartialViewResult FirstPageOfFriends()
-        {
-            ViewBag.PageIndex = 0;
-            int total = 0;
-            var friends = FriendsInternal(0, 10, out total, null, false);
-            ViewBag.NumberOfPages = total;
-            return PartialView("FriendsTable", friends);
-        }
-
         [HttpPost]
         [Authorize]
-        [ValidateAntiForgeryToken]
-        public virtual PartialViewResult DeleteFriend(string id)
+        public virtual void DeleteFriend(string id)
         {
             GetCurrentUser().Friends.RemoveAll(f => f.UserId == id);
-            RavenSession.SaveChanges();
-            return FirstPageOfFriends();
         }
 
         private IEnumerable<UserFriend> FriendsInternal(int pageIndex, int pageSize, out int totalPages, string friendSearch, bool unratedFriends)
@@ -250,15 +231,22 @@ namespace geeks.Controllers
         }
 
         [Authorize]
-        public virtual ActionResult Friends(int pageIndex = 0, int pageSize = 10, string friendSearch = null, bool unratedFriends = false)
+        public virtual JsonResult FriendsData(int pageIndex = 0, int pageSize = 10, string friendSearch = null, bool unratedFriends = false)
         {
-            ViewBag.PageIndex = pageIndex;
             int total = 0;
             var friends = FriendsInternal(pageIndex, pageSize, out total, friendSearch, unratedFriends);
-            ViewBag.NumberOfPages = total;
-            ViewBag.SearchTerm = friendSearch;
-            ViewBag.Unrated = unratedFriends;
-            return View(friends);
+            return Json(new {
+                Friends = friends,
+                NumberOfPages = total,
+                SearchTerm = friendSearch,
+                Unrated = unratedFriends,
+                PageIndex = pageIndex
+            }, JsonRequestBehavior.AllowGet);
+        }
+
+        public PartialViewResult Friends()
+        {
+            return PartialView();
         }
 
         [Authorize]
