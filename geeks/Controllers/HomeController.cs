@@ -144,11 +144,9 @@ namespace geeks.Controllers
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
-        public virtual PartialViewResult DeleteAllFriends(string id)
+        public virtual void DeleteAllFriends(string id)
         {
             GetCurrentUser().Friends.Clear();
-            RavenSession.SaveChanges();
-            return FirstPageOfFriends();
         }
 
         [HttpPost]
@@ -216,11 +214,9 @@ namespace geeks.Controllers
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
-        public virtual PartialViewResult DeleteFriend(string id)
+        public virtual void DeleteFriend(string id)
         {
             GetCurrentUser().Friends.RemoveAll(f => f.UserId == id);
-            RavenSession.SaveChanges();
-            return FirstPageOfFriends();
         }
 
         private IEnumerable<UserFriend> FriendsInternal(int pageIndex, int pageSize, out int totalPages, string friendSearch, bool unratedFriends)
@@ -229,15 +225,24 @@ namespace geeks.Controllers
         }
 
         [Authorize]
-        public virtual ActionResult Friends(int pageIndex = 0, int pageSize = 10, string friendSearch = null, bool unratedFriends = false)
+        public virtual JsonResult FriendsData(int pageIndex = 0, int pageSize = 10, string friendSearch = null, bool unratedFriends = false)
         {
-            ViewBag.PageIndex = pageIndex;
             int total = 0;
             var friends = FriendsInternal(pageIndex, pageSize, out total, friendSearch, unratedFriends);
-            ViewBag.NumberOfPages = total;
-            ViewBag.SearchTerm = friendSearch;
-            ViewBag.Unrated = unratedFriends;
-            return View(friends);
+            return Json(new
+            {
+                Friends = friends,
+                NumberOfPages = total,
+                SearchTerm = friendSearch,
+                Unrated = unratedFriends,
+                PageIndex = pageIndex
+            }, JsonRequestBehavior.AllowGet);
+        }
+
+        [Authorize]
+        public ViewResult Friends()
+        {
+            return View();
         }
 
         [Authorize]

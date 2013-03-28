@@ -1,70 +1,60 @@
-﻿@model IEnumerable<geeks.Models.UserFriend>
-@{
-    ViewBag.Title = "Friends";
-}
-
-<div class="content">
+﻿<div class="content" ng-controller="FriendsCtrl">
     <div class="span4">
         <h2 class="geek">Friends</h2>
         
     </div>
     
+        @Html.AntiForgeryToken()
+
     <div class="btn-group pull-right">
         
-        @if (ViewBag.PageIndex == 0)
-        {
-            <a class="btn disabled" href="#">Prev</a>
-        }
-        else
-        {
-            @Html.ActionLink("Prev", "Friends", "Home", routeValues: new { pageIndex = ViewBag.PageIndex - 1, friendSearch = ViewBag.SearchTerm, unratedFriends = ViewBag.Unrated }, htmlAttributes: new {@class = "btn"})
-        }
+        <a ng-class="prevClass" ng-click="prev()">Prev</a>
+        <a ng-class="nextClass" ng-click="next()">Next</a>
 
-        @if (ViewBag.PageIndex == ViewBag.NumberOfPages - 1)
-        {
-            <a class="btn disabled" href="#">Next</a>
-        }
-        else
-        {
-            @Html.ActionLink("Next", "Friends", "Home", routeValues: new { pageIndex = ViewBag.PageIndex + 1, friendSearch = ViewBag.SearchTerm, unratedFriends = ViewBag.Unrated }, htmlAttributes: new { @class = "btn" })
-        }
         <a href="#add-friend-form" id="add-friend-btn" class="btn"><i id="add-friend" title="Add a new friend" class="icon icon-plus"></i></a>
-        <a href="#delete-all-warning" class="delete-all-friends btn"><i id="delete-all" title="Delete All Friends" class="icon-trash"></i></a>
+        <delete-friend warning="#delete-all-warning"></delete-friend>
         <a id="import-drop" href="#" class=" btn dropdown-toggle" data-toggle="dropdown">Import <b class="caret"></b></a>
         <ul class="dropdown-menu" role="menu" aria-labelledby="import-drop">
             <li role="presentation">
-                @Html.ActionLink("Import from google", "OAuth", "Import", routeValues: null, htmlAttributes: new { @role = "menuitem", @tabindex = "-1" })
-            </li>
-            <li role="presentation">
-                @Html.ActionLink("Import from twitter", "ImportTwitter", "Import", routeValues: null, htmlAttributes: new { @role = "menuitem", @tabindex = "-1" })
+                <a role="menuItem" tabindex="-1" href="/geeks/Import/OAuth">Import from Google</a>
             </li>
         </ul>
     </div>
     
-    @using (Html.BeginForm("SearchFriends", "Home", FormMethod.Post, new{@id="searchForm"}))
-    {
-        @Html.AntiForgeryToken()
+    <input style="margin-left:10px;margin-right: 10px" class="pull-right" type="text" ng-change="searchArgs.pageIndex = 0;search()" placeholder="Search" ng-model="searchArgs.friendSearch" />
         
-        <div class="input-append pull-right" style="margin-left:10px;margin-right: 10px">
-            
-            <input id="friendSearch" name="friendSearch" type="text" placeholder="Search" value="@ViewBag.SearchTerm" />
-            <button type="submit" class="btn"><i title="Search for friends" class="icon icon-search"></i></button>
-        </div>
-        
-        <div class="pull-right">
-            <text>Unrated Friends : </text>
-            <input id="unratedFriends" name="unratedFriends" type="hidden" value="@ViewBag.Unrated" />
-            <input id="unrated-checkbox" onclick="$('#unratedFriends').val($('#unrated-checkbox').is(':checked'));$('#searchForm').submit()" type="checkbox" checked="@ViewBag.Unrated" />
-        </div>
-    }
+    <div class="pull-right">
+        <text>Unrated Friends : </text>
+        <input type="checkbox" ng-change="search()" ng-model="searchArgs.unratedFriends" />
+    </div>
     
-    @if (Model.Any())
-    {
-        <div id="table-placeholder">
-            @Html.Partial("FriendsTable")
-        </div>
+    <div ng-show="friends.length > 0">
         
-        <div id="delete-warning" class="modal hide fade">
+        
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th width="40px"></th>
+                    <th width="40px"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="friend in friends">
+                    <td truncate="30" ng-bind="friend.Name"></td>
+                    <td truncate="30" ng-bind="friend.Email"></td>
+                    <td>
+                        <button title="Rate your friend" role="button" class="rank-friend btn" data-userId="{{friend.UserId}}"><span ng-class="ratingClass">{{friend.Rating}}</span></button>
+                    </td>
+                    <td>
+                        <delete-friend warning="#delete-warning"></delete-friend>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div id="delete-warning" class="modal hide">
             <div class="modal-header">
                 <h3 class="geek">Delete Friend</h3>
             </div>
@@ -74,12 +64,12 @@
                 </p>
             </div>
             <div class="modal-footer">
-                <button accesskey="N" class="btn btn-primary" data-dismiss="modal" aria-hidden="true">No</button>
-                <input accesskey="Y" id="delete-friend" type="button" class="btn" value="Yes"/>
+                <button accesskey="N" class="btn btn-danger" data-dismiss="modal" aria-hidden="true">No</button>
+                <input accesskey="Y" id="delete-friend" type="button" class="btn" value="Yes" ng-click="deleteFriend()" /> 
             </div>
         </div>
         
-        <div id="delete-all-warning" class="modal hide fade">
+        <div id="delete-all-warning" class="modal hide">
             <div class="modal-header">
                 <h3 class="geek">Delete All Friends</h3>
             </div>
@@ -89,12 +79,12 @@
                 </p>
             </div>
             <div class="modal-footer">
-                <button accesskey="N" class="btn btn-primary" data-dismiss="modal" aria-hidden="true">No</button>
-                <input accesskey="Y" id="delete-all-confirm" type="button" class="btn" value="Yes"/>
+                <button accesskey="N" class="btn btn-danger" data-dismiss="modal" aria-hidden="true">No</button>
+                <button accesskey="Y" class="btn" ng-click="deleteAllFriends()">Yes</button>
             </div>
         </div>
         
-        <div id="add-friend-form" class="modal hide fade">
+        <div id="add-friend-form" class="modal hide">
             <div class="modal-header">
                 <h3 class="geek">Add a new friend</h3>
             </div>
@@ -107,9 +97,8 @@
                 <button accesskey="C" class="btn" data-dismiss="modal">Cancel</button>
             </div>
         </div>
+    </div>
 
-        @Html.AntiForgeryToken()
-    }
 </div>
 
 @section scripts{
@@ -117,7 +106,95 @@
     <script type="text/javascript">
         $("#nav-bar li.active").removeClass("active");
         $("#friends-nav").addClass("active");
-        
+
+        var app = angular.module('geeks', ['ui']);
+        app.factory("listData", function($http) {
+            return {
+                get: function(url, args) {
+                    return $http.get(url + "?" + $.param(args), { cache: false });
+                }
+            };
+        }).factory("xsrfPost", function($http) {
+            return {
+                post: function(url, args) {
+                    args = args || {};
+                    args.__RequestVerificationToken = angular.element("input[name='__RequestVerificationToken']").val();
+                    var payload = $.param(args);
+                    var config = {
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' }
+                    };
+                    return $http.post(url, payload, config);
+                }
+            };
+        }).controller("FriendsCtrl", function($scope, $http, listData, xsrfPost) {
+
+            $scope.searchArgs = {
+                pageIndex: 0,
+                pageSize: 10,
+                friendSearch: null,
+                unratedFriends: false
+            };
+
+            $scope.search = function() {
+                listData.get("/geeks/Home/FriendsData", $scope.searchArgs).success(function(data) {
+                    $scope.friends = data.Friends;
+                    $scope.numberOfPages = data.NumberOfPages;
+                    $scope.prevClass = data.PageIndex > 0 ? "btn" : "btn disabled";
+                    $scope.nextClass = data.PageIndex + 1 >= data.NumberOfPages ? "btn disabled" : "btn";
+                });
+            };
+            $scope.next = function() {
+                if ($scope.searchArgs.pageIndex + 1 >= $scope.numberOfPages)
+                    return;
+                $scope.searchArgs.pageIndex += 1;
+                $scope.search();
+            };
+            $scope.prev = function() {
+                if ($scope.searchArgs.pageIndex <= 0)
+                    return;
+                $scope.searchArgs.pageIndex -= 1;
+                $scope.search();
+            };
+            $scope.deleteFriend = function() {
+                xsrfPost.post('/geeks/Home/DeleteFriend/' + $scope.selectedFriend.UserId).success(function() {
+                    angular.element("#delete-warning").modal("hide");
+                    $scope.search();
+                });
+            };
+            $scope.deleteAllFriends = function() {
+                xsrfPost.post('/geeks/Home/DeleteAllFriends').success(function() {
+                    angular.element("#delete-all-warning").modal("hide");
+                    $scope.search();
+                });
+            };
+            $scope.search();
+        }).directive("deleteFriend", function() {
+            return {
+                restrict: "E",
+                replace: true,
+                template: "<button ng-click='confirmDelete()' class='btn'><i class='icon-trash'></i></button>",
+                link: function(scope, el, atts) {
+                    scope.confirmDelete = function() {
+                        scope.$parent.selectedFriend = scope.friend;
+                        angular.element(atts.warning).modal("show");
+                    };
+                }
+            };
+        })
+            .directive("truncate", function() {
+                return {
+                    priority: -1,
+                    link: function(scope, el, atts) {
+                        scope.$watch(atts.ngBind, function(value) {
+                            var len = parseInt(atts.truncate);
+                            el.text(value == undefined
+                                ? '' : (value.length > len
+                                    ? value.substring(0, len) + '...' : value));
+                        });
+                    }
+                };
+            });
+
         $(function() {
             var selected = null;
 
@@ -128,16 +205,6 @@
                 $("#friend-name").val('').removeClass("input-validation-error").focus();
                 $("#friend-email").removeClass("input-validation-error").val('');
                 $("#add-friend-form").modal();
-            });
-
-            $("#add-friend,#delete-all").tooltip({
-                animation: true,
-                placement: 'top'
-            });
-
-            $("a.delete-all-friends").click(function(e) {
-                e.preventDefault();
-                $("#delete-all-warning").modal();
             });
 
             $("#add-friend-submit").click(function(e) {
@@ -158,7 +225,7 @@
                 $.post("AddFriend", {
                         __RequestVerificationToken: $("input[name='__RequestVerificationToken']").val(),
                         name: name,
-                        email: email, 
+                        email: email,
                     }, function(data) {
                         $("#table-placeholder").empty()[0].innerHTML = data;
                         setupDeleteLinks();
@@ -166,41 +233,6 @@
                     });
             });
 
-            $("#delete-all-confirm").click(function(e) {
-                e.preventDefault();
-                $.post("DeleteAllFriends", {
-                        __RequestVerificationToken: $("input[name='__RequestVerificationToken']").val()
-                    }, function(data) {
-                        $("#table-placeholder").empty()[0].innerHTML = data;
-                        setupDeleteLinks();
-                        $('#delete-all-warning').modal('hide');
-                    });
-            });
-
-            function setupDeleteLinks() {
-                $("a.delete-friend").tooltip({
-                    animation: true,
-                    title: 'Delete this friend',
-                    trigger: 'hover',
-                    placement: 'right'
-                }).click(function(e) {
-                    e.preventDefault();
-                    selected = $(this).attr('data-friend-email');
-                    $("#delete-warning").modal();
-                });
-                $("#delete-friend").unbind("click").click(function(e) {
-                    e.preventDefault();
-                    $.post("DeleteFriend/" + selected, {
-                            __RequestVerificationToken: $("input[name='__RequestVerificationToken']").val()
-                        }, function(data) {
-                            $("#table-placeholder").empty()[0].innerHTML = data;
-                            setupDeleteLinks();
-                            $('#delete-warning').modal('hide');
-                        });
-                });
-            }
-
-            setupDeleteLinks();
         });
     </script>
 }
