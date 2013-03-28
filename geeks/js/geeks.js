@@ -1,12 +1,15 @@
 ﻿var app = angular.module("geeks", ["ui", "ngResource", "http-auth-interceptor"])
-    .config(['$routeProvider', '$httpProvider', function($routeProvider) {
+    .config(['$routeProvider', '$httpProvider', function($routeProvider, $httpProvider) {
         $routeProvider
             .when("/", { templateUrl: "/geeks/Content/Partials/index.html" })
             .when("/events", { templateUrl: "/geeks/Home/Events", controller: "EventsCtrl" })
             .when("/friends", { templateUrl: "/geeks/Home/Friends", controller: "FriendsCtrl" })
             .when("/register", { templateUrl: "/geeks/Content/Partials/register.html" })
+            .when("/google", { templateUrl: "/geeks/Content/Partials/googlelogin.html" })
+            .when("/googlecallback", { templateUrl: "/geeks/Account/ExternalLoginCallback" })
             .when("/about", { templateUrl: "/geeks/Home/About" })
             .otherwise({ redirectTo: "/" });
+
     }])
     .factory("listData", function($http) {
         return {
@@ -15,7 +18,7 @@
             }
         };
     })
-    .controller("LoginCtrl", function($scope, $http, authService) {
+    .controller("LoginCtrl", function($scope, $window, $http, $location, authService) {
         $scope.registering = false;
         $scope.register = function() {
             $scope.registering = true;
@@ -27,9 +30,10 @@
             };
             $http.post($scope.registering ? 'Account/Register' : 'Account/Login', payload, config).success(function() {
                 authService.loginConfirmed($scope.email);
-            }).error(function() {
-                alert("login failed");
             });
+        };
+        $scope.googleLogin = function() {
+            $location.path("/google");
         };
         $scope.buttonText = function() {
             return $scope.registering ? "Register" : "Sign In";

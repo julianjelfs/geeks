@@ -39,8 +39,8 @@
             </thead>
             <tbody>
                 <tr ng-repeat="friend in friends">
-                    <td>{{friend.Name}}</td>
-                    <td>{{friend.Email}}</td>
+                    <td truncate="30" ng-bind="friend.Name"></td>
+                    <td truncate="30" ng-bind="friend.Email"></td>
                     <td>
                         <button title="Rate your friend" role="button" class="rank-friend btn" data-userId="{{friend.UserId}}"><span ng-class="ratingClass">{{friend.Rating}}</span></button>
                     </td>
@@ -51,7 +51,7 @@
             </tbody>
         </table>
         
-        <div id="delete-warning" class="modal hide fade">
+        <div id="delete-warning" class="modal hide">
             <div class="modal-header">
                 <h3 class="geek">Delete Friend</h3>
             </div>
@@ -66,7 +66,7 @@
             </div>
         </div>
         
-        <div id="delete-all-warning" class="modal hide fade">
+        <div id="delete-all-warning" class="modal hide">
             <div class="modal-header">
                 <h3 class="geek">Delete All Friends</h3>
             </div>
@@ -81,7 +81,7 @@
             </div>
         </div>
         
-        <div id="add-friend-form" class="modal hide fade">
+        <div id="add-friend-form" class="modal hide">
             <div class="modal-header">
                 <h3 class="geek">Add a new friend</h3>
             </div>
@@ -120,10 +120,6 @@
                 placement: 'top'
             });
 
-            $("a.delete-all-friends").click(function(e) {
-                e.preventDefault();
-                $("#delete-all-warning").modal();
-            });
 
             $("#add-friend-submit").click(function(e) {
                 e.preventDefault();
@@ -148,17 +144,6 @@
                         $("#table-placeholder").empty()[0].innerHTML = data;
                         setupDeleteLinks();
                         $('#add-friend-form').modal('hide');
-                    });
-            });
-
-            $("#delete-all-confirm").click(function(e) {
-                e.preventDefault();
-                $.post("DeleteAllFriends", {
-                        __RequestVerificationToken: $("input[name='__RequestVerificationToken']").val()
-                    }, function(data) {
-                        $("#table-placeholder").empty()[0].innerHTML = data;
-                        setupDeleteLinks();
-                        $('#delete-all-warning').modal('hide');
                     });
             });
         });

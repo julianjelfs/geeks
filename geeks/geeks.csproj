@@ -291,6 +291,7 @@
     <Content Include="Content\angular-ui.css" />
     <Content Include="Content\angular-ui.min.css" />
     <Content Include="Content\Partials\delete-friend-warning.html" />
+    <Content Include="Content\Partials\googlelogin.html" />
     <Content Include="Content\Partials\index.html" />
     <Content Include="Content\Partials\login.html" />
     <Content Include="Content\select2.css" />

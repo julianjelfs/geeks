@@ -240,10 +240,10 @@ namespace geeks.Controllers
 
         [HttpPost]
         [AllowAnonymous]
-        [ValidateAntiForgeryToken]
         public virtual ActionResult ExternalLogin(string provider, string returnUrl)
         {
             return new ExternalLoginResult(_oAuthProvider, provider, Url.Action("ExternalLoginCallback", new { ReturnUrl = returnUrl }));
+//            return new ExternalLoginResult(_oAuthProvider, provider, "/geeks/googlecallback");
         }
 
         //
@@ -339,7 +339,6 @@ namespace geeks.Controllers
         }
 
         [AllowAnonymous]
-        [ChildActionOnly]
         public virtual ActionResult ExternalLoginsList(string returnUrl)
         {
             ViewBag.ReturnUrl = returnUrl;
