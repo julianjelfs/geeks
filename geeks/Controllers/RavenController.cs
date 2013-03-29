@@ -83,7 +83,7 @@ namespace geeks.Controllers
                                     Name = u.Name, 
                                     Email = u.Username, 
                                     Rating = f.Rating,
-                                    GravatarLink = GravatarHelper.GravatarHelper.CreateGravatarUrl(u.Username, 30, null, null, null, null)
+                                    GravatarLink = GravatarHelper.GravatarHelper.CreateGravatarUrl(u.Username, 30, "http://dl.dropbox.com/u/26218407/logo-small.png", null, null, null)
                                 }).OrderBy(friend => friend.Name);
 
             totalPages = (int)Math.Ceiling((double)result.Count() / pageSize);
