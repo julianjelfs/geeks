@@ -152,7 +152,7 @@ namespace geeks.Controllers
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
-        public virtual PartialViewResult AddFriend(string name, string email)
+        public virtual void AddFriend(string name, string email)
         {
             var user = AddNewUserIfNecessary(name, email);
 
@@ -165,7 +165,6 @@ namespace geeks.Controllers
                 me.Friends.Add(new Friend {UserId = user.Id});
 
             RavenSession.SaveChanges();
-            return FirstPageOfFriends();
         }
         
         [HttpPost]

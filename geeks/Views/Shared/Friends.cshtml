@@ -10,7 +10,7 @@
         <a ng-class="prevClass" ng-click="prev()">Prev</a>
         <a ng-class="nextClass" ng-click="next()">Next</a>
 
-        <a href="#add-friend-form" id="add-friend-btn" class="btn"><i id="add-friend" title="Add a new friend" class="icon icon-plus"></i></a>
+        <add-friend></add-friend>
         <delete-friend warning="#delete-all-warning"></delete-friend>
         <a id="import-drop" href="#" class=" btn dropdown-toggle" data-toggle="dropdown">Import <b class="caret"></b></a>
         <ul class="dropdown-menu" role="menu" aria-labelledby="import-drop">
@@ -42,7 +42,7 @@
             </thead>
             <tbody>
                 <tr ng-repeat="friend in friends">
-                    <td><img src="{{friend.GravatarLink}}"/></td>
+                    <td><img ng-src="{{friend.GravatarLink}}"/></td>
                     <td truncate="30" ng-bind="friend.Name"></td>
                     <td truncate="30" ng-bind="friend.Email"></td>
                     <td>
@@ -85,16 +85,16 @@
             </div>
         </div>
         
-        <div id="add-friend-form" class="modal hide">
+        <div id="add-friend" class="modal hide">
             <div class="modal-header">
                 <h3 class="geek">Add a new friend</h3>
             </div>
             <div class="modal-body">
-                <input type="text" id="friend-name" placeholder="Friend's Name" value=""/>
-                <input type="text" id="friend-email" placeholder="Friend's Email Address" value=""/>
+                <input type="text" ng-model="newFriend.name" placeholder="Friend's Name" required />
+                <input type="text" ng-model="newFriend.email" placeholder="Friend's Email Address" required />
             </div>
             <div class="modal-footer">
-                <button accesskey="A" id="add-friend-submit" class="btn btn-primary">Add</button>
+                <button accesskey="A" class="btn btn-danger" ng-click="addFriend()">Add</button>
                 <button accesskey="C" class="btn" data-dismiss="modal">Cancel</button>
             </div>
         </div>
@@ -128,13 +128,23 @@
                 }
             };
         }).controller("FriendsCtrl", function($scope, $http, listData, xsrfPost) {
-
+        
             $scope.searchArgs = {
                 pageIndex: 0,
                 pageSize: 10,
                 friendSearch: null,
                 unratedFriends: false
             };
+            
+            $scope.addFriend = function() {
+                xsrfPost.post('/geeks/Home/AddFriend/', {
+                    name : $scope.newFriend.name,
+                    email : $scope.newFriend.email
+                }).success(function() {
+                    angular.element("#add-friend").modal("hide");
+                    $scope.search();
+                });
+            }
 
             $scope.search = function() {
                 listData.get("/geeks/Home/FriendsData", $scope.searchArgs).success(function(data) {
@@ -169,6 +179,17 @@
                 });
             };
             $scope.search();
+        }).directive("addFriend", function() {
+            return {
+                restrict: "E",
+                replace: true,
+                template : "<button class='btn' ng-click='showAddFriend()'><i class='icon icon-plus'></i></button>",
+                link: function(scope, el, atts) {
+                    scope.showAddFriend = function() {
+                        angular.element("#add-friend").modal("show");
+                    };
+                }
+            };
         }).directive("deleteFriend", function() {
             return {
                 restrict: "E",
@@ -181,59 +202,23 @@
                     };
                 }
             };
-        })
-            .directive("truncate", function() {
-                return {
-                    priority: -1,
-                    link: function(scope, el, atts) {
-                        scope.$watch(atts.ngBind, function(value) {
-                            var len = parseInt(atts.truncate);
-                            el.text(value == undefined
-                                ? '' : (value.length > len
-                                    ? value.substring(0, len) + '...' : value));
-                        });
-                    }
-                };
-            });
+        }).directive("truncate", function() {
+            return {
+                priority: -1,
+                link: function(scope, el, atts) {
+                    scope.$watch(atts.ngBind, function(value) {
+                        var len = parseInt(atts.truncate);
+                        el.text(value == undefined
+                            ? '' : (value.length > len
+                                ? value.substring(0, len) + '...' : value));
+                    });
+                }
+            };
+        });
 
         $(function() {
             var selected = null;
-
             enablePopovers('@Url.Action("RateFriend", "Home")', "button", "span");
-
-            $("#add-friend-btn").click(function(e) {
-                e.preventDefault();
-                $("#friend-name").val('').removeClass("input-validation-error").focus();
-                $("#friend-email").removeClass("input-validation-error").val('');
-                $("#add-friend-form").modal();
-            });
-
-            $("#add-friend-submit").click(function(e) {
-                e.preventDefault();
-                var name = $("#friend-name").removeClass("input-validation-error").val();
-                var email = $("#friend-email").removeClass("input-validation-error").val();
-                var valid = true;
-                if (name.length === 0) {
-                    $("#friend-name").addClass("input-validation-error").attr("title", "Enter your friend's name");
-                    valid = false;
-                }
-                if (email.length === 0) {
-                    $("#friend-email").addClass("input-validation-error").attr("title", "Enter your friend's email");
-                    valid = false;
-                }
-                if (!valid)
-                    return;
-                $.post("AddFriend", {
-                        __RequestVerificationToken: $("input[name='__RequestVerificationToken']").val(),
-                        name: name,
-                        email: email,
-                    }, function(data) {
-                        $("#table-placeholder").empty()[0].innerHTML = data;
-                        setupDeleteLinks();
-                        $('#add-friend-form').modal('hide');
-                    });
-            });
-
         });
     </script>
 }
