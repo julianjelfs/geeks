@@ -1,7 +1,6 @@
 ﻿<div class="content" ng-controller="FriendsCtrl">
     <div class="span4">
         <h2 class="geek">Friends</h2>
-        
     </div>
     
         @Html.AntiForgeryToken()
@@ -34,6 +33,7 @@
         <table class="table table-hover">
             <thead>
                 <tr>
+                    <th></th>
                     <th>Name</th>
                     <th>Email</th>
                     <th width="40px"></th>
@@ -42,6 +42,7 @@
             </thead>
             <tbody>
                 <tr ng-repeat="friend in friends">
+                    <td><img src="{{friend.GravatarLink}}"/></td>
                     <td truncate="30" ng-bind="friend.Name"></td>
                     <td truncate="30" ng-bind="friend.Email"></td>
                     <td>

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
+using GravatarHelper;
 using Raven.Client;
 using geeks.Models;
 
@@ -68,6 +69,8 @@ namespace geeks.Controllers
             var user = RavenSession.Include<User>(u=>u.Friends.Select(f=>f.UserId))
                        .Load<User>(userId);
 
+            
+
             var result = (from f in user.Friends
                             let u = RavenSession.Load<User>(f.UserId)
                             where (string.IsNullOrEmpty(friendSearch)
@@ -76,7 +79,11 @@ namespace geeks.Controllers
                                 && (f.Rating == 0 || !unratedFriends)
                             select new UserFriend
                                 {
-                                    UserId = u.Id, Name = u.Name, Email = u.Username, Rating = f.Rating
+                                    UserId = u.Id, 
+                                    Name = u.Name, 
+                                    Email = u.Username, 
+                                    Rating = f.Rating,
+                                    GravatarLink = GravatarHelper.GravatarHelper.CreateGravatarUrl(u.Username, 30, null, null, null, null)
                                 }).OrderBy(friend => friend.Name);
 
             totalPages = (int)Math.Ceiling((double)result.Count() / pageSize);

@@ -125,6 +125,9 @@
     <Reference Include="Google.GData.Extensions">
       <HintPath>..\packages\Google.GData.Extensions.2.1.0.0\lib\Google.GData.Extensions.dll</HintPath>
     </Reference>
+    <Reference Include="GravatarHelper">
+      <HintPath>..\packages\GravatarHelper.3.2.2\lib\Net40\GravatarHelper.dll</HintPath>
+    </Reference>
     <Reference Include="log4net">
       <HintPath>..\packages\log4net.2.0.0\lib\net40-full\log4net.dll</HintPath>
     </Reference>
