@@ -27,7 +27,7 @@
         <input type="checkbox" ng-change="search()" ng-model="searchArgs.unratedFriends" />
     </div>
     
-    <div ng-show="friends.length > 0">
+    <div id="table-placeholder" ng-show="friends.length > 0">
         
         
         <table class="table table-hover">
@@ -46,7 +46,7 @@
                     <td truncate="30" ng-bind="friend.Name"></td>
                     <td truncate="30" ng-bind="friend.Email"></td>
                     <td>
-                        <button title="Rate your friend" role="button" class="rank-friend btn" data-userId="{{friend.UserId}}"><span ng-class="ratingClass">{{friend.Rating}}</span></button>
+                        <rate-friend></rate-friend>                        
                     </td>
                     <td>
                         <delete-friend warning="#delete-warning"></delete-friend>
@@ -190,6 +190,55 @@
                     };
                 }
             };
+        }).directive("rateFriend", function($compile, xsrfPost) {
+            var regex = new RegExp("{x}", "g");
+            var rankHtml = "<div>";
+            var rankButton = "<span ng-click='rateFriend({x})' ng-class='ratingClass({x})'>{x}</span>";
+            for (var i = 0; i < 10; i++) {
+                rankHtml += rankButton.replace(regex,i+1);
+            }
+            rankHtml += "</div>";
+            console.log("created popover template");
+            var popover;
+
+            return {
+                restrict: "E",
+                replace: true,
+                template: "<button title='Rate your friend' class='rating btn'><span ng-class='ratingClass(friend.Rating)'>{{friend.Rating}}</span></button>",
+                link: function(scope, el, atts) {
+                    console.log("linking add friend");
+                    el.popover({
+                        content: $compile(rankHtml)(scope),
+                        placement: "top",
+                        trigger: "manual",
+                        html: true,
+                        title: ''
+                    }).click(function(){
+                        if(popover != null && popover != el)
+                            popover.popover("hide");
+                        el.popover("show");
+                        popover = el;
+                    });
+
+                    scope.ratingClass = function(index){
+                        var cls = "rank badge";
+                        if(index <= scope.friend.Rating
+                            && scope.friend.Rating > 0)
+                            cls += " badge-warning";
+                        return cls;
+                    }
+
+                    scope.rateFriend = function(rating) {
+                        scope.friend.Rating = rating;
+                        xsrfPost.post('/geeks/Home/RateFriend', {
+                            id : scope.friend.UserId,
+                            rating : rating
+                        }).success(function() {
+                            el.popover("hide");
+                        });
+                    };
+                }
+            };
         }).directive("deleteFriend", function() {
             return {
                 restrict: "E",
@@ -214,11 +263,6 @@
                     });
                 }
             };
-        });
-
-        $(function() {
-            var selected = null;
-            enablePopovers('@Url.Action("RateFriend", "Home")', "button", "span");
         });
     </script>
 }
