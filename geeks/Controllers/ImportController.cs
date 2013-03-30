@@ -81,23 +81,77 @@ namespace geeks.Controllers
             var authFactory = new GAuthSubRequestFactory("cp", "Geeks Dilemma") {Token = auth.AccessToken};
             var service = new ContactsService(authFactory.ApplicationName) {RequestFactory = authFactory};
 
-            //var settings = new RequestSettings("<var>Geeks Dilemma</var>", auth.AccessToken);
-            //var cr = new ContactsRequest(settings);
             var query = new ContactsQuery(ContactsQuery.CreateContactsUri("default"));
             query.NumberToRetrieve = 1000;
             ContactsFeed contacts = service.Query(query);
             ViewBag.ImportFrom = "Google";
+            var userId = GetCurrentUserId();
 
-            return View("Import", (from ContactEntry entry in contacts.Entries
-                                   from email in entry.Emails
-                                   where entry.Name != null
-                                   where email != null
-                                   select new ImportModel
-                                       {
-                                           Import = false,
-                                           EmailAddress = email.Address,
-                                           Name = entry.Name.FullName
-                                       }).ToList());
+            DeletePreviousImportIfNecessary(userId);
+
+            var googleContact = new GoogleContact
+                {
+                    UserId = userId,
+                    Contacts = (from ContactEntry entry in contacts.Entries
+                                from email in entry.Emails
+                                where entry.Name != null
+                                where email != null
+                                select new ImportModel
+                                    {
+                                        Import = false,
+                                        EmailAddress = email.Address,
+                                        Name = entry.Name.FullName
+                                    }).ToList()
+                };
+
+
+            RavenSession.Store(googleContact);
+
+            return View("Import");
+        }
+
+        public ViewResult Import()
+        {
+            return View();
+        }
+
+        [Authorize]
+        public virtual JsonResult ImportData(int pageIndex = 0, int pageSize = 10, string search = null)
+        {
+            var contact = RavenSession.Query<GoogleContact>().FirstOrDefault(c => c.UserId == GetCurrentUserId());
+
+            int total = 0;
+            var contacts = GetImportModels(contact, out total, pageIndex, pageSize, search);
+            return Json(new
+            {
+                Contacts = contacts,
+                NumberOfPages = total,
+                SearchTerm = search,
+                PageIndex = pageIndex
+            }, JsonRequestBehavior.AllowGet);
+        }
+
+        private List<ImportModel> GetImportModels(GoogleContact contact,
+            out int totalPages,
+            int pageIndex = 0, 
+            int pageSize = 10, 
+            string search = null)
+        {
+            var result = (from im in contact.Contacts
+                          where (string.IsNullOrEmpty(search)
+                              || (im.Name != null && im.Name.Contains(search))
+                              || (im.EmailAddress != null && im.EmailAddress.Contains(search)))
+                          select im).OrderBy(friend => friend.Name);
+
+            totalPages = (int)Math.Ceiling((double)result.Count() / pageSize);
+            return result.Skip(pageIndex * pageSize).Take(pageSize).ToList();
+        } 
+
+        private void DeletePreviousImportIfNecessary(string userId)
+        {
+            var contacts = RavenSession.Query<GoogleContact>().FirstOrDefault(c => c.UserId == userId);
+            if(contacts != null)
+                RavenSession.Delete(contacts);
         }
 
         /*
@@ -118,11 +172,45 @@ namespace geeks.Controllers
          */
 
         [Authorize]
-        public virtual ActionResult ImportTwitter()
+        [ValidateAntiForgeryToken]
+        public void ImportAll()
         {
-            ViewBag.ImportFrom = "Twitter";
-            return View("Import");
+            var user = GetCurrentUser();
+            var gc = RavenSession.Query<GoogleContact>().FirstOrDefault(c => c.UserId == user.Id);
+            var contacts = gc.Contacts.Where(m => m.EmailAddress != User.Identity.Name).ToList();
+
+            var emails = new HashSet<string>(from m in contacts.Distinct() select m.EmailAddress);
+            var users = RavenSession.Query<User>()
+                            .Where(u => u.Username.In(emails))
+                                    .ToDictionary(u => u.Username);
+
+            using (var bulkInsert = Store.BulkInsert())
+            {
+                foreach (var importModel in contacts)
+                {
+                    if (importModel.EmailAddress == User.Identity.Name) continue;
+                    if (users.ContainsKey(importModel.EmailAddress)) continue;
+
+                    var newUser = new User
+                    {
+                        Username = importModel.EmailAddress,
+                        Name = importModel.Name,
+                        Id = Guid.NewGuid().ToString()
+                    };
+                    bulkInsert.Store(newUser);
+                    users.Add(newUser.Username, newUser);
+                }
+
+                user.Friends = user.Friends.Union(from i in contacts
+                                                  where !user.Friends.Any(f => f.UserId == users[i.EmailAddress].Id)
+                                                  select new Friend
+                                                  {
+                                                      UserId = users[i.EmailAddress].Id
+                                                  }).ToList();
+            }
+            RavenSession.Delete(gc);
         }
+
 
         [Authorize]
         [ValidateAntiForgeryToken]

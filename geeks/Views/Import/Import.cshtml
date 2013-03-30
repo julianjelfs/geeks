@@ -1,58 +1,89 @@
-﻿@model List<geeks.Models.ImportModel>
-@{
+﻿@{
     ViewBag.Title = "Import";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="content">
+<div class="content" ng-controller="ImportCtrl">
     <h2 class="geek">Import from @ViewBag.ImportFrom</h2>
-    
-    @using (Html.BeginForm("PerformImport","Import"))
-    {
-        @Html.AntiForgeryToken()
+    @Html.AntiForgeryToken()
+        
+    <div class="btn-group pull-right">
+        <a ng-class="prevClass" ng-click="prev()">Prev</a>
+        <a ng-class="nextClass" ng-click="next()">Next</a>
+        <a class="btn" ng-click="importAll()">Import All</a>
+        <a class="btn" ng-click="importSelected()">Import Selected</a>
+        <input style="margin-left:10px;margin-right: 10px" class="pull-right" type="text" ng-change="searchArgs.pageIndex = 0;search()" placeholder="Search" ng-model="searchArgs.search" />
+    </div>
 
-        <button id="import-all" class="btn" type="submit">Import All</button>
-        <button class="btn" type="submit">Import Selected</button>
-
-        <table class="table table-hover">
-            <thead>
-                <tr>
-                    <th>Import</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                </tr>
-            </thead>
-            <tbody>
-                
-                @for(var i=0; i<Model.Count(); i++)
-                {
-                    <tr>
-                        <td>
-                            @Html.CheckBoxFor(m => m[i].Import)
-                        </td>
-                        <td>
-                            @Html.HiddenFor(m => m[i].Name)
-                            @Model[i].Name
-                        </td>
-                        <td>
-                            @Html.HiddenFor(m => m[i].EmailAddress)
-                            @Model[i].EmailAddress
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    }
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Import</th>
+                <th>Name</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr ng-repeat="contact in contacts">
+                <td>
+                    <input type="checkbox" ng-change="toggleImport(contact)" ng-model="contact.Import"/>
+                </td>
+                <td>
+                    {{contact.Name}}
+                </td>
+                <td>
+                    {{contact.EmailAddress}}
+                </td>
+            </tr>
+        </tbody>
+    </table>
 
 </div>
 
 @section scripts{
     <script type="text/javascript">
-        $(function() {
-            $("#import-all").click(function(e) {
-                $(":checkbox").prop("checked", true);
-            });
+        var app = angular.module("geeks");
+        app.controller("ImportCtrl", function($scope, $window, listData, xsrfPost) {
+            $scope.searchArgs = {
+                pageIndex: 0,
+                pageSize: 10,
+                search: null
+            };
 
+            $scope.search = function() {
+                listData.get("/geeks/Import/ImportData", $scope.searchArgs).success(function(data) {
+                    $scope.contacts = data.Contacts;
+                    $scope.numberOfPages = data.NumberOfPages;
+                    $scope.prevClass = data.PageIndex > 0 ? "btn" : "btn disabled";
+                    $scope.nextClass = data.PageIndex + 1 >= data.NumberOfPages ? "btn disabled" : "btn";
+                });
+            };
+            
+            $scope.next = function() {
+                if ($scope.searchArgs.pageIndex + 1 >= $scope.numberOfPages)
+                    return;
+                $scope.searchArgs.pageIndex += 1;
+                $scope.search();
+            };
+            
+            $scope.prev = function() {
+                if ($scope.searchArgs.pageIndex <= 0)
+                    return;
+                $scope.searchArgs.pageIndex -= 1;
+                $scope.search();
+            };
+            
+            $scope.importAll = function() {
+                xsrfPost.post('/geeks/Import/ImportAll/').success(function() {
+                    $window.location.href = "/geeks/Home/Friends";
+                });
+            }
+            
+            $scope.toggleImport = function(contact) {
+                //track all selected contacts
+            }
+            
+            $scope.search();
         });
     </script>
 }

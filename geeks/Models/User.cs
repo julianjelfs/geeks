@@ -29,6 +29,13 @@ namespace geeks.Models
         public bool EmailSent { get; set; }
     }
 
+    public class GoogleContact
+    {
+        public string Id { get; set; }
+        public string UserId { get; set; }
+        public List<ImportModel> Contacts { get; set; } 
+    }
+
     public class User : IFlexMembershipUser
     {
         public User()

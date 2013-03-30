@@ -63,15 +63,35 @@
         </div>
     </div>
     
-    
-        
     @Scripts.Render("~/bundles/script")
-    
+
+    <script type="text/javascript">
+        var app = angular.module('geeks', ['ui']);
+        app.factory("listData", function($http) {
+            return {
+                get: function(url, args) {
+                    return $http.get(url + "?" + $.param(args), { cache: false });
+                }
+            };
+        }).factory("xsrfPost", function($http) {
+            return {
+                post: function(url, args) {
+                    args = args || {};
+                    args.__RequestVerificationToken = angular.element("input[name='__RequestVerificationToken']").val();
+                    var payload = $.param(args);
+                    var config = {
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' }
+                    };
+                    return $http.post(url, payload, config);
+                }
+            };
+        });
+    </script>
+        
     @RenderSection("scripts", required: false)
 
     <script type="text/javascript">
 
-        
         $(function() {
             $(document).pjax("a[data-pjax]", "#body-placeholder");
 
