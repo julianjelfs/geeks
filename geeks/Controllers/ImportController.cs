@@ -173,12 +173,16 @@ namespace geeks.Controllers
 
         [Authorize]
         [ValidateAntiForgeryToken]
-        public void ImportAll()
+        public void ImportSelected(List<string> contacts)
         {
             var user = GetCurrentUser();
             var gc = RavenSession.Query<GoogleContact>().FirstOrDefault(c => c.UserId == user.Id);
-            var contacts = gc.Contacts.Where(m => m.EmailAddress != User.Identity.Name).ToList();
+            ImportContacts(gc, gc.Contacts.Where(model => contacts.Contains(model.EmailAddress)).ToList());
+        }
 
+        private void ImportContacts(GoogleContact gc, List<ImportModel> contacts)
+        {
+            var user = GetCurrentUser();
             var emails = new HashSet<string>(from m in contacts.Distinct() select m.EmailAddress);
             var users = RavenSession.Query<User>()
                             .Where(u => u.Username.In(emails))
@@ -209,6 +213,16 @@ namespace geeks.Controllers
                                                   }).ToList();
             }
             RavenSession.Delete(gc);
+        }
+
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public void ImportAll()
+        {
+            var user = GetCurrentUser();
+            var gc = RavenSession.Query<GoogleContact>().FirstOrDefault(c => c.UserId == user.Id);
+            var contacts = gc.Contacts.Where(m => m.EmailAddress != User.Identity.Name).ToList();
+            ImportContacts(gc, contacts);
         }
 
 

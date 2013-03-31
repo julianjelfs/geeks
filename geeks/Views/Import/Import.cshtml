@@ -53,36 +53,63 @@
             $scope.search = function() {
                 listData.get("/geeks/Import/ImportData", $scope.searchArgs).success(function(data) {
                     $scope.contacts = data.Contacts;
+                    angular.forEach($scope.contacts, function(v) {
+                        if (toImport[v.EmailAddress] != undefined) {
+                            v.Import = true;
+                        }    
+                    })
                     $scope.numberOfPages = data.NumberOfPages;
                     $scope.prevClass = data.PageIndex > 0 ? "btn" : "btn disabled";
                     $scope.nextClass = data.PageIndex + 1 >= data.NumberOfPages ? "btn disabled" : "btn";
                 });
             };
-            
+
             $scope.next = function() {
                 if ($scope.searchArgs.pageIndex + 1 >= $scope.numberOfPages)
                     return;
                 $scope.searchArgs.pageIndex += 1;
                 $scope.search();
             };
-            
+
             $scope.prev = function() {
                 if ($scope.searchArgs.pageIndex <= 0)
                     return;
                 $scope.searchArgs.pageIndex -= 1;
                 $scope.search();
             };
-            
+
             $scope.importAll = function() {
                 xsrfPost.post('/geeks/Import/ImportAll/').success(function() {
                     $window.location.href = "/geeks/Home/Friends";
                 });
             }
-            
-            $scope.toggleImport = function(contact) {
-                //track all selected contacts
+
+            $scope.importSelected = function() {
+                xsrfPost.post("/geeks/Import/ImportSelected/", { contacts: toImportToArray() }).success(function() {
+                    $window.location.href = "/geeks/Home/Friends";
+                });
             }
-            
+
+            var toImport = {};
+
+            function toImportToArray() {
+                var arr = [];
+                for (prop in toImport) {
+                    arr.push(toImport[prop].EmailAddress);
+                }
+                return arr;
+            }
+
+            $scope.toggleImport = function(contact) {
+                if (contact.Import) {
+                    toImport[contact.EmailAddress] = contact;
+                } else {
+                    if (toImport[contact.EmailAddress] != undefined) {
+                        delete toImport[contact.EmailAddress];
+                    }
+                }
+            }
+
             $scope.search();
         });
     </script>
