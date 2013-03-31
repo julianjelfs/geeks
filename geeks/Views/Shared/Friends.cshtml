@@ -149,7 +149,7 @@
                 $scope.search();
             };
             $scope.deleteFriend = function() {
-                xsrfPost.post('/geeks/Home/DeleteFriend/' + $scope.selectedFriend.UserId).success(function() {
+                xsrfPost.post('/geeks/Home/DeleteFriend/' + $scope.selectedFriend.PersonId).success(function() {
                     angular.element("#delete-warning").modal("hide");
                     $scope.search();
                 });
@@ -214,7 +214,7 @@
                         console.log("Rating friend " + scope.friend.Name + " as " + rating);
                         scope.friend.Rating = rating;
                         xsrfPost.post('/geeks/Home/RateFriend', {
-                            id : scope.friend.UserId,
+                            id : scope.friend.PersonId,
                             rating : rating
                         }).success(function() {
                             el.popover("hide");

@@ -47,12 +47,12 @@ namespace geeks.Controllers
             if (!string.IsNullOrEmpty(id))
             {
                 var ev = RavenSession.Include<Event>(e => e.Invitations).Load<Event>(id);
-                return View(EventModelFromEvent(ev, GetCurrentUser()));
+                return View(EventModelFromEvent(ev, GetCurrentPerson()));
             }
             return View(new EventModel{ CreatedBy = GetCurrentUserId()});
         }
 
-        private EventModel EventModelFromEvent(Event ev, User currentUser = null)
+        private EventModel EventModelFromEvent(Event ev, Person currentPerson = null)
         {
             return new EventModel
                 {
@@ -66,24 +66,23 @@ namespace geeks.Controllers
                     Longitude = ev.Longitude,
                     Venue = ev.Venue,
                     Invitations = (from i in ev.Invitations
-                               let user = RavenSession.Load<User>(i.UserId)
-                               let friend = GetFriendFromUser(currentUser, i.UserId)
+                               let user = RavenSession.Load<User>(i.PersonId)
+                               let friend = GetFriendFromPerson(currentPerson, i.PersonId)
                                select new InvitationModel
                                    {
                                        Email = user.Username,
-                                       UserId = user.Id,
-                                       Name = user.Name,
+                                       PersonId = user.Id,
                                        Rating = friend == null ? 0 : friend.Rating,
                                        EmailSent = i.EmailSent
                                    }).ToList()
                 };
         }
 
-        private Friend GetFriendFromUser(User user, string friendUserId)
+        private Friend GetFriendFromPerson(Person person, string friendPersonId)
         {
-            if (user == null)
+            if (person == null)
                 return null;
-            return user.Friends.SingleOrDefault(f => f.UserId == friendUserId);
+            return person.Friends.SingleOrDefault(f => f.PersonId == friendPersonId);
         }
 
         [HttpPost]
@@ -106,11 +105,11 @@ namespace geeks.Controllers
             var users = RavenSession.Query<User>()
                                     .Where(u => u.Username.In(from i in invitees
                                                               where !i.EmailSent
-                                                              select i.UserId));
+                                                              select i.PersonId));
 
             foreach (var invitee in invitees.Where(i => !i.EmailSent))
             {
-                _emailer.Invite(GetCurrentUser(), RavenSession.Load<User>(invitee.UserId), ev);
+                _emailer.Invite(GetCurrentPerson(), RavenSession.Load<Person>(invitee.PersonId), ev);
                 invitee.EmailSent = true;
             }
             ev.Invitations = invitees;
@@ -146,7 +145,7 @@ namespace geeks.Controllers
         [ValidateAntiForgeryToken]
         public virtual void DeleteAllFriends(string id)
         {
-            GetCurrentUser().Friends.Clear();
+            GetCurrentPerson().Friends.Clear();
         }
 
         [HttpPost]
@@ -154,15 +153,15 @@ namespace geeks.Controllers
         [ValidateAntiForgeryToken]
         public virtual void AddFriend(string name, string email)
         {
-            var user = AddNewUserIfNecessary(name, email);
+            var person = CreatePersonDocumentIfNecessary(name, email);
 
-            var me = RavenSession.Query<User>()
-                        .Include<User>(u => u.Friends.Select(f => f.UserId))
-                        .SingleOrDefault(u => u.Username == User.Identity.Name);
+            var me = RavenSession.Query<Person>()
+                        .Include<Person>(p => p.Friends.Select(f => f.PersonId))
+                        .SingleOrDefault(p => p.EmailAddress == User.Identity.Name);
 
-            var friend = me.Friends.SingleOrDefault(f => RavenSession.Load<User>(f.UserId).Username == email);
+            var friend = me.Friends.SingleOrDefault(f => RavenSession.Load<Person>(f.PersonId).EmailAddress == email);
             if (friend == null)
-                me.Friends.Add(new Friend {UserId = user.Id});
+                me.Friends.Add(new Friend {PersonId = person.Id});
 
             RavenSession.SaveChanges();
         }
@@ -172,33 +171,32 @@ namespace geeks.Controllers
         [ValidateAntiForgeryToken]
         public virtual void RateFriend(string id, string rating)
         {
-            var me = RavenSession.Query<User>()
-                        .SingleOrDefault(u => u.Username == User.Identity.Name);
+            var me = RavenSession.Query<Person>()
+                        .FirstOrDefault(p => p.EmailAddress == User.Identity.Name);
 
-            var friend = me.Friends.SingleOrDefault(f => f.UserId == id);
+            var friend = me.Friends.SingleOrDefault(f => f.PersonId == id);
             if (friend != null)
             {
                 friend.Rating = Convert.ToInt32(rating);
             }
         }
 
-        private User AddNewUserIfNecessary(string name, string email)
+        private Person CreatePersonDocumentIfNecessary(string name, string email)
         {
-            var user = RavenSession.Query<User>()
-                                   .SingleOrDefault(u => u.Username == email);
+            var person = RavenSession.Query<Person>()
+                                   .FirstOrDefault(p => p.EmailAddress == email);
 
-            if (user == null)
+            if (person == null)
             {
-                user = new User
+                person = new Person
                     {
                         Id = Guid.NewGuid().ToString(),
-                        Username = email,
-                        Name = name,
-                        Registered = false
+                        EmailAddress = email,
+                        Name = name
                     };
-                RavenSession.Store(user);
+                RavenSession.Store(person);
             }
-            return user;
+            return person;
         }
 
         private PartialViewResult FirstPageOfFriends()
@@ -215,12 +213,12 @@ namespace geeks.Controllers
         [ValidateAntiForgeryToken]
         public virtual void DeleteFriend(string id)
         {
-            GetCurrentUser().Friends.RemoveAll(f => f.UserId == id);
+            GetCurrentPerson().Friends.RemoveAll(f => f.PersonId == id);
         }
 
-        private IEnumerable<UserFriend> FriendsInternal(int pageIndex, int pageSize, out int totalPages, string friendSearch, bool unratedFriends)
+        private IEnumerable<PersonFriend> FriendsInternal(int pageIndex, int pageSize, out int totalPages, string friendSearch, bool unratedFriends)
         {
-            return UsersFromFriends(GetCurrentUserId(), pageIndex, pageSize, out totalPages, friendSearch, unratedFriends);
+            return PersonsFromFriends(GetCurrentPersonId(), pageIndex, pageSize, out totalPages, friendSearch, unratedFriends);
         }
 
         [Authorize]
@@ -248,11 +246,11 @@ namespace geeks.Controllers
         public JsonResult LookupFriends(string query)
         {
             var totalPages = 0;
-            var matches = UsersFromFriends(GetCurrentUserId(), 0, 100, out totalPages, query, false);
+            var matches = PersonsFromFriends(GetCurrentPersonId(), 0, 100, out totalPages, query, false);
             var dict = new Dictionary<string, object>();
             foreach (var match in matches.Where(match => !dict.ContainsKey(match.Email)))
                 dict.Add(match.Email, new {
-                    userId = match.UserId,
+                    personId = match.PersonId,
                     rating = match.Rating
                 });
             return Json(dict,  JsonRequestBehavior.AllowGet);

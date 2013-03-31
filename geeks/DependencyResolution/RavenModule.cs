@@ -30,7 +30,6 @@ namespace geeks.DependencyResolution
                 {
                     ConnectionStringName = "LocalRavenDB"
                 }.Initialize();
-            IndexCreation.CreateIndexes(typeof(FriendNameAndEmailIndex).Assembly, store);
             return store;
         }
     }

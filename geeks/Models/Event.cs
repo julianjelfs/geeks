@@ -9,7 +9,7 @@ namespace geeks.Models
 {
     public class Invitation
     {
-        public string UserId { get; set; }
+        public string PersonId { get; set; }
         public bool EmailSent { get; set; }
     }
 
@@ -36,7 +36,7 @@ namespace geeks.Models
                 Invitations = from i in model.Invitations
                              select new Invitation
                                  {
-                                     UserId = i.UserId,
+                                     PersonId = i.PersonId,
                                      EmailSent = i.EmailSent
                                  };
             }

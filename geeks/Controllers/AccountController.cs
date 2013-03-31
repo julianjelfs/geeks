@@ -104,7 +104,6 @@ namespace geeks.Controllers
             {
                 user = new RegisterModel
                     {
-                        Name = u.Name,
                         EmailAddress = u.Username
                     };
                 return View(user);
@@ -125,16 +124,20 @@ namespace geeks.Controllers
                 // Attempt to register the user
                 try
                 {
-                    var user = ExtractUserFromReturnUrl(returnUrl);
-                    user = user ?? new User
+                    var user = new User
                         {
                             Id = Guid.NewGuid().ToString(),
-                            Name = model.Name,
-                            Username = model.EmailAddress
+                            Username = model.EmailAddress,
+                            Password = model.Password
                         };
-                    user.Password = model.Password;
-                    user.Registered = true;
-                    _membershipProvider.AddCredentialsToAccount(user);
+                    RavenSession.Store(new Person
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            UserId = user.Id,
+                            EmailAddress = model.EmailAddress,
+                            Name = model.Name
+                        });
+                    _membershipProvider.CreateAccount(user);
                     _membershipProvider.Login(user.Username, model.Password);
                     Session["UserId"] = null;
                     return RedirectToLocal(returnUrl);
@@ -271,11 +274,16 @@ namespace geeks.Controllers
             if (User.Identity.IsAuthenticated)
             {
                 // If the current user is logged in add the new account
-                _oAuthProvider.CreateOAuthAccount(result.Provider, result.ProviderUserId, new User()
+                var user = new User()
                     {
-                        Username = User.Identity.Name, 
-                        Registered = true,
-                        Id = Guid.NewGuid().ToString()
+                        Username = User.Identity.Name, Id = Guid.NewGuid().ToString()
+                    };
+                _oAuthProvider.CreateOAuthAccount(result.Provider, result.ProviderUserId, user);
+                RavenSession.Store(new Person
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        UserId = user.Id,
+                        EmailAddress = user.Username
                     });
                 return RedirectToLocal(returnUrl);
             }
@@ -311,14 +319,18 @@ namespace geeks.Controllers
             {
                 if (!_membershipProvider.HasLocalAccount(model.UserName))
                 {
-                    _oAuthProvider.CreateOAuthAccount(provider, providerUserId, new User
+                    var user = new User
                         {
-                            Username = model.UserName, 
-                            Registered = true,
-                            Id = Guid.NewGuid().ToString()
-                        });
+                            Username = model.UserName, Id = Guid.NewGuid().ToString()
+                        };
+                    _oAuthProvider.CreateOAuthAccount(provider, providerUserId, user);
                     _oAuthProvider.OAuthLogin(provider, providerUserId, persistCookie: false);
-
+                    RavenSession.Store(new Person
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            UserId = user.Id,
+                            EmailAddress = user.Username
+                        });
                     return RedirectToLocal(returnUrl);
                 }
                 else

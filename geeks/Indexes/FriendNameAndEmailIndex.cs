@@ -13,19 +13,4 @@ namespace geeks.Indexes
         public string FriendUsername { get; set; }
         public string FriendName { get; set; }    
     }
-
-    public class FriendNameAndEmailIndex : AbstractIndexCreationTask<User>
-    {
-        public FriendNameAndEmailIndex()
-        {
-            Map = users => from u in users
-                           from f in u.Friends
-                           select new UserAndFriend
-                               {
-                                   Username = u.Username,
-                                   FriendUsername = LoadDocument<User>(f.UserId).Username,
-                                   FriendName = LoadDocument<User>(f.UserId).Name
-                               };
-        }
-    }
 }

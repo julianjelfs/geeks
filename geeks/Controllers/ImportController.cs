@@ -182,34 +182,39 @@ namespace geeks.Controllers
 
         private void ImportContacts(GoogleContact gc, List<ImportModel> contacts)
         {
-            var user = GetCurrentUser();
+            var person = GetCurrentPerson();
             var emails = new HashSet<string>(from m in contacts.Distinct() select m.EmailAddress);
-            var users = RavenSession.Query<User>()
-                            .Where(u => u.Username.In(emails))
-                                    .ToDictionary(u => u.Username);
+
+            //do we have paerson records that match these people
+            var people = RavenSession.Query<Person>()
+                            .Where(u => u.EmailAddress.In(emails))
+                                    .ToDictionary(u => u.EmailAddress);
 
             using (var bulkInsert = Store.BulkInsert())
             {
                 foreach (var importModel in contacts)
                 {
+                    //don't import yourself
                     if (importModel.EmailAddress == User.Identity.Name) continue;
-                    if (users.ContainsKey(importModel.EmailAddress)) continue;
+                    
+                    //if we already have a person record for this address
+                    if (people.ContainsKey(importModel.EmailAddress)) continue;
 
-                    var newUser = new User
+                    var newPerson = new Person
                     {
-                        Username = importModel.EmailAddress,
+                        EmailAddress = importModel.EmailAddress,
                         Name = importModel.Name,
                         Id = Guid.NewGuid().ToString()
                     };
-                    bulkInsert.Store(newUser);
-                    users.Add(newUser.Username, newUser);
+                    bulkInsert.Store(newPerson);
+                    people.Add(newPerson.EmailAddress, newPerson);
                 }
 
-                user.Friends = user.Friends.Union(from i in contacts
-                                                  where !user.Friends.Any(f => f.UserId == users[i.EmailAddress].Id)
+                person.Friends = person.Friends.Union(from i in contacts
+                                                  where !person.Friends.Any(f => f.PersonId == people[i.EmailAddress].Id)
                                                   select new Friend
                                                   {
-                                                      UserId = users[i.EmailAddress].Id
+                                                      PersonId = people[i.EmailAddress].Id
                                                   }).ToList();
             }
             RavenSession.Delete(gc);
@@ -223,49 +228,6 @@ namespace geeks.Controllers
             var gc = RavenSession.Query<GoogleContact>().FirstOrDefault(c => c.UserId == user.Id);
             var contacts = gc.Contacts.Where(m => m.EmailAddress != User.Identity.Name).ToList();
             ImportContacts(gc, contacts);
-        }
-
-
-        [Authorize]
-        [ValidateAntiForgeryToken]
-        public virtual ActionResult PerformImport(List<ImportModel> model)
-        {
-            var user = GetCurrentUser();
-            
-            model = model.Where(m => m.EmailAddress != User.Identity.Name
-                                     && m.Import).ToList();
-
-            var emails = new HashSet<string>(from m in model.Distinct() select m.EmailAddress);
-            var users = RavenSession.Query<User>()
-                            .Where(u => u.Username.In(emails))
-                                    .ToDictionary(u => u.Username);
-
-            using (var bulkInsert = Store.BulkInsert())
-            {
-                foreach (var importModel in model)
-                {
-                    if (importModel.EmailAddress == User.Identity.Name) continue;
-                    if (users.ContainsKey(importModel.EmailAddress)) continue;
-
-                    var newUser = new User
-                        {
-                            Username = importModel.EmailAddress,
-                            Name = importModel.Name,
-                            Id = Guid.NewGuid().ToString()
-                        };
-                    bulkInsert.Store(newUser);
-                    users.Add(newUser.Username, newUser);
-                }
-
-                user.Friends = user.Friends.Union(from i in model
-                                                  where !user.Friends.Any(f => f.UserId == users[i.EmailAddress].Id)
-                                                  select new Friend
-                                                      {
-                                                          UserId = users[i.EmailAddress].Id
-                                                      }).ToList();
-            }
-
-            return RedirectToAction("Friends", "Home");
         }
     }
 }

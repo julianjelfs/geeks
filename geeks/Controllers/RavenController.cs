@@ -38,10 +38,32 @@ namespace geeks.Controllers
             }
             return Session["UserId"] as string;
         }
+        
+        protected string GetCurrentPersonId()
+        {
+            if (Session["PersonId"] == null)
+            {
+                var person = RavenSession.Query<Person>()
+                                .FirstOrDefault(p => p.UserId == GetCurrentUserId());
+
+                if (person == null)
+                {
+                    throw new ApplicationException(string.Format("Unknown person {0}", User.Identity.Name));
+                }
+                Session["PersonId"] = person.Id;
+            }
+            return Session["PersonId"] as string;
+        }
 
         protected User GetCurrentUser()
         {
             return RavenSession.Load<User>(GetCurrentUserId());
+        }
+        
+        protected Person GetCurrentPerson()
+        {
+            return RavenSession.Query<Person>()
+                .FirstOrDefault(person => person.UserId == GetCurrentUserId());
         }
 
         protected override void OnActionExecuted(ActionExecutedContext filterContext)
@@ -59,31 +81,29 @@ namespace geeks.Controllers
             }
         }
 
-        protected IEnumerable<UserFriend> UsersFromFriends(string userId, 
+        protected IEnumerable<PersonFriend> PersonsFromFriends(string personId, 
             int pageIndex, 
             int pageSize, 
             out int totalPages,
             string friendSearch,
             bool unratedFriends)
         {
-            var user = RavenSession.Include<User>(u=>u.Friends.Select(f=>f.UserId))
-                       .Load<User>(userId);
+            var person = RavenSession.Include<Person>(u=>u.Friends.Select(f=>f.PersonId))
+                       .Load<Person>(personId);
 
-            
-
-            var result = (from f in user.Friends
-                            let u = RavenSession.Load<User>(f.UserId)
+            var result = (from f in person.Friends
+                            let p = RavenSession.Load<Person>(f.PersonId)
                             where (string.IsNullOrEmpty(friendSearch)
-                                || (u.Username != null && u.Username.Contains(friendSearch))
-                                || (u.Name != null && u.Name.Contains(friendSearch)))
+                                || (p.EmailAddress != null && p.EmailAddress.Contains(friendSearch))
+                                || (p.Name != null && p.Name.Contains(friendSearch)))
                                 && (f.Rating == 0 || !unratedFriends)
-                            select new UserFriend
+                            select new PersonFriend
                                 {
-                                    UserId = u.Id, 
-                                    Name = u.Name, 
-                                    Email = u.Username, 
+                                    PersonId = p.Id, 
+                                    Name = p.Name, 
+                                    Email = p.EmailAddress, 
                                     Rating = f.Rating,
-                                    GravatarLink = GravatarHelper.GravatarHelper.CreateGravatarUrl(u.Username, 30, "http://dl.dropbox.com/u/26218407/logo-small.png", null, null, null)
+                                    GravatarLink = GravatarHelper.GravatarHelper.CreateGravatarUrl(p.EmailAddress, 30, "http://dl.dropbox.com/u/26218407/logo-small.png", null, null, null)
                                 }).OrderBy(friend => friend.Name);
 
             totalPages = (int)Math.Ceiling((double)result.Count() / pageSize);
