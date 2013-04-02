@@ -24,7 +24,6 @@ namespace geeks.Models
         public Event(EventModel model)
         {
             Id = model.Id;
-            Title = model.Title;
             Description = model.Description;
             Date = model.Date;
             Venue = model.Venue;
@@ -43,13 +42,11 @@ namespace geeks.Models
         }
 
         public string Id { get; set; }
-        public string Title { get; set; }
         public string Description { get; set; }
         public DateTime Date { get; set; }
         public string Venue { get; set; }
         public string CreatedBy { get; set; }
         public IEnumerable<Invitation> Invitations { get; set; }
-
         public double Latitude { get; set; }
         public double Longitude { get; set; }
     }
@@ -67,11 +64,6 @@ namespace geeks.Models
 
         public string Id { get; set; }
 
-        [Required]
-        [DataType(DataType.Text)]
-        [Display(Name = "Title")]
-        public string Title { get; set; }
-        
         [Required]
         [DataType(DataType.MultilineText)]
         [Display(Name = "Description")]

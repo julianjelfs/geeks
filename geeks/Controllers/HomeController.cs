@@ -9,6 +9,7 @@ using Raven.Client.Linq;
 
 namespace geeks.Controllers
 {
+    [ValidateAntiForgeryTokenOnAllPosts]
     public class HomeController : RavenController
     {
         private readonly IEmailer _emailer;
@@ -35,7 +36,6 @@ namespace geeks.Controllers
         
         [HttpPost]
         [Authorize]
-        [ValidateAntiForgeryToken]
         public ActionResult SearchFriends(string friendSearch, bool unratedFriends)
         {
             return RedirectToAction("Friends", new { friendSearch, unratedFriends });
@@ -61,17 +61,16 @@ namespace geeks.Controllers
                     CreatedBy = ev.CreatedBy,
                     Date = ev.Date,
                     Description = ev.Description,
-                    Title = ev.Title,
                     Latitude = ev.Latitude,
                     Longitude = ev.Longitude,
                     Venue = ev.Venue,
                     Invitations = (from i in ev.Invitations
-                               let user = RavenSession.Load<User>(i.PersonId)
+                               let person = RavenSession.Load<Person>(i.PersonId)
                                let friend = GetFriendFromPerson(currentPerson, i.PersonId)
                                select new InvitationModel
                                    {
-                                       Email = user.Username,
-                                       PersonId = user.Id,
+                                       Email = person.EmailAddress,
+                                       PersonId = person.Id,
                                        Rating = friend == null ? 0 : friend.Rating,
                                        EmailSent = i.EmailSent
                                    }).ToList()
@@ -87,7 +86,6 @@ namespace geeks.Controllers
 
         [HttpPost]
         [Authorize]
-        [ValidateAntiForgeryToken]
         public virtual ActionResult Event(EventModel model)
         {
             if (ModelState.IsValid)
@@ -130,7 +128,6 @@ namespace geeks.Controllers
 
         [HttpPost]
         [Authorize]
-        [ValidateAntiForgeryToken]
         public void DeleteEvent(int id)
         {
             var model = RavenSession.Load<EventModel>(id);
@@ -142,7 +139,6 @@ namespace geeks.Controllers
 
         [HttpPost]
         [Authorize]
-        [ValidateAntiForgeryToken]
         public virtual void DeleteAllFriends(string id)
         {
             GetCurrentPerson().Friends.Clear();
@@ -150,7 +146,6 @@ namespace geeks.Controllers
 
         [HttpPost]
         [Authorize]
-        [ValidateAntiForgeryToken]
         public virtual void AddFriend(string name, string email)
         {
             var person = CreatePersonDocumentIfNecessary(name, email);
@@ -168,7 +163,6 @@ namespace geeks.Controllers
         
         [HttpPost]
         [Authorize]
-        [ValidateAntiForgeryToken]
         public virtual void RateFriend(string id, string rating)
         {
             var me = RavenSession.Query<Person>()
@@ -210,7 +204,6 @@ namespace geeks.Controllers
 
         [HttpPost]
         [Authorize]
-        [ValidateAntiForgeryToken]
         public virtual void DeleteFriend(string id)
         {
             GetCurrentPerson().Friends.RemoveAll(f => f.PersonId == id);
@@ -250,8 +243,8 @@ namespace geeks.Controllers
             var dict = new Dictionary<string, object>();
             foreach (var match in matches.Where(match => !dict.ContainsKey(match.Email)))
                 dict.Add(match.Email, new {
-                    personId = match.PersonId,
-                    rating = match.Rating
+                    match.PersonId, 
+                    match.Rating
                 });
             return Json(dict,  JsonRequestBehavior.AllowGet);
         }

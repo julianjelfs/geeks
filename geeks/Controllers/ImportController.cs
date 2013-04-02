@@ -33,6 +33,7 @@ namespace geeks.Controllers
         }
     }
 
+    [ValidateAntiForgeryTokenOnAllPosts]
     public class ImportController : RavenController
     {
         private static readonly WebServerClient client = AuthHelper.CreateClient();
@@ -172,7 +173,6 @@ namespace geeks.Controllers
          */
 
         [Authorize]
-        [ValidateAntiForgeryToken]
         public void ImportSelected(List<string> contacts)
         {
             var user = GetCurrentUser();
@@ -221,7 +221,6 @@ namespace geeks.Controllers
         }
 
         [Authorize]
-        [ValidateAntiForgeryToken]
         public void ImportAll()
         {
             var user = GetCurrentUser();

@@ -1,61 +1,38 @@
-﻿@model geeks.Models.EventModel
-
-@{
+﻿@{
     ViewBag.Title = "Event";
 }
 
 <div id="event-content" class="content ng-scope" ng-controller="EventCtrl">
-    @using (Html.BeginForm())
-    {
+    <form class="form" name="form">
         @Html.AntiForgeryToken()
-        @Html.ValidationSummary(true)
-        @Html.HiddenFor(model => model.CreatedBy)
+
         <input id="Longitude" name="Longitude" type="hidden" value="{{theEvent.position.nb}}" />
         <input id="Latitude" name="Latitude" type="hidden" value="{{theEvent.position.mb}}" />
+    
         <div class="row-fluid">
             <div class="span6">
                 <fieldset>
                     <legend class="geek">Enter details to create a new event</legend>
-                    @Html.ValidationMessageFor(m => m.Title)
-                    @Html.TextBoxFor(m => m.Title, htmlAttributes: new {@class = "input-xxlarge input-block-level", @placeholder = "Title", @style = "width:100%"})
-                    @Html.ValidationMessageFor(m => m.Description)
-                    @Html.TextAreaFor(m => m.Description, htmlAttributes: new {@class = "input-xxlarge input-block-level", @placeholder = "Description", @style = "width:100%"})
-                    @Html.ValidationMessageFor(m => m.Date)
-                    @Html.TextBoxFor(m => m.Date, htmlAttributes: new {@class = "input-xxlarge input-block-level", @placeholder = "Date and time", @style = "width:100%"})
-                    <br/>
-                    @Html.ValidationMessageFor(m => m.Venue)
-                    @Html.TextBoxFor(m => m.Venue, htmlAttributes: new {@class = "input-xxlarge input-block-level", @placeholder = "Venue", @style = "width:100%"})
-                    <br/>
-
+                    <textarea rows="4" ng-model="model.Description" placeholder="Description" required class="input-xxlarge input-block-level"></textarea>
+                    <input type="datetime" ng-model="model.Date" class="input-xxlarge input-block-level" placeholder="Date and time" required/>
+                    <input type="text" ng-model="model.Venue" class="input-xxlarge input-block-level" placeholder="Venue" required />
                     <div id="map-canvas" ui-map="eventMap" class="map"
                          ui-event="{'map-click': 'moveMarker($event)' }"
                          ui-options="mapOptions">
                     </div>
                     <br/>
-                    <button class="btn" type="submit">Save</button>
+                    <button class="btn" type="submit" ng-click="submit()">Save</button>
                 </fieldset>
                 
             </div>
             <div class="span6">
                 <fieldset>
                     <legend class="geek">Who's invited</legend>
-                    <input class="typeahead" type="text" placeholder="Type here to find friends to add" data-provide="typeahead" autocomplete="false" style="width: 98%" />
-                    <div id="friends-placeholder">
-                        <div id="invitees" class="well well-small">
-                            <div ng-repeat="invitee in invitees" class="alert alert-info">
-                                <button ng-click="remove(invitee.personId)" type="button" class="close" data-dismiss="alert">&times;</button>
-                                {{invitee.email}}
-                                <span title="Rate your friend" data-personId="{{invitee.personId}}" class="rank-friend pull-right badge {{badgeClass(invitee)}}">{{invitee.rating}}</span>
-                                <input type='hidden' name='Invitations[{{$index}}].UserId' value='{{invitee.personId}}' />
-                                <input type='hidden' name='Invitations[{{$index}}].EmailSent' value='{{invitee.emailSent}}' />
-                            </div>
-                            <span ng-show="unratedFriends()">Make sure you rate all friends that you invite for the best result</span>
-                        </div>
-                    </div>
+                    <friend-picker></friend-picker>
                 </fieldset>
             </div>
         </div>
-    }
+    </form>
 </div>
 
 @section scripts{
@@ -63,15 +40,8 @@
     <script type="text/javascript">
         $("#nav-bar li.active").removeClass("active");
         $("#events-nav").addClass("active");
-        
-        //angular.module('geeks', ['ui']);
 
-        $(function() {
-            angular.bootstrap(document);
-            enablePopovers('@Url.Action("RateFriend", "Home")', 'span');
-        });
-
-        function EventCtrl($scope) {
+        function EventCtrl($scope, $http, xsrfPost) {
             $scope.zoom = 12;
 
             $scope.$on("linked", function() {
@@ -95,78 +65,19 @@
                 marker.setPosition(new google.maps.LatLng(lat, lng));
             };
 
-            $scope.invitees = [];
-            @if (Model.Invitations.Any())
-            {
-                for (int i = 0; i < Model.Invitations.Count; i++)
-                {
-                    <text>
-                    $scope.invitees.push({ 
-                        personId: '@Model.Invitations[i].PersonId', 
-                        email: '@Model.Invitations[i].Email', 
-                        rating: '@Model.Invitations[i].Rating',
-                        emailSent: @Model.Invitations[i].EmailSent.ToString().ToLower()
-                    });
-                    </text>
-                }
-            };
-
-            $scope.unratedFriends = function() {
-                return $.grep($scope.invitees, function(item) {
-                    return item.rating == 0;
-                }).length > 0;
-            };
-
-            $scope.badgeClass = function(invitee) {
-                return invitee.rating > 0 ? "badge-warning" : "";
-            };
-
-            $scope.add = function(obj) {
-                $scope.invitees.push({
-                    email: obj.email,
-                    userId: obj.userId,
-                    rating: obj.rating,
-                    emailSent: obj.emailSent
-                });
-                setTimeout(function() {
-                    enablePopovers('@Url.Action("RateFriend", "Home")', 'span');
-                }, 100);
-            };
-
-            $scope.remove = function(userId) {
-                $scope.invitees = $.grep($scope.invitees, function(item) {
-                    return item.userId != userId;
-                });
-            };
-        }
-
-        $(function() {
-            var map = {};
-            $('.typeahead').typeahead({
-                updater: function(item) {
-                    var scope = angular.element("#event-content").scope();
-                    scope.$apply(function() {
-                        scope.add({
-                            userId: map[item].userId,
-                            email: item,
-                            rating: map[item].rating,
-                            emailSent: false
-                        });
-                    });
-                    enablePopovers();
-                    return "";
-                },
-                source: function(query, process) {
-                    return $.get('@Url.Action("LookupFriends", "Home")', { query: query }, function(data) {
-                        var emails = [];
-                        map = data;
-                        for (var prop in data) {
-                            emails.push(prop);
+            $scope.submit = function() {
+                if ($scope.form.$valid) {
+                    xsrfPost.post("/geeks/Home/Event", {
+                        model: {
+                            Description: $scope.model.Description,
+                            Latitiude: $scope.theEvent.position.mb,
+                            Longitude: $scope.theEvent.position.nb,
+                            Venue: $scope.model.Venue,
+                            Invitations: $scope.invitees
                         }
-                        return process(emails);
                     });
                 }
-            });
-        });
+            }
+        }
     </script>
 }

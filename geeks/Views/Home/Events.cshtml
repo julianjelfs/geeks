@@ -17,7 +17,7 @@
         <table class="table table-hover">
             <thead>
                 <tr>
-                    <th>Title</th>
+                    <th>Description</th>
                     <th>Venue</th>
                     <th>Created By</th>
                     <th width="40px"></th>
@@ -29,7 +29,7 @@
                 @foreach (EventModel ev in Model)
                 {
                     <tr>
-                        <td>@ev.Title</td>
+                        <td>@ev.Description</td>
                         <td>@ev.Venue</td>
                         <td>@ev.CreatedByUserName</td>
                         <td>

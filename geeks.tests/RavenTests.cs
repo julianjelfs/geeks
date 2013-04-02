@@ -64,21 +64,5 @@ namespace geeks.tests
                 Console.WriteLine("User: {0}", user);
             }
         }
-
-        [Test]
-        public void EventsAndInvitees()
-        {
-            var events = _session.Query<Event>().Include<Event>(e => e.Invitations);
-
-            foreach (var ev in events)
-            {
-                Console.WriteLine("Event:{0}", ev.Title);
-                foreach (var inv in ev.Invitations)
-                {
-                    var user = _session.Load<User>(inv.PersonId);
-                    Console.WriteLine("Invitee:{0}", user);
-                }
-            }
-        }
     }
 }
