@@ -1,52 +1,48 @@
-﻿@using geeks.Models
-@model IEnumerable<geeks.Models.EventModel>
-
-@{
-    ViewBag.Title = "Events";
-}
-
-<div class="content">
+﻿<div class="content" ng-controller="EventsCtrl">
     <h2 class="geek">Events</h2>
-    
-    @Html.ActionLink("Create an event", "Event", "Home", htmlAttributes: new {@id = "add-event", @class = "btn"})
-    
+	
+	@Html.AntiForgeryToken()
+	
     <p></p>
+	
+	<div class="btn-group pull-right">
+        <a ng-class="prevClass" ng-click="prev()">Prev</a>
+        <a ng-class="nextClass" ng-click="next()">Next</a>
+	    <a class="btn" href="/geeks/home/event">Create an event</a>
+    </div>
     
-    @if (Model.Any())
-    {
+    <input style="margin-left:10px;margin-right: 10px" class="pull-right" type="text" ng-change="searchArgs.pageIndex = 0;search()" placeholder="Search" ng-model="searchArgs.friendSearch" />
+
+	<div id="table-placeholder" ng-show="events.length > 0">
+        
         <table class="table table-hover">
             <thead>
                 <tr>
                     <th>Description</th>
                     <th>Venue</th>
-                    <th>Created By</th>
-                    <th width="40px"></th>
+                    <th>Organiser</th>
+                    <th>When</th>
                     <th width="40px"></th>
                     <th width="40px"></th>
                 </tr>
             </thead>
             <tbody>
-                @foreach (EventModel ev in Model)
-                {
-                    <tr>
-                        <td>@ev.Description</td>
-                        <td>@ev.Venue</td>
-                        <td>@ev.CreatedByUserName</td>
-                        <td>
-                            @Html.ActionLink("Edit", "Event", "Home", routeValues: new {id = @ev.Id}, htmlAttributes: new {@id = "edit-event", @class = "btn btn-block"})
-                        </td>
-                        <td>
-                            <a href="#delete-warning" role="button" class="delete-event btn" data-eventid="@ev.Id"><i class="icon-trash"></i></a>
-                        </td>
-                        <td>
-                            <a href="#reschedule" role="button" class="reschedule-event btn" data-toggle="modal"><i class="icon-calendar"></i></a>
-                        </td>
-                    </tr>
-                }
+                <tr ng-repeat="ev in events">
+                    <td truncate="30" ng-bind="ev.Description"></td>
+                    <td truncate="30" ng-bind="ev.Venue"></td>
+                    <td ng-bind="ev.CreatedByUserName"></td>
+                    <td>{{ev.Date | date:'dd/MM/yyyy at h:mma'}}</td>
+                    <td>
+                        <a class="btn" href="/geeks/home/event/{{ev.Id}}">Edit</a>
+                    </td>
+                    <td>
+                        <delete-event warning="#delete-warning"></delete-event>
+                    </td>
+                </tr>
             </tbody>
         </table>
-
-        <div id="delete-warning" class="modal hide fade">
+        
+		<div id="delete-warning" class="modal hide fade">
             <div class="modal-header">
                 <h3 class="geek">Cancel Event</h3>
             </div>
@@ -58,28 +54,12 @@
                 </p>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">No</button>
-                <input id="delete-event" type="button" class="btn" value="Yes"/>
+                <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">No</button>
+                <input id="delete-event" type="button" class="btn" value="Yes" ng-click="deleteEvent()"/>
             </div>
         </div>
-
-        <div id="reschedule" class="modal hide fade">
-            <div class="modal-header">
-                <h3 class="geek">Reschedule Event</h3>
-            </div>
-            <div class="modal-body">
-                <p>
-                    We'll have a calendar here to pick a new date and time 
-                    and then it will send out change emails.
-                </p>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">Done</button>
-            </div>
-        </div>
-    }
-    
-    @Html.AntiForgeryToken()
+        
+	</div>
 
 </div>
 

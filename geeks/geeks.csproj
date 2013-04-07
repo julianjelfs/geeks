@@ -551,13 +551,9 @@
     <Content Include="Views\Import\Import.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Views\Shared\FriendsTable.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="App_Readme\Handlebarsjs_LICENSE" />
     <None Include="App_Readme\Handlebarsjs_README.md" />
     <None Include="Scripts\jquery-1.9.1.min.map" />
-    <Content Include="Views\Shared\FriendsPager.cshtml" />
     <Content Include="Views\Shared\AddFriend.cshtml" />
     <Content Include="Views\Home\Calendar.cshtml" />
     <Content Include="Views\Shared\_PjaxLayout.cshtml" />

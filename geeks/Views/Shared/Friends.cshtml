@@ -110,18 +110,18 @@
 
         var app = angular.module("geeks");
         app.controller("FriendsCtrl", function($scope, $http, listData, xsrfPost) {
-        
+
             $scope.searchArgs = {
                 pageIndex: 0,
                 pageSize: 10,
                 friendSearch: null,
                 unratedFriends: false
             };
-            
+
             $scope.addFriend = function() {
                 xsrfPost.post('/geeks/Home/AddFriend/', {
-                    name : $scope.newFriend.name,
-                    email : $scope.newFriend.email
+                    name: $scope.newFriend.name,
+                    email: $scope.newFriend.email
                 }).success(function() {
                     angular.element("#add-friend").modal("hide");
                     $scope.search();
@@ -165,7 +165,7 @@
             return {
                 restrict: "E",
                 replace: true,
-                template : "<button class='btn' ng-click='showAddFriend()'><i class='icon icon-plus'></i></button>",
+                template: "<button class='btn' ng-click='showAddFriend()'><i class='icon icon-plus'></i></button>",
                 link: function(scope, el, atts) {
                     scope.showAddFriend = function() {
                         angular.element("#add-friend").modal("show");
@@ -182,18 +182,6 @@
                         scope.$parent.selectedFriend = scope.friend;
                         angular.element(atts.warning).modal("show");
                     };
-                }
-            };
-        }).directive("truncate", function() {
-            return {
-                priority: -1,
-                link: function(scope, el, atts) {
-                    scope.$watch(atts.ngBind, function(value) {
-                        var len = parseInt(atts.truncate);
-                        el.text(value == undefined
-                            ? '' : (value.length > len
-                                ? value.substring(0, len) + '...' : value));
-                    });
                 }
             };
         });

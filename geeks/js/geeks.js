@@ -12,7 +12,6 @@ app.factory("listData", function($http) {
             var config = {
                 headers: { '__RequestVerificationToken': angular.element("input[name='__RequestVerificationToken']").val() }
             };
-            debugger;
             return $http.post(url, args, config);
         }
     };
@@ -126,6 +125,18 @@ app.factory("listData", function($http) {
                     el.popover("hide");
                 });
             };
+        }
+    };
+}).directive("truncate", function() {
+    return {
+        priority: -1,
+        link: function(scope, el, atts) {
+            scope.$watch(atts.ngBind, function(value) {
+                var len = parseInt(atts.truncate);
+                el.text(value == undefined
+                    ? '' : (value.length > len
+                        ? value.substring(0, len) + '...' : value));
+            });
         }
     };
 });

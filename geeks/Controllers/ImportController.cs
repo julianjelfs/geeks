@@ -33,7 +33,7 @@ namespace geeks.Controllers
         }
     }
 
-    [ValidateAntiForgeryTokenOnAllPosts]
+    [ValidateJsonAntiForgeryToken]
     public class ImportController : RavenController
     {
         private static readonly WebServerClient client = AuthHelper.CreateClient();

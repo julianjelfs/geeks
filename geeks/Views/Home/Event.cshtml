@@ -44,15 +44,8 @@
         function EventCtrl($scope, $http, xsrfPost) {
             $scope.zoom = 12;
 
-            $scope.$on("linked", function() {
-                $scope.theEvent = new google.maps.Marker({
-                    map: $scope.eventMap,
-                    position: new google.maps.LatLng(@Model.Latitude, @Model.Longitude)
-                });
-            });
-
             $scope.mapOptions = {
-                center: new google.maps.LatLng(@Model.Latitude, @Model.Longitude),
+                center: new google.maps.LatLng(51.509, -0.115),
                 zoom: $scope.zoom,
                 mapTypeId: google.maps.MapTypeId.ROADMAP
             };
@@ -67,7 +60,7 @@
 
             $scope.submit = function() {
                 if ($scope.form.$valid) {
-                    xsrfPost.post("/geeks/Home/Event", {
+                    xsrfPost.post("/geeks/Home/SaveEvent", {
                         model: {
                             Description: $scope.model.Description,
                             Latitiude: $scope.theEvent.position.mb,
@@ -77,7 +70,16 @@
                         }
                     });
                 }
-            }
+            };
+
+            $http.get("/geeks/Home/EventData").success(function(data, status) {
+                $scope.model = data;
+                $scope.theEvent = new google.maps.Marker({
+                    map: $scope.eventMap,
+                    position: new google.maps.LatLng(data.Latitude, data.Longitude)
+                });
+            });
+
         }
     </script>
 }

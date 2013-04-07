@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Text;
+using System.Web;
 using System.Web.Mvc;
+using Newtonsoft.Json;
 using Raven.Client;
 using geeks.Models;
 using geeks.Services;
@@ -9,7 +13,47 @@ using Raven.Client.Linq;
 
 namespace geeks.Controllers
 {
-    [ValidateAntiForgeryTokenOnAllPosts]
+    public class JsonNetResult : ActionResult
+    {
+        public Encoding ContentEncoding { get; set; }
+        public string ContentType { get; set; }
+        public object Data { get; set; }
+
+        public JsonSerializerSettings SerializerSettings { get; set; }
+        public Formatting Formatting { get; set; }
+
+        public JsonNetResult()
+        {
+            SerializerSettings = new JsonSerializerSettings();
+        }
+
+        public override void ExecuteResult(ControllerContext context)
+        {
+            if (context == null)
+                throw new ArgumentNullException("context");
+
+            var response = context.HttpContext.Response;
+
+            response.ContentType = !string.IsNullOrEmpty(ContentType)
+              ? ContentType
+              : "application/json";
+
+            if (ContentEncoding != null)
+                response.ContentEncoding = ContentEncoding;
+
+            if (Data != null)
+            {
+                var writer = new JsonTextWriter(response.Output) { Formatting = Formatting };
+
+                var serializer = JsonSerializer.Create(SerializerSettings);
+                serializer.Serialize(writer, Data);
+
+                writer.Flush();
+            }
+        }
+    }
+
+    [ValidateJsonAntiForgeryToken]
     public class HomeController : RavenController
     {
         private readonly IEmailer _emailer;
@@ -41,15 +85,41 @@ namespace geeks.Controllers
             return RedirectToAction("Friends", new { friendSearch, unratedFriends });
         }
 
+        public virtual ActionResult Event()
+        {
+            return View();
+        }
+
+        protected JsonNetResult JsonNet(object data)
+        {
+            return new JsonNetResult
+                {
+                    Data = data
+                };
+        }
+
         [Authorize]
-        public virtual ActionResult Event(string id, string userId)
+        public virtual JsonNetResult EventData(string id, string userId)
         {
             if (!string.IsNullOrEmpty(id))
             {
                 var ev = RavenSession.Include<Event>(e => e.Invitations).Load<Event>(id);
-                return View(EventModelFromEvent(ev, GetCurrentPerson()));
+                return JsonNet(EventModelFromEvent(ev, GetCurrentPerson()));
             }
-            return View(new EventModel{ CreatedBy = GetCurrentUserId()});
+            return JsonNet(new EventModel{ CreatedBy = GetCurrentUserId()});
+        }
+
+
+        [HttpPost]
+        [Authorize]
+        public virtual HttpStatusCodeResult SaveEvent(EventModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                model.CreatedBy = GetCurrentUserId();
+                RavenSession.Store(SendEmailToInvitees(new Event(model)));
+            }
+            return new HttpStatusCodeResult(HttpStatusCode.OK);
         }
 
         private EventModel EventModelFromEvent(Event ev, Person currentPerson = null)
@@ -84,19 +154,6 @@ namespace geeks.Controllers
             return person.Friends.SingleOrDefault(f => f.PersonId == friendPersonId);
         }
 
-        [HttpPost]
-        [Authorize]
-        public virtual ActionResult Event(EventModel model)
-        {
-            if (ModelState.IsValid)
-            {
-                model.CreatedBy = GetCurrentUserId();
-                RavenSession.Store(SendEmailToInvitees(new Event(model)));
-                return RedirectToAction("Events");
-            }
-            return View(EventModelFromEvent(new Event(model)));
-        }
-
         private Event SendEmailToInvitees(Event ev)
         {
             var invitees = ev.Invitations.ToArray();
@@ -115,7 +172,7 @@ namespace geeks.Controllers
         }
 
         [Authorize]
-        public virtual ActionResult Events()
+        public virtual JsonNetResult EventsData(int pageIndex = 0, int pageSize = 10, string search = null)
         {
             var evs = RavenSession.Query<Event>()
                                   .Include<Event>(e => e.Invitations)
@@ -123,7 +180,20 @@ namespace geeks.Controllers
                                   .Where(e => e.CreatedBy == GetCurrentUserId())
                                   .ToList();
             var models = (from e in evs select EventModelFromEvent(e)).ToList();
-            return View(models);
+            var total = (int)Math.Ceiling((double)models.Count() / pageSize);
+            return JsonNet(new
+            {
+                Events = models.Skip(pageIndex * pageSize).Take(pageSize),
+                NumberOfPages = total,
+                SearchTerm = search,
+                PageIndex = pageIndex
+            });
+        }
+
+        [Authorize]
+        public virtual ActionResult Events()
+        {
+            return View();
         }
 
         [HttpPost]
@@ -193,17 +263,9 @@ namespace geeks.Controllers
             return person;
         }
 
-        private PartialViewResult FirstPageOfFriends()
-        {
-            ViewBag.PageIndex = 0;
-            int total = 0;
-            var friends = FriendsInternal(0, 10, out total, null, false);
-            ViewBag.NumberOfPages = total;
-            return PartialView("FriendsTable", friends);
-        }
-
         [HttpPost]
         [Authorize]
+        [ValidateJsonAntiForgeryToken]
         public virtual void DeleteFriend(string id)
         {
             GetCurrentPerson().Friends.RemoveAll(f => f.PersonId == id);
@@ -215,18 +277,18 @@ namespace geeks.Controllers
         }
 
         [Authorize]
-        public virtual JsonResult FriendsData(int pageIndex = 0, int pageSize = 10, string friendSearch = null, bool unratedFriends = false)
+        public virtual JsonNetResult FriendsData(int pageIndex = 0, int pageSize = 10, string friendSearch = null, bool unratedFriends = false)
         {
             int total = 0;
             var friends = FriendsInternal(pageIndex, pageSize, out total, friendSearch, unratedFriends);
-            return Json(new
+            return JsonNet(new
             {
                 Friends = friends,
                 NumberOfPages = total,
                 SearchTerm = friendSearch,
                 Unrated = unratedFriends,
                 PageIndex = pageIndex
-            }, JsonRequestBehavior.AllowGet);
+            });
         }
 
         [Authorize]
@@ -236,7 +298,7 @@ namespace geeks.Controllers
         }
 
         [Authorize]
-        public JsonResult LookupFriends(string query)
+        public JsonNetResult LookupFriends(string query)
         {
             var totalPages = 0;
             var matches = PersonsFromFriends(GetCurrentPersonId(), 0, 100, out totalPages, query, false);
@@ -246,7 +308,7 @@ namespace geeks.Controllers
                     match.PersonId, 
                     match.Rating
                 });
-            return Json(dict,  JsonRequestBehavior.AllowGet);
+            return JsonNet(dict);
         }
     }
 }
