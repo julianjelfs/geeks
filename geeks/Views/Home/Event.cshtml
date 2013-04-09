@@ -1,11 +1,7 @@
-﻿@{
-    ViewBag.Title = "Event";
-}
-
-<div id="event-content" class="content ng-scope" ng-controller="EventCtrl">
+﻿<div id="event-content" class="content ng-scope" ng-controller="EventCtrl">
     <form class="form" name="form">
         @Html.AntiForgeryToken()
-
+		
         <input id="Longitude" name="Longitude" type="hidden" value="{{theEvent.position.nb}}" />
         <input id="Latitude" name="Latitude" type="hidden" value="{{theEvent.position.mb}}" />
     
@@ -43,6 +39,7 @@
 
         function EventCtrl($scope, $http, xsrfPost) {
             $scope.zoom = 12;
+            $scope.eventId = "@ViewBag.EventId";
 
             $scope.mapOptions = {
                 center: new google.maps.LatLng(51.509, -0.115),
@@ -51,7 +48,10 @@
             };
 
             $scope.moveMarker = function($event) {
+                console.log("moving marker to " + $event.latLng);
                 $scope.theEvent.setPosition($event.latLng);
+                console.log("Lat: " + $scope.theEvent.position.lat());
+                console.log("Long: " + $scope.theEvent.position.lng());
             };
 
             $scope.setMarkerPosition = function(marker, lat, lng) {
@@ -62,22 +62,28 @@
                 if ($scope.form.$valid) {
                     xsrfPost.post("/geeks/Home/SaveEvent", {
                         model: {
+                            Id : $scope.eventId,
                             Description: $scope.model.Description,
-                            Latitiude: $scope.theEvent.position.mb,
-                            Longitude: $scope.theEvent.position.nb,
+                            Latitude: $scope.theEvent.position.lat(),
+                            Longitude: $scope.theEvent.position.lng(),
                             Venue: $scope.model.Venue,
-                            Invitations: $scope.invitees
+                            Invitations: $scope.model.Invitations
                         }
+                    }).success(function() {
+                        console.log("saved changes to " + $scope.eventId);
                     });
                 }
             };
 
-            $http.get("/geeks/Home/EventData").success(function(data, status) {
+            $http.get("/geeks/Home/EventData/" + $scope.eventId).success(function(data, status) {
                 $scope.model = data;
+                $scope.eventId = data.Id;
+                var latlng = new google.maps.LatLng(data.Latitude, data.Longitude);
                 $scope.theEvent = new google.maps.Marker({
                     map: $scope.eventMap,
-                    position: new google.maps.LatLng(data.Latitude, data.Longitude)
+                    position: latlng
                 });
+                $scope.eventMap.panTo($scope.theEvent.getPosition());
             });
 
         }

@@ -21,22 +21,22 @@ app.factory("listData", function($http) {
         replace : true,
         template : "<div><input class='typeahead' type='text' placeholder='Type here to find friends to add' data-provide='typeahead' autocomplete='false' style='width: 98%' />"
                     +    "<div id='invitees' class='well well-small'>"
-                    +        "<div ng-repeat='invitee in invitees' class='alert alert-info'>"
+                    +        "<div ng-repeat='invitee in model.Invitations' class='alert alert-info'>"
                     +            "<button ng-click='remove(invitee.PersonId)' type='button' class='close' data-dismiss='alert'>&times;</button>"
-                    +            "{{invitee.EmailAddress}}"
+                    +            "{{invitee.Email}}"
                     +            "<rate-friend model='invitee'></rate-friend>"
                     +        "</div>"
                     +        "<span ng-show='unratedFriends()'>Make sure you rate all friends that you invite for the best result</span>"
                     +    "</div></div>",
         link : function(scope, el, atts) {
             var map = {};
-            scope.invitees = [];
+            //scope.model = { Invitations: [] };
             angular.element("input.typeahead", el).typeahead({
                 updater: function(item) {
                     scope.$apply(function() {
                         scope.add({
                             PersonId: map[item].PersonId,
-                            EmailAddress: item,
+                            Email: item,
                             Rating: map[item].Rating,
                             EmailSent: false
                         });
@@ -55,22 +55,25 @@ app.factory("listData", function($http) {
                 }
             });    
             scope.add = function(obj) {
-                scope.invitees.push({
-                    EmailAddress: obj.EmailAddress,
+                scope.model.Invitations.push({
+                    Email: obj.Email,
                     PersonId: obj.PersonId,
                     Rating: obj.Rating,
                     EmailSent: obj.EmailSent
                 });
             };
             scope.remove = function(personId) {
-                scope.invitees = $.grep(scope.invitees, function(item) {
+                scope.model.Invitations = $.grep(scope.model.Invitations, function(item) {
                     return item.personId != personId;
                 });
             };
             scope.unratedFriends = function() {
-                return $.grep(scope.invitees, function(item) {
-                    return item.Rating == 0;
-                }).length > 0;
+                if (scope.model && scope.model.Invitations.length) {
+                    return $.grep(scope.model.Invitations, function(item) {
+                        return item.Rating == 0;
+                    }).length > 0;
+                }
+                return false;
             };
         }
     }

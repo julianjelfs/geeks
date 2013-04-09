@@ -545,7 +545,9 @@
     <Content Include="Views\Home\Event.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Views\Shared\Friends.cshtml" />
+    <Content Include="Views\Shared\Friends.cshtml">
+      <SubType>Designer</SubType>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Import\Import.cshtml" />

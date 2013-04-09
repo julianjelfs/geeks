@@ -1,13 +1,55 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Web.Mvc;
 using GravatarHelper;
+using Newtonsoft.Json;
 using Raven.Client;
 using geeks.Models;
 
 namespace geeks.Controllers
 {
+    public class JsonNetResult : ActionResult
+    {
+        public Encoding ContentEncoding { get; set; }
+        public string ContentType { get; set; }
+        public object Data { get; set; }
+
+        public JsonSerializerSettings SerializerSettings { get; set; }
+        public Formatting Formatting { get; set; }
+
+        public JsonNetResult()
+        {
+            SerializerSettings = new JsonSerializerSettings();
+        }
+
+        public override void ExecuteResult(ControllerContext context)
+        {
+            if (context == null)
+                throw new ArgumentNullException("context");
+
+            var response = context.HttpContext.Response;
+
+            response.ContentType = !string.IsNullOrEmpty(ContentType)
+              ? ContentType
+              : "application/json";
+
+            if (ContentEncoding != null)
+                response.ContentEncoding = ContentEncoding;
+
+            if (Data != null)
+            {
+                var writer = new JsonTextWriter(response.Output) { Formatting = Formatting };
+
+                var serializer = JsonSerializer.Create(SerializerSettings);
+                serializer.Serialize(writer, Data);
+
+                writer.Flush();
+            }
+        }
+    }
+
     public class RavenController : Controller
     {
         protected IDocumentStore Store { get; private set; }
@@ -109,6 +151,14 @@ namespace geeks.Controllers
             totalPages = (int)Math.Ceiling((double)result.Count() / pageSize);
 
             return result.Skip(pageIndex*pageSize).Take(pageSize);
+        }
+
+        protected JsonNetResult JsonNet(object data)
+        {
+            return new JsonNetResult
+                {
+                    Data = data
+                };
         }
     }
 }

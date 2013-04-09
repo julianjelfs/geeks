@@ -26,7 +26,7 @@ app.controller("EventsCtrl", function($scope, $http, listData, xsrfPost) {
         $scope.searchArgs.pageIndex -= 1;
         $scope.search();
     };
-    $scope.deleteFriend = function() {
+    $scope.deleteEvent = function() {
         xsrfPost.post('/geeks/Home/DeleteEvent/' + $scope.selectedEvent.Id).success(function() {
             angular.element("#delete-warning").modal("hide");
             $scope.search();

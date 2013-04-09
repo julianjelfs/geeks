@@ -15,7 +15,7 @@ namespace geeks
 
             routes.MapRoute(
                 name: "Default2",
-                url: "event/{id}/{userId}",
+                url: "eventdata/{id}/{userId}",
                 defaults: new { controller = "Home", action = "event" }
                 );
 

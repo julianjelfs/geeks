@@ -1,7 +1,7 @@
 ﻿<div class="content" ng-controller="EventsCtrl">
     <h2 class="geek">Events</h2>
 	
-	@Html.AntiForgeryToken()
+    @Html.AntiForgeryToken()
 	
     <p></p>
 	
@@ -31,7 +31,7 @@
                     <td truncate="30" ng-bind="ev.Description"></td>
                     <td truncate="30" ng-bind="ev.Venue"></td>
                     <td ng-bind="ev.CreatedByUserName"></td>
-                    <td>{{ev.Date | date:'dd/MM/yyyy at h:mma'}}</td>
+                    <td>{{ev.Date | date:'dd/MM/yyyy h:mma'}}</td>
                     <td>
                         <a class="btn" href="/geeks/home/event/{{ev.Id}}">Edit</a>
                     </td>
