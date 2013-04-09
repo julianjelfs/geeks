@@ -100,7 +100,7 @@ namespace geeks.Controllers
                                 select new ImportModel
                                     {
                                         Import = false,
-                                        EmailAddress = email.Address,
+                                        EmailAddress = email.Address.ToLower(),
                                         Name = entry.Name.FullName
                                     }).ToList()
                 };
@@ -177,13 +177,13 @@ namespace geeks.Controllers
         {
             var user = GetCurrentUser();
             var gc = RavenSession.Query<GoogleContact>().FirstOrDefault(c => c.UserId == user.Id);
-            ImportContacts(gc, gc.Contacts.Where(model => contacts.Contains(model.EmailAddress)).ToList());
+            ImportContacts(gc, gc.Contacts.Where(model => contacts.Contains(model.EmailAddress.ToLower())).ToList());
         }
 
         private void ImportContacts(GoogleContact gc, List<ImportModel> contacts)
         {
             var person = GetCurrentPerson();
-            var emails = new HashSet<string>(from m in contacts.Distinct() select m.EmailAddress);
+            var emails = new HashSet<string>(from m in contacts.Distinct() select m.EmailAddress.ToLower());
 
             //do we have paerson records that match these people
             var people = RavenSession.Query<Person>()
@@ -195,26 +195,35 @@ namespace geeks.Controllers
                 foreach (var importModel in contacts)
                 {
                     //don't import yourself
-                    if (importModel.EmailAddress == User.Identity.Name) continue;
+                    if (importModel.EmailAddress.ToLower() == User.Identity.Name) continue;
                     
                     //if we already have a person record for this address
-                    if (people.ContainsKey(importModel.EmailAddress)) continue;
+                    if (people.ContainsKey(importModel.EmailAddress.ToLower())) continue;
 
                     var newPerson = new Person
                     {
-                        EmailAddress = importModel.EmailAddress,
+                        EmailAddress = importModel.EmailAddress.ToLower(),
                         Name = importModel.Name,
-                        Id = Guid.NewGuid().ToString()
+                        Id = Guid.NewGuid().ToString(),
+                        Friends = new List<Friend>
+                            {
+                                new Friend
+                                    {
+                                        PersonId = person.Id,
+                                        Rating = 0
+                                    }
+                            }
                     };
                     bulkInsert.Store(newPerson);
                     people.Add(newPerson.EmailAddress, newPerson);
                 }
 
                 person.Friends = person.Friends.Union(from i in contacts
-                                                  where !person.Friends.Any(f => f.PersonId == people[i.EmailAddress].Id)
+                                                      let email = i.EmailAddress.ToLower()
+                                                  where !person.Friends.Any(f => f.PersonId == people[email].Id)
                                                   select new Friend
                                                   {
-                                                      PersonId = people[i.EmailAddress].Id
+                                                      PersonId = people[email].Id
                                                   }).ToList();
             }
             RavenSession.Delete(gc);
@@ -225,7 +234,7 @@ namespace geeks.Controllers
         {
             var user = GetCurrentUser();
             var gc = RavenSession.Query<GoogleContact>().FirstOrDefault(c => c.UserId == user.Id);
-            var contacts = gc.Contacts.Where(m => m.EmailAddress != User.Identity.Name).ToList();
+            var contacts = gc.Contacts.Where(m => m.EmailAddress.ToLower() != User.Identity.Name).ToList();
             ImportContacts(gc, contacts);
         }
     }

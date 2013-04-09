@@ -5,6 +5,7 @@ using System.Net;
 using System.Web.Mvc;
 using Raven.Client;
 using Raven.Client.Linq;
+using geeks.DependencyResolution;
 using geeks.Models;
 using geeks.Services;
 
@@ -124,16 +125,24 @@ namespace geeks.Controllers
         [Authorize]
         public virtual JsonNetResult EventsData(int pageIndex = 0, int pageSize = 10, string search = null)
         {
-            List<Event> evs = RavenSession.Query<Event>()
-                                          .Include<Event>(e => e.Invitations)
-                                          .Include<Event>(e => e.CreatedBy)
-                                          .Where(e => e.CreatedBy == GetCurrentUserId())
-                                          .ToList();
-            List<EventModel> models = (from e in evs select EventModelFromEvent(e)).ToList();
-            var total = (int) Math.Ceiling((double) models.Count()/pageSize);
+            var person = GetCurrentPerson();
+            var query = RavenSession.Query<Event, Event_ByDescription>()
+                                            .Include<Event>(e => e.Invitations)
+                                          .Where(e => e.CreatedBy == GetCurrentUserId()
+                                                || e.Invitations.Any(p => p.PersonId == person.Id ) 
+                                          );
+            if (!string.IsNullOrEmpty(search))
+            {
+                query = query.Search(e => e.Description, search)
+                             .Search(e => e.Venue, search);
+            }
+
+            var evs = query.ToList();
+            var total = (int) Math.Ceiling((double) evs.Count()/pageSize);
             return JsonNet(new
                 {
-                    Events = models.Skip(pageIndex*pageSize).Take(pageSize),
+                    Events = from ev in evs.Skip(pageIndex*pageSize).Take(pageSize)
+                                 select EventModelFromEvent(ev, person),
                     NumberOfPages = total,
                     SearchTerm = search,
                     PageIndex = pageIndex
@@ -206,7 +215,15 @@ namespace geeks.Controllers
                     {
                         Id = Guid.NewGuid().ToString(),
                         EmailAddress = email,
-                        Name = name
+                        Name = name,
+                        Friends = new List<Friend>
+                            {
+                                new Friend
+                                    {
+                                        PersonId = GetCurrentPersonId(),
+                                        Rating = 0
+                                    }
+                            }
                     };
                 RavenSession.Store(person);
             }

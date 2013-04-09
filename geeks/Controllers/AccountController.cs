@@ -6,7 +6,9 @@ using DotNetOpenAuth.AspNet;
 using FlexProviders.Membership;
 using Microsoft.Web.WebPages.OAuth;
 using Raven.Client;
+using Raven.Client.Linq;
 using geeks.Models;
+using System.Linq;
 
 namespace geeks.Controllers
 {
@@ -70,6 +72,7 @@ namespace geeks.Controllers
         public virtual ActionResult Login(LoginModel model, string returnUrl)
         {
             Session["UserId"] = null;
+            Session["PersonId"] = null;
             if (ModelState.IsValid && _membershipProvider.Login(model.UserName, model.Password, model.RememberMe))
             {
                 return RedirectToLocal(returnUrl);
@@ -87,6 +90,7 @@ namespace geeks.Controllers
         public virtual ActionResult LogOff()
         {
             Session["UserId"] = null;
+            Session["PersonId"] = null;
             _membershipProvider.Logout();
             return RedirectToAction("Index", "Home");
         }
@@ -127,19 +131,14 @@ namespace geeks.Controllers
                     var user = new User
                         {
                             Id = Guid.NewGuid().ToString(),
-                            Username = model.EmailAddress,
+                            Username = model.EmailAddress.ToLower(),
                             Password = model.Password
                         };
-                    RavenSession.Store(new Person
-                        {
-                            Id = Guid.NewGuid().ToString(),
-                            UserId = user.Id,
-                            EmailAddress = model.EmailAddress,
-                            Name = model.Name
-                        });
+                    CreateOrUpdatePersonRecord(model.Name, user);
                     _membershipProvider.CreateAccount(user);
                     _membershipProvider.Login(user.Username, model.Password);
                     Session["UserId"] = null;
+                    Session["PersonId"] = null;
                     return RedirectToLocal(returnUrl);
                 }
                 catch (FlexMembershipException e)
@@ -150,6 +149,23 @@ namespace geeks.Controllers
 
             // If we got this far, something failed, redisplay form
             return View(model);
+        }
+
+        private void CreateOrUpdatePersonRecord(string name, User user)
+        {
+            var person =
+                RavenSession.Query<Person>()
+                            .FirstOrDefault(
+                                p => p.EmailAddress.Equals(user.Username, StringComparison.InvariantCultureIgnoreCase))
+                ?? new Person
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        EmailAddress = user.Username.ToLower(),
+                        Name = name
+                    };
+
+            person.UserId = user.Id;
+            RavenSession.Store(person);
         }
 
         //
@@ -259,6 +275,7 @@ namespace geeks.Controllers
         public virtual ActionResult ExternalLoginCallback(string returnUrl)
         {
             Session["UserId"] = null;
+            Session["PersonId"] = null;
 
             AuthenticationResult result = _oAuthProvider.VerifyOAuthAuthentication(Url.Action("ExternalLoginCallback", new { ReturnUrl = returnUrl }));
             if (!result.IsSuccessful)
@@ -279,12 +296,7 @@ namespace geeks.Controllers
                         Username = User.Identity.Name, Id = Guid.NewGuid().ToString()
                     };
                 _oAuthProvider.CreateOAuthAccount(result.Provider, result.ProviderUserId, user);
-                RavenSession.Store(new Person
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        UserId = user.Id,
-                        EmailAddress = user.Username
-                    });
+                CreateOrUpdatePersonRecord(user.Username, user);
                 return RedirectToLocal(returnUrl);
             }
             else
@@ -309,6 +321,7 @@ namespace geeks.Controllers
             string providerUserId = null;
 
             Session["UserId"] = null;
+            Session["PersonId"] = null;
 
             if (User.Identity.IsAuthenticated || !_encoder.TryDeserializeOAuthProviderUserId(model.ExternalLoginData, out provider, out providerUserId))
             {
@@ -325,12 +338,7 @@ namespace geeks.Controllers
                         };
                     _oAuthProvider.CreateOAuthAccount(provider, providerUserId, user);
                     _oAuthProvider.OAuthLogin(provider, providerUserId, persistCookie: false);
-                    RavenSession.Store(new Person
-                        {
-                            Id = Guid.NewGuid().ToString(),
-                            UserId = user.Id,
-                            EmailAddress = user.Username
-                        });
+                    CreateOrUpdatePersonRecord(user.Username, user);
                     return RedirectToLocal(returnUrl);
                 }
                 else

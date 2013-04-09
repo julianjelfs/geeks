@@ -4,9 +4,12 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using NUnit.Framework;
+using Raven.Abstractions.Indexing;
 using Raven.Client;
 using Raven.Client.Document;
+using Raven.Client.Indexes;
 using Raven.Client.Linq;
+using geeks.DependencyResolution;
 using geeks.Indexes;
 using geeks.Models;
 
@@ -17,6 +20,7 @@ namespace geeks.tests
     {
         private IDocumentStore _store;
         private IDocumentSession _session;
+
 
         [TestFixtureSetUp]
         public void SetupFixture()
@@ -44,7 +48,6 @@ namespace geeks.tests
         {
             //_session.SaveChanges();
         }
-
 
         [Test]
         public void UsersByEmail()
