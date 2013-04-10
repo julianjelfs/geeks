@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Raven.Client;
+using geeks.Exceptions;
 using geeks.Models;
 using geeks.Queries;
 
@@ -14,6 +15,9 @@ namespace geeks.Commands
         public override void Execute()
         {
             var me = Query(new PersonByUserIdWithFriends {UserId = CurrentUserId});
+            if (me.Id == PersonId)
+                throw new CantRankYourselfException();
+
             var friend = me.Friends.SingleOrDefault(f => f.PersonId == PersonId);
             if (friend == null)
             {

@@ -56,7 +56,7 @@ namespace geeks.Controllers
             if (!string.IsNullOrEmpty(id))
             {
                 var me = Query(new PersonByUserId {UserId = GetCurrentUserId()});
-                var ev = Query(new EventWithInvitations { EventId = id });
+                var ev = Query(new EventWithInvitations {EventId = id});
                 return JsonNet(EventModelFromEvent(ev, me));
             }
             return JsonNet(new EventModel {CreatedBy = GetCurrentUserId()});
@@ -80,11 +80,13 @@ namespace geeks.Controllers
 
         private EventModel EventModelFromEvent(Event ev, Person currentPerson = null)
         {
+            var organiser = RavenSession.Load<User>(ev.CreatedBy);
             return new EventModel
                 {
                     Id = ev.Id,
-                    CreatedByUserName = RavenSession.Load<User>(ev.CreatedBy).Username,
-                    CreatedBy = ev.CreatedBy,
+                    CreatedByUserName = organiser.Username,
+                    CreatedBy = organiser.Id,
+                    ReadOnly = organiser.Id != GetCurrentUserId(),
                     Date = ev.Date,
                     Description = ev.Description,
                     Latitude = ev.Latitude,
@@ -95,6 +97,7 @@ namespace geeks.Controllers
                                    let friend = GetFriendFromPerson(currentPerson, i.PersonId)
                                    select new InvitationModel
                                        {
+                                           IsCurrentUser = person.Id == currentPerson.Id,
                                            Email = person.EmailAddress,
                                            PersonId = person.Id,
                                            Rating = friend == null ? 0 : friend.Rating,
@@ -113,7 +116,7 @@ namespace geeks.Controllers
         [Authorize]
         public virtual JsonNetResult EventsData(int pageIndex = 0, int pageSize = 10, string search = null)
         {
-            var person = Query(new PersonByUserId { UserId = GetCurrentUserId() });
+            var person = Query(new PersonByUserId {UserId = GetCurrentUserId()});
             var result = Query(new EventsDataForUser
                 {
                     Search = search,
@@ -125,7 +128,7 @@ namespace geeks.Controllers
             return JsonNet(new
                 {
                     Events = from ev in result.List
-                                 select EventModelFromEvent(ev, person),
+                             select EventModelFromEvent(ev, person),
                     NumberOfPages = result.TotalPages,
                     SearchTerm = search,
                     PageIndex = pageIndex
@@ -142,7 +145,7 @@ namespace geeks.Controllers
         [Authorize]
         public void DeleteEvent(string id)
         {
-            Command(new DeleteEventCommand{ EventId = id });
+            Command(new DeleteEventCommand {EventId = id});
         }
 
         [HttpPost]
@@ -157,21 +160,22 @@ namespace geeks.Controllers
         public virtual void AddFriend(string name, string email)
         {
             Command(new AddFriendCommand
-            {
-                Email = email,
-                Name = name
-            });
+                {
+                    Email = email,
+                    Name = name
+                });
         }
 
         [HttpPost]
         [Authorize]
+        [HandleErrorAsHttp]
         public virtual void RateFriend(string id, string rating)
         {
             Command(new RateFriendCommand
-            {
-                PersonId = id,
-                Rating = Convert.ToInt32(rating)
-            });
+                {
+                    PersonId = id,
+                    Rating = Convert.ToInt32(rating)
+                });
         }
 
         [HttpPost]
@@ -179,7 +183,7 @@ namespace geeks.Controllers
         [ValidateJsonAntiForgeryToken]
         public virtual void DeleteFriend(string id)
         {
-            Command(new DeleteFriendCommand { PersonId = id });
+            Command(new DeleteFriendCommand {PersonId = id});
         }
 
         [Authorize]
@@ -187,13 +191,13 @@ namespace geeks.Controllers
                                                  bool unratedFriends = false)
         {
             var friends = Query(new FriendsForAPerson
-            {
-                PersonId = GetCurrentPersonId(),
-                Search = friendSearch,
-                PageIndex = pageIndex,
-                PageSize = pageSize,
-                Unrated = unratedFriends
-            });
+                {
+                    PersonId = GetCurrentPersonId(),
+                    Search = friendSearch,
+                    PageIndex = pageIndex,
+                    PageSize = pageSize,
+                    Unrated = unratedFriends
+                });
 
             return JsonNet(new
                 {

@@ -2,6 +2,7 @@
 {
     public class InvitationModel
     {
+        public bool IsCurrentUser { get; set; }
         public string PersonId { get; set; }
         public string Email { get; set; }
         public int Rating { get; set; }

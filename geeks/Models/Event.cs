@@ -90,6 +90,8 @@ namespace geeks.Models
         [Display(Name = "Created By")]
         public string CreatedByUserName { get; set; }
 
+        public bool ReadOnly { get; set; }
+
         public List<InvitationModel> Invitations { get; set; } 
     }
 }

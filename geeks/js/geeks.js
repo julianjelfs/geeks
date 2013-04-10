@@ -94,7 +94,7 @@ app.factory("listData", function($http) {
         scope : {
             model : "=model"
         },
-        template: "<span title='Rate your friend' class='rating pull-right'><span ng-class='ratingClass(model.Rating)'>{{model.Rating}}</span></span>",
+        template: "<span ng-show='!model.IsCurrentUser' title='Rate your friend' class='rating pull-right'><span ng-class='ratingClass(model.Rating)'>{{model.Rating}}</span></span>",
         link: function(scope, el, atts) {
             console.log("linking add friend");
             el.popover({

@@ -17,7 +17,7 @@
                          ui-options="mapOptions">
                     </div>
                     <br/>
-                    <button class="btn" type="submit" ng-click="submit()">Save</button>
+                    <button ng-show="!model.ReadOnly" class="btn" type="submit" ng-click="submit()">Save</button>
                 </fieldset>
                 
             </div>
@@ -67,7 +67,8 @@
                             Latitude: $scope.theEvent.position.lat(),
                             Longitude: $scope.theEvent.position.lng(),
                             Venue: $scope.model.Venue,
-                            Invitations: $scope.model.Invitations
+                            Invitations: $scope.model.Invitations,
+                            CreatedBy:$scope.model.CreatedBy
                         }
                     }).success(function() {
                         console.log("saved changes to " + $scope.eventId);
@@ -76,7 +77,7 @@
             };
 
             $http.get("/geeks/Home/EventData/" + $scope.eventId).success(function(data, status) {
-                $scope.model = data;
+				$scope.model = data;
                 $scope.eventId = data.Id;
                 var latlng = new google.maps.LatLng(data.Latitude, data.Longitude);
                 $scope.theEvent = new google.maps.Marker({
