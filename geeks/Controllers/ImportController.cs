@@ -10,6 +10,7 @@ using Google.GData.Contacts;
 using Raven.Client;
 using geeks.Models;
 using Raven.Client.Linq;
+using geeks.Queries;
 
 namespace geeks.Controllers
 {
@@ -175,14 +176,14 @@ namespace geeks.Controllers
         [Authorize]
         public void ImportSelected(List<string> contacts)
         {
-            var user = GetCurrentUser();
-            var gc = RavenSession.Query<GoogleContact>().FirstOrDefault(c => c.UserId == user.Id);
+            var gc = RavenSession.Query<GoogleContact>().FirstOrDefault(c => c.UserId == GetCurrentUserId());
             ImportContacts(gc, gc.Contacts.Where(model => contacts.Contains(model.EmailAddress.ToLower())).ToList());
         }
 
         private void ImportContacts(GoogleContact gc, List<ImportModel> contacts)
         {
-            var person = GetCurrentPerson();
+            var person = Query(new PersonByUserId {UserId = GetCurrentUserId()});
+
             var emails = new HashSet<string>(from m in contacts.Distinct() select m.EmailAddress.ToLower());
 
             //do we have paerson records that match these people
@@ -232,8 +233,7 @@ namespace geeks.Controllers
         [Authorize]
         public void ImportAll()
         {
-            var user = GetCurrentUser();
-            var gc = RavenSession.Query<GoogleContact>().FirstOrDefault(c => c.UserId == user.Id);
+            var gc = RavenSession.Query<GoogleContact>().FirstOrDefault(c => c.UserId == GetCurrentUserId());
             var contacts = gc.Contacts.Where(m => m.EmailAddress.ToLower() != User.Identity.Name).ToList();
             ImportContacts(gc, contacts);
         }

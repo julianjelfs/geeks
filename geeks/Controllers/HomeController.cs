@@ -4,9 +4,9 @@ using System.Linq;
 using System.Net;
 using System.Web.Mvc;
 using Raven.Client;
-using Raven.Client.Linq;
-using geeks.DependencyResolution;
+using geeks.Commands;
 using geeks.Models;
+using geeks.Queries;
 using geeks.Services;
 
 namespace geeks.Controllers
@@ -50,12 +50,14 @@ namespace geeks.Controllers
             return View();
         }
 
+        [Authorize]
         public virtual JsonNetResult EventData(string id, string userId)
         {
             if (!string.IsNullOrEmpty(id))
             {
-                var ev = RavenSession.Include<Event>(e => e.Invitations).Load<Event>(id);
-                return JsonNet(EventModelFromEvent(ev, GetCurrentPerson()));
+                var me = Query(new PersonByUserId {UserId = GetCurrentUserId()});
+                var ev = Query(new EventWithInvitations { EventId = id });
+                return JsonNet(EventModelFromEvent(ev, me));
             }
             return JsonNet(new EventModel {CreatedBy = GetCurrentUserId()});
         }
@@ -67,8 +69,11 @@ namespace geeks.Controllers
         {
             if (ModelState.IsValid)
             {
-                model.CreatedBy = GetCurrentUserId();
-                RavenSession.Store(SendEmailToInvitees(new Event(model)));
+                Command(new SaveEventCommand
+                    {
+                        Event = new Event(model),
+                        Emailer = _emailer
+                    });
             }
             return new HttpStatusCodeResult(HttpStatusCode.OK);
         }
@@ -105,45 +110,23 @@ namespace geeks.Controllers
             return person.Friends.SingleOrDefault(f => f.PersonId == friendPersonId);
         }
 
-        private Event SendEmailToInvitees(Event ev)
-        {
-            Invitation[] invitees = ev.Invitations.ToArray();
-            IRavenQueryable<User> users = RavenSession.Query<User>()
-                                                      .Where(u => u.Username.In(from i in invitees
-                                                                                where !i.EmailSent
-                                                                                select i.PersonId));
-
-            foreach (Invitation invitee in invitees.Where(i => !i.EmailSent))
-            {
-                _emailer.Invite(GetCurrentPerson(), RavenSession.Load<Person>(invitee.PersonId), ev);
-                invitee.EmailSent = true;
-            }
-            ev.Invitations = invitees;
-            return ev;
-        }
-
         [Authorize]
         public virtual JsonNetResult EventsData(int pageIndex = 0, int pageSize = 10, string search = null)
         {
-            var person = GetCurrentPerson();
-            var query = RavenSession.Query<Event, Event_ByDescription>()
-                                            .Include<Event>(e => e.Invitations)
-                                          .Where(e => e.CreatedBy == GetCurrentUserId()
-                                                || e.Invitations.Any(p => p.PersonId == person.Id ) 
-                                          );
-            if (!string.IsNullOrEmpty(search))
-            {
-                query = query.Search(e => e.Description, search)
-                             .Search(e => e.Venue, search);
-            }
+            var person = Query(new PersonByUserId { UserId = GetCurrentUserId() });
+            var result = Query(new EventsDataForUser
+                {
+                    Search = search,
+                    PageIndex = pageIndex,
+                    PageSize = pageSize,
+                    CurrentPerson = person
+                });
 
-            var evs = query.ToList();
-            var total = (int) Math.Ceiling((double) evs.Count()/pageSize);
             return JsonNet(new
                 {
-                    Events = from ev in evs.Skip(pageIndex*pageSize).Take(pageSize)
+                    Events = from ev in result.List
                                  select EventModelFromEvent(ev, person),
-                    NumberOfPages = total,
+                    NumberOfPages = result.TotalPages,
                     SearchTerm = search,
                     PageIndex = pageIndex
                 });
@@ -159,75 +142,36 @@ namespace geeks.Controllers
         [Authorize]
         public void DeleteEvent(string id)
         {
-            var model = RavenSession.Load<Event>(id);
-            if (model != null)
-            {
-                RavenSession.Delete(model);
-            }
+            Command(new DeleteEventCommand{ EventId = id });
         }
 
         [HttpPost]
         [Authorize]
         public virtual void DeleteAllFriends(string id)
         {
-            GetCurrentPerson().Friends.Clear();
+            Command(new DeleteAllFriendsCommand());
         }
 
         [HttpPost]
         [Authorize]
         public virtual void AddFriend(string name, string email)
         {
-            Person person = CreatePersonDocumentIfNecessary(name, email);
-
-            Person me = RavenSession.Query<Person>()
-                                    .Include<Person>(p => p.Friends.Select(f => f.PersonId))
-                                    .SingleOrDefault(p => p.EmailAddress == User.Identity.Name);
-
-            Friend friend = me.Friends.SingleOrDefault(f => RavenSession.Load<Person>(f.PersonId).EmailAddress == email);
-            if (friend == null)
-                me.Friends.Add(new Friend {PersonId = person.Id});
-
-            RavenSession.SaveChanges();
+            Command(new AddFriendCommand
+            {
+                Email = email,
+                Name = name
+            });
         }
 
         [HttpPost]
         [Authorize]
         public virtual void RateFriend(string id, string rating)
         {
-            Person me = RavenSession.Query<Person>()
-                                    .FirstOrDefault(p => p.EmailAddress == User.Identity.Name);
-
-            Friend friend = me.Friends.SingleOrDefault(f => f.PersonId == id);
-            if (friend != null)
+            Command(new RateFriendCommand
             {
-                friend.Rating = Convert.ToInt32(rating);
-            }
-        }
-
-        private Person CreatePersonDocumentIfNecessary(string name, string email)
-        {
-            Person person = RavenSession.Query<Person>()
-                                        .FirstOrDefault(p => p.EmailAddress == email);
-
-            if (person == null)
-            {
-                person = new Person
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        EmailAddress = email,
-                        Name = name,
-                        Friends = new List<Friend>
-                            {
-                                new Friend
-                                    {
-                                        PersonId = GetCurrentPersonId(),
-                                        Rating = 0
-                                    }
-                            }
-                    };
-                RavenSession.Store(person);
-            }
-            return person;
+                PersonId = id,
+                Rating = Convert.ToInt32(rating)
+            });
         }
 
         [HttpPost]
@@ -235,27 +179,26 @@ namespace geeks.Controllers
         [ValidateJsonAntiForgeryToken]
         public virtual void DeleteFriend(string id)
         {
-            GetCurrentPerson().Friends.RemoveAll(f => f.PersonId == id);
-        }
-
-        private IEnumerable<PersonFriend> FriendsInternal(int pageIndex, int pageSize, out int totalPages,
-                                                          string friendSearch, bool unratedFriends)
-        {
-            return PersonsFromFriends(GetCurrentPersonId(), pageIndex, pageSize, out totalPages, friendSearch,
-                                      unratedFriends);
+            Command(new DeleteFriendCommand { PersonId = id });
         }
 
         [Authorize]
         public virtual JsonNetResult FriendsData(int pageIndex = 0, int pageSize = 10, string friendSearch = null,
                                                  bool unratedFriends = false)
         {
-            int total = 0;
-            IEnumerable<PersonFriend> friends = FriendsInternal(pageIndex, pageSize, out total, friendSearch,
-                                                                unratedFriends);
+            var friends = Query(new FriendsForAPerson
+            {
+                PersonId = GetCurrentPersonId(),
+                Search = friendSearch,
+                PageIndex = pageIndex,
+                PageSize = pageSize,
+                Unrated = unratedFriends
+            });
+
             return JsonNet(new
                 {
-                    Friends = friends,
-                    NumberOfPages = total,
+                    Friends = friends.List,
+                    NumberOfPages = friends.TotalPages,
                     SearchTerm = friendSearch,
                     Unrated = unratedFriends,
                     PageIndex = pageIndex
@@ -271,11 +214,17 @@ namespace geeks.Controllers
         [Authorize]
         public JsonNetResult LookupFriends(string query)
         {
-            int totalPages = 0;
-            IEnumerable<PersonFriend> matches = PersonsFromFriends(GetCurrentPersonId(), 0, 100, out totalPages, query,
-                                                                   false);
+            var matches = Query(new FriendsForAPerson
+                {
+                    PersonId = GetCurrentPersonId(),
+                    Search = query,
+                    PageIndex = 0,
+                    PageSize = 100,
+                    Unrated = false
+                });
+
             var dict = new Dictionary<string, object>();
-            foreach (PersonFriend match in matches.Where(match => !dict.ContainsKey(match.Email)))
+            foreach (var match in matches.List.Where(match => !dict.ContainsKey(match.Email)))
                 dict.Add(match.Email, new
                     {
                         match.PersonId,

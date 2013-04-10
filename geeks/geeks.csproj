@@ -270,6 +270,13 @@
     <Compile Include="App_Start\NinjectWebCommon.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Commands\AddFriendCommand.cs" />
+    <Compile Include="Commands\Command.cs" />
+    <Compile Include="Commands\DeleteAllFriendsCommand.cs" />
+    <Compile Include="Commands\DeleteEventCommand.cs" />
+    <Compile Include="Commands\DeleteFriendCommand.cs" />
+    <Compile Include="Commands\RateFriendCommand.cs" />
+    <Compile Include="Commands\SaveEventCommand.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\ImportController.cs" />
     <Compile Include="Controllers\RavenController.cs" />
@@ -288,6 +295,15 @@
     <Compile Include="Models\User.cs" />
     <Compile Include="Models\PersonFriend.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Queries\EventsDataForUser.cs" />
+    <Compile Include="Queries\EventWithInvitations.cs" />
+    <Compile Include="Queries\FriendsForAPerson.cs" />
+    <Compile Include="Queries\ListQuery.cs" />
+    <Compile Include="Queries\ListResult.cs" />
+    <Compile Include="Queries\PersonByEmail.cs" />
+    <Compile Include="Queries\PersonByUserId.cs" />
+    <Compile Include="Queries\PersonByUserIdWithFriends.cs" />
+    <Compile Include="Queries\Query.cs" />
     <Compile Include="Services\Emailer.cs" />
     <Compile Include="ValidateJsonAntiForgeryTokenAttribute.cs" />
   </ItemGroup>
