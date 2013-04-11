@@ -21,8 +21,8 @@ app.factory("listData", function($http) {
         replace : true,
         template : "<div><input class='typeahead' type='text' placeholder='Type here to find friends to add' data-provide='typeahead' autocomplete='false' style='width: 98%' />"
                     +    "<div id='invitees' class='well well-small'>"
-                    +        "<div ng-repeat='invitee in model.Invitations' class='alert alert-info'>"
-                    +            "<button ng-click='remove(invitee.PersonId)' type='button' class='close' data-dismiss='alert'>&times;</button>"
+                    +        "<div ng-show='!invitee.IsCurrentUser' ng-repeat='invitee in model.Invitations' class='alert alert-info'>"
+                    +            "<button ng-show='!model.ReadOnly' ng-click='remove(invitee.PersonId)' type='button' class='close' data-dismiss='alert'>&times;</button>"
                     +            "{{invitee.Email}}"
                     +            "<rate-friend model='invitee'></rate-friend>"
                     +        "</div>"
@@ -94,7 +94,7 @@ app.factory("listData", function($http) {
         scope : {
             model : "=model"
         },
-        template: "<span ng-show='!model.IsCurrentUser' title='Rate your friend' class='rating pull-right'><span ng-class='ratingClass(model.Rating)'>{{model.Rating}}</span></span>",
+        template: "<span title='Rate your friend' class='rating pull-right'><span ng-class='ratingClass(model.Rating)'>{{model.Rating}}</span></span>",
         link: function(scope, el, atts) {
             console.log("linking add friend");
             el.popover({

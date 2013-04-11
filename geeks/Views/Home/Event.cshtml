@@ -6,26 +6,27 @@
         <input id="Latitude" name="Latitude" type="hidden" value="{{theEvent.position.mb}}" />
     
         <div class="row-fluid">
-            <div class="span6">
+            <div class="span7">
                 <fieldset>
                     <legend class="geek">Enter details to create a new event</legend>
-                    <textarea rows="4" ng-model="model.Description" placeholder="Description" required class="input-xxlarge input-block-level"></textarea>
-                    <input type="datetime" ng-model="model.Date" class="input-xxlarge input-block-level" placeholder="Date and time" required/>
-                    <input type="text" ng-model="model.Venue" class="input-xxlarge input-block-level" placeholder="Venue" required />
-                    <div id="map-canvas" ui-map="eventMap" class="map"
-                         ui-event="{'map-click': 'moveMarker($event)' }"
-                         ui-options="mapOptions">
-                    </div>
-                    <br/>
+                    <textarea rows="4" ng-model="model.Description" placeholder="Description" required class="input-block-level"></textarea>
+                    <input type="datetime" ng-model="model.Date" class="input-block-level" placeholder="Date and time" required/>
+                    <input type="text" ng-model="model.Venue" class="input-block-level" placeholder="Venue" required />
                     <button ng-show="!model.ReadOnly" class="btn" type="submit" ng-click="submit()">Save</button>
+                    <button ng-show="model.ReadOnly" class="btn btn-success" type="submit" ng-click="accept()">Accept</button>
+                    <button ng-show="model.ReadOnly" class="btn btn-danger" type="submit" ng-click="accept()">Decline</button>
                 </fieldset>
-                
-            </div>
-            <div class="span6">
+				<br/>
                 <fieldset>
                     <legend class="geek">Who's invited</legend>
                     <friend-picker></friend-picker>
                 </fieldset>
+            </div>
+            <div class="span5">
+				<div id="map-canvas" ui-map="eventMap" class="map"
+                        ui-event="{'map-click': 'moveMarker($event)' }"
+                        ui-options="mapOptions">
+                </div>
             </div>
         </div>
     </form>

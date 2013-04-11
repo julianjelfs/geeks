@@ -22,6 +22,7 @@
                     <th>Venue</th>
                     <th>Organiser</th>
                     <th>When</th>
+                    <th width="40px">Score</th>
                     <th width="40px"></th>
                     <th width="40px"></th>
                 </tr>
@@ -32,6 +33,7 @@
                     <td truncate="30" ng-bind="ev.Venue"></td>
                     <td ng-bind="ev.CreatedByUserName"></td>
                     <td>{{ev.Date | date:'dd/MM/yyyy h:mma'}}</td>
+					<td>{{ev.Score}}</td>
                     <td>
                         <a class="btn" href="/geeks/home/event/{{ev.Id}}">Edit</a>
                     </td>

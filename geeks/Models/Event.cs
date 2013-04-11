@@ -1,18 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 
 namespace geeks.Models
 {
-    public class Invitation
-    {
-        public string PersonId { get; set; }
-        public bool EmailSent { get; set; }
-    }
-
     public class Event
     {
         public Event()
@@ -21,7 +14,7 @@ namespace geeks.Models
             Longitude = -0.115;
         }
 
-        public Event(EventModel model)
+        public Event Merge(EventModel model)
         {
             Id = model.Id;
             Description = model.Description;
@@ -30,15 +23,23 @@ namespace geeks.Models
             CreatedBy = model.CreatedBy;
             Longitude = model.Longitude;
             Latitude = model.Latitude;
+            Score = model.Score;
             if (model.Invitations != null)
             {
                 Invitations = from i in model.Invitations
-                             select new Invitation
-                                 {
-                                     PersonId = i.PersonId,
-                                     EmailSent = i.EmailSent
-                                 };
+                              select new Invitation
+                              {
+                                  PersonId = i.PersonId,
+                                  EmailSent = i.EmailSent,
+                                  Response = i.Response
+                              };
             }
+            return this;
+        }
+
+        public Event(EventModel model)
+        {
+            Merge(model);
         }
 
         public string Id { get; set; }
@@ -49,49 +50,6 @@ namespace geeks.Models
         public IEnumerable<Invitation> Invitations { get; set; }
         public double Latitude { get; set; }
         public double Longitude { get; set; }
-    }
-
-    public class EventModel
-    {
-        public EventModel()
-        {
-            Id = Guid.NewGuid().ToString();
-            Invitations = new List<InvitationModel>();
-            Latitude = 51.509;
-            Longitude = -0.115;
-            Date = DateTime.Today;
-        }
-
-        public string Id { get; set; }
-
-        [Required]
-        [DataType(DataType.MultilineText)]
-        [Display(Name = "Description")]
-        public string Description { get; set; }
-        
-        [Required]
-        [DataType(DataType.DateTime)]
-        [Display(Name = "Date and time")]
-        public DateTime Date { get; set; }
-        
-        [Required]
-        [DataType(DataType.MultilineText)]
-        [Display(Name = "Venue")]
-        public string Venue { get; set; }
-
-        public double Latitude { get; set; }
-        public double Longitude { get; set; }
-        
-        [DataType(DataType.Text)]
-        [Display(Name = "Created By")]
-        public string CreatedBy { get; set; }
-        
-        [DataType(DataType.Text)]
-        [Display(Name = "Created By")]
-        public string CreatedByUserName { get; set; }
-
-        public bool ReadOnly { get; set; }
-
-        public List<InvitationModel> Invitations { get; set; } 
+        public double Score { get; set; }
     }
 }

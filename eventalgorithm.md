@@ -15,3 +15,9 @@ If a person has an excluded person in their `only-if` constraint then they too a
 
 ####1.2) Process `not-ifs`
 If a person has someone in their `not-if` constraint who is *not* excluded, then they are excluded. The problem here is that this `not-if` person may go on to be excluded later. Not sure how to deal with that.
+
+###Look into###
+* combinatory problems
+* back tracking algorithms
+* graph theory
+* stable marriage / stable roommates problems

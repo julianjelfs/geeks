@@ -69,9 +69,13 @@ namespace geeks.Controllers
         {
             if (ModelState.IsValid)
             {
+                var @event = Query(new EventWithInvitationsAndPersons { EventId = model.Id }).Merge(model)
+                    ?? new Event(model);
+                
+                Command(new EvaluateEventCommand { Event = @event });
                 Command(new SaveEventCommand
                     {
-                        Event = new Event(model),
+                        Event = @event,
                         Emailer = _emailer
                     });
             }
@@ -92,6 +96,7 @@ namespace geeks.Controllers
                     Latitude = ev.Latitude,
                     Longitude = ev.Longitude,
                     Venue = ev.Venue,
+                    Score = ev.Score,
                     Invitations = (from i in ev.Invitations
                                    let person = RavenSession.Load<Person>(i.PersonId)
                                    let friend = GetFriendFromPerson(currentPerson, i.PersonId)
@@ -101,7 +106,8 @@ namespace geeks.Controllers
                                            Email = person.EmailAddress,
                                            PersonId = person.Id,
                                            Rating = friend == null ? 0 : friend.Rating,
-                                           EmailSent = i.EmailSent
+                                           EmailSent = i.EmailSent,
+                                           Response = i.Response
                                        }).ToList()
                 };
         }
