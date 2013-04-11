@@ -8,17 +8,17 @@
         <div class="row-fluid">
             <div class="span7" >
                 <fieldset ng-disabled="model.ReadOnly">
-                    <legend class="geek">Event Details</legend>
+                    <legend class="geek">Event Details<spinner/></legend>
                     <textarea rows="4" ng-model="model.Description" placeholder="Description" required class="input-block-level"></textarea>
-                    <input type="datetime" ng-model="model.Date" class="input-block-level" placeholder="Date and time" required/>
+                    <date-picker></date-picker>
                     <input type="text" ng-model="model.Venue" class="input-block-level" placeholder="Venue" required />
-                    <button ng-show="!model.ReadOnly" class="btn" type="submit" ng-click="submit()">Save</button>
+                    <button ng-show="!model.ReadOnly" ng-disabled="loading" class="btn" type="submit" ng-click="submit()">Save</button>
                 </fieldset>
                 <br/>
                 <fieldset ng-show="model.ReadOnly">
                     <legend class="geek">Are you coming?</legend>
                     Currently you are down as <em>{{going()}}</em> but you can change that by clicking below:<br/><br/>
-                    <button ng-show="model.ReadOnly" class="btn btn-success" type="submit" ng-click="respond(2)">Yes please</button>
+                    <button ng-show="model.ReadOnly" ng-disabled="loading" class="btn btn-success" type="submit" ng-click="respond(2)">Yes please</button>
                     <button ng-show="model.ReadOnly" class="btn btn-danger" type="submit" ng-click="respond(1)">No thanks</button>
                 </fieldset>
 				<br/>
@@ -46,6 +46,7 @@
         function EventCtrl($scope, $http, xsrfPost) {
             $scope.zoom = 12;
             $scope.eventId = "@ViewBag.EventId";
+            $scope.loading = true;
 
 			$scope.going = function() {
 			    if($scope.model === undefined
@@ -80,16 +81,19 @@
             
 			$scope.respond = function(response) {
 			    $scope.model.MyResponse = response;
+			    $scope.loading = true;
 			    xsrfPost.post("/geeks/Home/RespondToInvite", {
 			        id : $scope.eventId, 
 			        response : $scope.model.MyResponse
 			    }).success(function() {
                     console.log("saved changes to " + $scope.eventId);
+			        $scope.loading = false;
                 });
 			}
 
             $scope.submit = function() {
                 if ($scope.form.$valid) {
+                    $scope.loading = true;
                     xsrfPost.post("/geeks/Home/SaveEvent", {
                         model: {
                             Id : $scope.eventId,
@@ -100,8 +104,11 @@
                             Invitations: $scope.model.Invitations,
                             CreatedBy:$scope.model.CreatedBy
                         }
-                    }).success(function() {
+                    }).success(function(data) {
+                        $scope.model = data;
+                        $scope.eventId = data.Id;
                         console.log("saved changes to " + $scope.eventId);
+                        $scope.loading = false;
                     });
                 }
             };
@@ -115,6 +122,7 @@
                     position: latlng
                 });
                 $scope.eventMap.panTo($scope.theEvent.getPosition());
+                $scope.loading = false;
             });
 
         }

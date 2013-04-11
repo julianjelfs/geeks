@@ -1,5 +1,5 @@
 ﻿<div class="content" ng-controller="EventsCtrl">
-    <h2 class="geek">Events</h2>
+    <h2 class="geek">Events<spinner/></h2>
 	
     @Html.AntiForgeryToken()
 	
@@ -15,28 +15,26 @@
 
 	<div id="table-placeholder" ng-show="events.length > 0">
         
-        <table class="table table-hover">
+        <table class="table">
             <thead>
                 <tr>
                     <th>Description</th>
                     <th>Venue</th>
                     <th>Organiser</th>
                     <th>When</th>
-                    <th width="40px">Score</th>
-                    <th width="40px"></th>
+                    <th width="80px">Score</th>
                     <th width="40px"></th>
                 </tr>
             </thead>
             <tbody>
-                <tr ng-repeat="ev in events">
-                    <td truncate="30" ng-bind="ev.Description"></td>
+                <tr ng-class="statusClass(ev)" ng-repeat="ev in events">
+                    <td>
+                        <a href="/geeks/home/event/{{ev.Id}}" ng-bind="ev.Description" truncate="50">{{ev.Description}}</a>
+                    </td>
                     <td truncate="30" ng-bind="ev.Venue"></td>
                     <td ng-bind="ev.CreatedByUserName"></td>
                     <td>{{ev.Date | date:'dd/MM/yyyy h:mma'}}</td>
-					<td>{{ev.Score}}</td>
-                    <td>
-                        <a class="btn" href="/geeks/home/event/{{ev.Id}}">Edit</a>
-                    </td>
+                    <td style="text-align: center">{{ev.Score | number:2}}% <i ng-class="thumbClass(ev)"></i></td>
                     <td>
                         <delete-event warning="#delete-warning"></delete-event>
                     </td>

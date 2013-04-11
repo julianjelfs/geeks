@@ -65,7 +65,7 @@ app.factory("listData", function($http) {
             };
             scope.remove = function(personId) {
                 scope.model.Invitations = $.grep(scope.model.Invitations, function(item) {
-                    return item.personId != personId;
+                    return item.PersonId != personId;
                 });
             };
             scope.unratedFriends = function() {
@@ -113,11 +113,11 @@ app.factory("listData", function($http) {
 
             scope.ratingClass = function(index) {
                 var cls = "rank badge";
-                if(index <= scope.model.Rating
+                if (index <= scope.model.Rating
                     && scope.model.Rating > 0)
                     cls += " badge-warning";
                 return cls;
-            }
+            };
 
             scope.rateFriend = function(rating) {
                 console.log("Rating friend " + scope.model.Name + " as " + rating);
@@ -140,6 +140,27 @@ app.factory("listData", function($http) {
                 el.text(value == undefined
                     ? '' : (value.length > len
                         ? value.substring(0, len) + '...' : value));
+            });
+        }
+    };
+}).directive("spinner", function() {
+    return {
+        template : "<img style='margin-left:10px' ng-show='loading' src='/geeks/img/ajax-loader2.gif' />",
+        restrict: "E",
+        replace : true
+    };
+}).directive("datePicker", function($filter) {
+    return {
+        restrict: "E",
+        replace: true,
+        template: "<input type='datetime' ng-model='model.Date' placeholder='Date and time' required />",
+        link: function(scope, el, atts) {
+            console.log("linking datepicker");
+            el.datepicker({ format : "dd mm yyyy"}).on('changeDate', function(ev) {
+                scope.$apply(function() {
+                    scope.model.Date = $filter("date")(ev.date, "dd MMMM yyyy");
+                });
+                el.datepicker("hide");
             });
         }
     };

@@ -8,7 +8,10 @@ namespace geeks
         // For more information on Bundling, visit http://go.microsoft.com/fwlink/?LinkId=254725
         public static void RegisterBundles(BundleCollection bundles)
         {
-            bundles.Add(new StyleBundle("~/bundles/css").Include("~/css/bootstrap.css", "~/css/styles.css", "~/css/calendar.css"));
+            bundles.Add(new StyleBundle("~/bundles/css")
+                .Include("~/css/bootstrap.css", 
+                    "~/css/styles.css", 
+                    "~/css/datepicker.css"));
 
             bundles.Add(new ScriptBundle("~/bundles/script").Include(
                         "~/js/jquery-{version}.js",
@@ -17,7 +20,9 @@ namespace geeks
                         "~/js/angular.js",
                         "~/js/angular-ui.js",
                         "~/js/jquery.validate.min.js",
-                        "~/js/jquery.validate.unobtrusive.min.js"));
+                        "~/js/jquery.validate.unobtrusive.min.js",
+                        "~/js/bootstrap-datepicker.js",
+                        "~/js/geeks.js"));
 
             /*bundles.Add(new ScriptBundle("~/bundles/jqueryui").Include(
                         "~/Scripts/jquery-ui-{version}.js"));

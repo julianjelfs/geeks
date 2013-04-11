@@ -1,6 +1,6 @@
 ﻿<div class="content" ng-controller="FriendsCtrl">
     <div class="span4">
-        <h2 class="geek">Friends</h2>
+        <h2 class="geek">Friends<spinner/></h2>
     </div>
     
         @Html.AntiForgeryToken()
@@ -129,11 +129,13 @@
             }
 
             $scope.search = function() {
+                $scope.loading = true;
                 listData.get("/geeks/Home/FriendsData", $scope.searchArgs).success(function(data) {
                     $scope.friends = data.Friends;
                     $scope.numberOfPages = data.NumberOfPages;
                     $scope.prevClass = data.PageIndex > 0 ? "btn" : "btn disabled";
                     $scope.nextClass = data.PageIndex + 1 >= data.NumberOfPages ? "btn disabled" : "btn";
+                    $scope.loading = false;
                 });
             };
             $scope.next = function() {

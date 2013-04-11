@@ -8,7 +8,6 @@ namespace geeks.Models
     {
         public EventModel()
         {
-            Id = Guid.NewGuid().ToString();
             Invitations = new List<InvitationModel>();
             Latitude = 51.509;
             Longitude = -0.115;

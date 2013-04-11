@@ -23,7 +23,6 @@ namespace geeks.Models
             CreatedBy = model.CreatedBy;
             Longitude = model.Longitude;
             Latitude = model.Latitude;
-            Score = model.Score;
             if (model.Invitations != null)
             {
                 Invitations = from i in model.Invitations
@@ -50,6 +49,7 @@ namespace geeks.Models
         public IEnumerable<Invitation> Invitations { get; set; }
         public double Latitude { get; set; }
         public double Longitude { get; set; }
+        public double TheoreticalMaximumScore { get; set; }
         public double Score { get; set; }
     }
 }

@@ -65,24 +65,38 @@ namespace geeks.Controllers
 
         [HttpPost]
         [Authorize]
-        public virtual HttpStatusCodeResult SaveEvent(EventModel model)
+        public virtual JsonNetResult SaveEvent(EventModel model)
         {
             if (ModelState.IsValid)
             {
-                var @event = Query(new EventWithInvitationsAndPersons { EventId = model.Id }).Merge(model)
-                    ?? new Event(model);
+                var @event = string.IsNullOrEmpty(model.Id) 
+                    ? SaveAndReload(model) 
+                    : Query(new EventWithInvitationsAndPersons {EventId = model.Id}).Merge(model);
                 
-                Command(new EvaluateEventCommand { Event = @event });
+                Command(new ScoreEventCommand { Event = @event });
                 
                 Command(new SaveEventCommand
                     {
                         Event = @event,
                         Emailer = _emailer
                     });
+                model.Id = @event.Id;
             }
-            return new HttpStatusCodeResult(HttpStatusCode.OK);
+            return JsonNet(model);
         }
-        
+
+        private Event SaveAndReload(EventModel model)
+        {
+            var @event = new Event(model) {Id = Guid.NewGuid().ToString()};
+            Command(new SaveEventCommand
+                {
+                    Event = @event,
+                    Emailer = _emailer
+                });
+            RavenSession.SaveChanges();
+            return Query(new EventWithInvitationsAndPersons { EventId = @event.Id });
+        }
+
         [HttpPost]
         [Authorize]
         public virtual HttpStatusCodeResult RespondToInvite(string id, InvitationResponse response)
@@ -96,7 +110,7 @@ namespace geeks.Controllers
                     PersonId = GetCurrentPersonId()
                 });
             
-            Command(new EvaluateEventCommand { Event = @event });
+            Command(new ScoreEventCommand { Event = @event });
             
             Command(new SaveEventCommand
             {
@@ -111,6 +125,9 @@ namespace geeks.Controllers
         {
             var organiser = RavenSession.Load<User>(ev.CreatedBy);
             var myInvitation = ev.Invitations.FirstOrDefault(invitation => invitation.PersonId == currentPerson.Id);
+            var score = 0D;
+            if (ev.TheoreticalMaximumScore > 0)
+                score = (ev.Score / ev.TheoreticalMaximumScore) * 100;
 
             return new EventModel
                 {
@@ -123,7 +140,7 @@ namespace geeks.Controllers
                     Latitude = ev.Latitude,
                     Longitude = ev.Longitude,
                     Venue = ev.Venue,
-                    Score = ev.Score,
+                    Score = score,
                     MyResponse = myInvitation == null ? InvitationResponse.No : myInvitation.Response,
                     Invitations = (from i in ev.Invitations
                                    let person = RavenSession.Load<Person>(i.PersonId)

@@ -3,14 +3,14 @@
     border-top: solid 10px #000;
     color: #333;
     font-size: 1em;
-    font-family: "Segoe UI", Verdana, Helvetica, Sans-Serif;
+    font-family: Helvetica, Sans-Serif;
 }
 
 
 .logo {
 	background-image: url("../img/logo.png");
 	background-repeat: no-repeat;
-	height: 180px;
+	height: 150px;
 }
 
 div.header {

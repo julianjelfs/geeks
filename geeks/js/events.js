@@ -5,13 +5,29 @@ app.controller("EventsCtrl", function($scope, $http, listData, xsrfPost) {
         pageSize: 10,
         search: null
     };
+
+    var threshold = 75;
+
+    $scope.statusClass = function(ev) {
+        return ev.Score > threshold
+            ? "alert-success" : "alert-danger";
+    };
+    
+    $scope.thumbClass = function(ev) {
+        var cls = "icon pull-right ";
+        cls += ev.Score > threshold
+            ? "icon-thumbs-up" : "icon-thumbs-down";
+        return cls;
+    };
         
     $scope.search = function() {
+        $scope.loading = true;
         listData.get("/geeks/home/EventsData", $scope.searchArgs).success(function(data) {
             $scope.events = data.Events;
             $scope.numberOfPages = data.NumberOfPages;
             $scope.prevClass = data.PageIndex > 0 ? "btn" : "btn disabled";
             $scope.nextClass = data.PageIndex + 1 >= data.NumberOfPages ? "btn disabled" : "btn";
+            $scope.loading = false;
         });
     };
     $scope.next = function() {

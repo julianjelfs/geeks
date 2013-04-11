@@ -7,16 +7,15 @@ namespace geeks.Commands
     /// <summary>
     /// works out the current score for this event as it stands at the moment
     /// </summary>
-    public class EvaluateEventCommand : Command
+    public class ScoreEventCommand : Command
     {
         public Event Event { get; set; }
 
         public override void Execute()
         {
-            var score = 0D;
+            var maxScore = 0D;
+            var actualScore = 0D;
 
-            //this is actually wrong at the moment because it doesn't take into 
-            //account whether each invitee is actually coming or not
             foreach (var i1 in Event.Invitations)
             {
                 var currentPerson = Query(new PersonByIdWithFriends {Id = i1.PersonId});
@@ -27,12 +26,18 @@ namespace geeks.Commands
                     var f = currentPerson.Friends.SingleOrDefault(friend => friend.PersonId == i2.PersonId);
                     if (f != null)
                     {
-                        score += f.Rating;
+                        maxScore += f.Rating;
+                        if (i1.Response == InvitationResponse.Yes
+                            && i2.Response == InvitationResponse.Yes)
+                        {
+                            actualScore += f.Rating;
+                        }
                     }
                 }
             }
 
-            Event.Score = score;
+            Event.TheoreticalMaximumScore = maxScore;
+            Event.Score = actualScore;
         }
     }
 }
