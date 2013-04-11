@@ -19,14 +19,14 @@ app.factory("listData", function($http) {
     return {
         restrict : "E",
         replace : true,
-        template : "<div><input class='typeahead' type='text' placeholder='Type here to find friends to add' data-provide='typeahead' autocomplete='false' style='width: 98%' />"
+        template : "<div><input ng-show='!model.ReadOnly' class='typeahead' type='text' placeholder='Type here to find friends to add' data-provide='typeahead' autocomplete='false' style='width: 98%' />"
                     +    "<div id='invitees' class='well well-small'>"
                     +        "<div ng-show='!invitee.IsCurrentUser' ng-repeat='invitee in model.Invitations' class='alert alert-info'>"
                     +            "<button ng-show='!model.ReadOnly' ng-click='remove(invitee.PersonId)' type='button' class='close' data-dismiss='alert'>&times;</button>"
                     +            "{{invitee.Email}}"
                     +            "<rate-friend model='invitee'></rate-friend>"
                     +        "</div>"
-                    +        "<span ng-show='unratedFriends()'>Make sure you rate all friends that you invite for the best result</span>"
+                    +        "<span ng-show='unratedFriends()'>Make sure you rate all friends that are invited for the best result</span>"
                     +    "</div></div>",
         link : function(scope, el, atts) {
             var map = {};
@@ -38,7 +38,8 @@ app.factory("listData", function($http) {
                             PersonId: map[item].PersonId,
                             Email: item,
                             Rating: map[item].Rating,
-                            EmailSent: false
+                            EmailSent: false,
+                            Response: 0
                         });
                     });
                     return "";
@@ -70,7 +71,7 @@ app.factory("listData", function($http) {
             scope.unratedFriends = function() {
                 if (scope.model && scope.model.Invitations.length) {
                     return $.grep(scope.model.Invitations, function(item) {
-                        return item.Rating == 0;
+                        return !item.IsCurrentUser && item.Rating == 0;
                     }).length > 0;
                 }
                 return false;

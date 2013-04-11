@@ -45,6 +45,7 @@ namespace geeks.Models
 
         public bool ReadOnly { get; set; }
         public double Score { get; set; }
+        public InvitationResponse MyResponse { get; set; }
 
         public List<InvitationModel> Invitations { get; set; } 
     }

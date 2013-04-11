@@ -73,6 +73,7 @@ namespace geeks.Controllers
                     ?? new Event(model);
                 
                 Command(new EvaluateEventCommand { Event = @event });
+                
                 Command(new SaveEventCommand
                     {
                         Event = @event,
@@ -81,10 +82,36 @@ namespace geeks.Controllers
             }
             return new HttpStatusCodeResult(HttpStatusCode.OK);
         }
+        
+        [HttpPost]
+        [Authorize]
+        public virtual HttpStatusCodeResult RespondToInvite(string id, InvitationResponse response)
+        {
+            var @event = Query(new EventWithInvitationsAndPersons {EventId = id});
+            
+            Command(new RespondToInviteCommand
+                {
+                    Event = @event, 
+                    Response = response, 
+                    PersonId = GetCurrentPersonId()
+                });
+            
+            Command(new EvaluateEventCommand { Event = @event });
+            
+            Command(new SaveEventCommand
+            {
+                Event = @event,
+                Emailer = _emailer
+            });
+            
+            return new HttpStatusCodeResult(HttpStatusCode.OK);
+        }
 
         private EventModel EventModelFromEvent(Event ev, Person currentPerson = null)
         {
             var organiser = RavenSession.Load<User>(ev.CreatedBy);
+            var myInvitation = ev.Invitations.FirstOrDefault(invitation => invitation.PersonId == currentPerson.Id);
+
             return new EventModel
                 {
                     Id = ev.Id,
@@ -97,6 +124,7 @@ namespace geeks.Controllers
                     Longitude = ev.Longitude,
                     Venue = ev.Venue,
                     Score = ev.Score,
+                    MyResponse = myInvitation == null ? InvitationResponse.No : myInvitation.Response,
                     Invitations = (from i in ev.Invitations
                                    let person = RavenSession.Load<Person>(i.PersonId)
                                    let friend = GetFriendFromPerson(currentPerson, i.PersonId)

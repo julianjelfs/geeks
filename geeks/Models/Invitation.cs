@@ -9,7 +9,8 @@
 
     public enum InvitationResponse
     {
-        Yes,
-        No
+        Unknown = 0,
+        No = 1,
+        Yes = 2
     }
 }

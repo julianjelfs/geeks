@@ -6,15 +6,20 @@
         <input id="Latitude" name="Latitude" type="hidden" value="{{theEvent.position.mb}}" />
     
         <div class="row-fluid">
-            <div class="span7">
-                <fieldset>
-                    <legend class="geek">Enter details to create a new event</legend>
+            <div class="span7" >
+                <fieldset ng-disabled="model.ReadOnly">
+                    <legend class="geek">Event Details</legend>
                     <textarea rows="4" ng-model="model.Description" placeholder="Description" required class="input-block-level"></textarea>
                     <input type="datetime" ng-model="model.Date" class="input-block-level" placeholder="Date and time" required/>
                     <input type="text" ng-model="model.Venue" class="input-block-level" placeholder="Venue" required />
                     <button ng-show="!model.ReadOnly" class="btn" type="submit" ng-click="submit()">Save</button>
-                    <button ng-show="model.ReadOnly" class="btn btn-success" type="submit" ng-click="accept()">Accept</button>
-                    <button ng-show="model.ReadOnly" class="btn btn-danger" type="submit" ng-click="accept()">Decline</button>
+                </fieldset>
+                <br/>
+                <fieldset ng-show="model.ReadOnly">
+                    <legend class="geek">Are you coming?</legend>
+                    Currently you are down as <em>{{going()}}</em> but you can change that by clicking below:<br/><br/>
+                    <button ng-show="model.ReadOnly" class="btn btn-success" type="submit" ng-click="respond(2)">Yes please</button>
+                    <button ng-show="model.ReadOnly" class="btn btn-danger" type="submit" ng-click="respond(1)">No thanks</button>
                 </fieldset>
 				<br/>
                 <fieldset>
@@ -42,6 +47,18 @@
             $scope.zoom = 12;
             $scope.eventId = "@ViewBag.EventId";
 
+			$scope.going = function() {
+			    if($scope.model === undefined
+					|| $scope.model.MyResponse === 0)
+			        return "maybe going";
+			    
+				if($scope.model.MyResponse === 1)
+			        return "not going";
+			    
+				if($scope.model.MyResponse === 2)
+			        return "going";
+			}
+
             $scope.mapOptions = {
                 center: new google.maps.LatLng(51.509, -0.115),
                 zoom: $scope.zoom,
@@ -49,6 +66,8 @@
             };
 
             $scope.moveMarker = function($event) {
+                if ($scope.model.ReadOnly)
+                    return;
                 console.log("moving marker to " + $event.latLng);
                 $scope.theEvent.setPosition($event.latLng);
                 console.log("Lat: " + $scope.theEvent.position.lat());
@@ -58,6 +77,16 @@
             $scope.setMarkerPosition = function(marker, lat, lng) {
                 marker.setPosition(new google.maps.LatLng(lat, lng));
             };
+            
+			$scope.respond = function(response) {
+			    $scope.model.MyResponse = response;
+			    xsrfPost.post("/geeks/Home/RespondToInvite", {
+			        id : $scope.eventId, 
+			        response : $scope.model.MyResponse
+			    }).success(function() {
+                    console.log("saved changes to " + $scope.eventId);
+                });
+			}
 
             $scope.submit = function() {
                 if ($scope.form.$valid) {

@@ -277,6 +277,7 @@
     <Compile Include="Commands\DeleteFriendCommand.cs" />
     <Compile Include="Commands\EvaluateEventCommand.cs" />
     <Compile Include="Commands\RateFriendCommand.cs" />
+    <Compile Include="Commands\RespondToInviteCommand.cs" />
     <Compile Include="Commands\SaveEventCommand.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\HandleErrorAsHttpAttribute.cs" />
