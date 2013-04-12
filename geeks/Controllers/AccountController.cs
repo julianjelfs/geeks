@@ -6,7 +6,6 @@ using DotNetOpenAuth.AspNet;
 using FlexProviders.Membership;
 using Microsoft.Web.WebPages.OAuth;
 using Raven.Client;
-using Raven.Client.Linq;
 using geeks.Models;
 using System.Linq;
 
@@ -19,7 +18,9 @@ namespace geeks.Controllers
         private readonly IFlexOAuthProvider _oAuthProvider;
         private readonly ISecurityEncoder _encoder = new DefaultSecurityEncoder();
 
-        public AccountController(IFlexMembershipProvider membership, IFlexOAuthProvider oauth, IDocumentStore store)
+        public AccountController(IFlexMembershipProvider membership, 
+            IFlexOAuthProvider oauth, 
+            IDocumentStore store)
             : base(store)
         {
             _membershipProvider = membership;

@@ -5,6 +5,7 @@ using Raven.Client;
 using geeks.Commands;
 using geeks.Models;
 using geeks.Queries;
+using log4net;
 
 namespace geeks.Controllers
 {
@@ -12,6 +13,7 @@ namespace geeks.Controllers
     {
         protected IDocumentStore Store { get; private set; }
         protected IDocumentSession RavenSession { get; private set; }
+        protected ILog Logger = LogManager.GetLogger("Geeks");
 
         public RavenController(IDocumentStore store)
         {

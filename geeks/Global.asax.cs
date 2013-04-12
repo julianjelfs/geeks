@@ -9,6 +9,7 @@ using System.Web.Optimization;
 using System.Web.Routing;
 using Raven.Client.Document;
 using Raven.Client.Indexes;
+using log4net.Config;
 
 namespace geeks
 {
@@ -19,6 +20,7 @@ namespace geeks
     {
         protected void Application_Start()
         {
+            XmlConfigurator.Configure();
             AreaRegistration.RegisterAllAreas();
 
             WebApiConfig.Register(GlobalConfiguration.Configuration);

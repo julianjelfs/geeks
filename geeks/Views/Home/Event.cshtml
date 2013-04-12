@@ -127,6 +127,9 @@
                 });
                 $scope.eventMap.panTo($scope.theEvent.getPosition());
                 $scope.loading = false;
+            }).error(function(data, status) {
+                $scope.$emit("UNEXPECTEDERROR", data);
+                $scope.loading = false;
             });
 
         }

@@ -1,20 +1,31 @@
 ﻿var app = angular.module('geeks', ['ui']);
 
-app.factory("listData", function($http) {
+app.factory("listData", function($http, $rootScope) {
     return {
         get: function(url, args) {
-            return $http.get(url + "?" + $.param(args), { cache: false });
+            return $http.get(url + "?" + $.param(args), { cache: false }).error(function(data, status) {
+                $rootScope.$broadcast("UNEXPECTEDERROR", data);
+            });
         }
     };
-}).factory("xsrfPost", function($http) {
+}).factory("xsrfPost", function($http, $rootScope) {
     return {
         post: function(url, args) {
             var config = {
                 headers: { '__RequestVerificationToken': angular.element("input[name='__RequestVerificationToken']").val() }
             };
-            return $http.post(url, args, config);
+            return $http.post(url, args, config).error(function(data, status) {
+                $rootScope.$broadcast("UNEXPECTEDERROR", data);
+            });
+            
         }
     };
+}).controller("GeeksCtrl", function($scope) {
+    $scope.$on("UNEXPECTEDERROR", function(ev, data) {
+        $scope.error = data;
+        angular.element("#unexpected-error").modal("show");
+        $scope.loading = false;
+    });
 }).directive("friendPicker", function($http) {
     return {
         restrict : "E",
@@ -52,6 +63,8 @@ app.factory("listData", function($http) {
                             emails.push(prop);
                         }
                         return process(emails);
+                    }).error(function(data, status) {
+                        $scope.$emit("UNEXPECTEDERROR", data);
                     });
                 }
             });    

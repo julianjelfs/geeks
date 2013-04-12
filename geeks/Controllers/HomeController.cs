@@ -8,10 +8,12 @@ using geeks.Commands;
 using geeks.Models;
 using geeks.Queries;
 using geeks.Services;
+using log4net;
 
 namespace geeks.Controllers
 {
     [ValidateJsonAntiForgeryToken]
+    [HandleErrorAsHttp]
     public class HomeController : RavenController
     {
         private readonly IEmailer _emailer;
@@ -60,7 +62,6 @@ namespace geeks.Controllers
                 var ev = Query(new EventWithInvitations {EventId = id});
                 return JsonNet(EventModelFromEvent(ev, me));
             }
-            
             return JsonNet(EventModelForNewEvent(me));
         }
 
@@ -241,7 +242,6 @@ namespace geeks.Controllers
 
         [HttpPost]
         [Authorize]
-        [HandleErrorAsHttp]
         public virtual void RateFriend(string id, string rating)
         {
             Command(new RateFriendCommand
@@ -253,7 +253,6 @@ namespace geeks.Controllers
 
         [HttpPost]
         [Authorize]
-        [ValidateJsonAntiForgeryToken]
         public virtual void DeleteFriend(string id)
         {
             Command(new DeleteFriendCommand {PersonId = id});
