@@ -157,12 +157,20 @@ app.factory("listData", function($http) {
         link: function(scope, el, atts) {
             console.log("linking datepicker");
             var input = angular.element('input:first', el);
-            input.datepicker({ format : "dd mm yyyy"}).on('changeDate', function(ev) {
-                scope.$apply(function() {
-                    scope.model.Date = ev.date;
-                    scope.model.DateString = $filter("date")(ev.date, "dd MMMM yyyy");
-                });
-                input.datepicker("hide");
+            input.datepicker({
+                 format : "dd MMMM yyyy",
+                 formatter : function(date, format) {
+                     return $filter("date")(date, format.parts.join(" "));
+                 }
+            }).on('changeDate', function(ev) {
+                console.log(ev.viewMode);
+                if (ev.viewMode === "days") {
+                    scope.$apply(function() {
+                        scope.model.Date = ev.date;
+                        scope.model.DateString = $filter("date")(ev.date, "dd MMMM yyyy");
+                    });
+                    input.datepicker("hide");
+                }
             });
         }
     };
