@@ -53,13 +53,34 @@ namespace geeks.Controllers
         [Authorize]
         public virtual JsonNetResult EventData(string id, string userId)
         {
+            var me = Query(new PersonByUserId { UserId = GetCurrentUserId() });
+
             if (!string.IsNullOrEmpty(id))
             {
-                var me = Query(new PersonByUserId {UserId = GetCurrentUserId()});
                 var ev = Query(new EventWithInvitations {EventId = id});
                 return JsonNet(EventModelFromEvent(ev, me));
             }
-            return JsonNet(new EventModel {CreatedBy = GetCurrentUserId()});
+            
+            return JsonNet(EventModelForNewEvent(me));
+        }
+
+        private EventModel EventModelForNewEvent(Person me)
+        {
+            return new EventModel
+                {
+                    CreatedBy = me.UserId,
+                    Invitations = new List<InvitationModel>
+                        {
+                            new InvitationModel
+                                {
+                                    PersonId = me.Id,
+                                    Email = me.EmailAddress,
+                                    EmailSent = true,
+                                    IsCurrentUser = true,
+                                    Response = InvitationResponse.Yes
+                                }
+                        }
+                };
         }
 
 
@@ -136,6 +157,7 @@ namespace geeks.Controllers
                     CreatedBy = organiser.Id,
                     ReadOnly = organiser.Id != GetCurrentUserId(),
                     Date = ev.Date,
+                    Time = ev.Time,
                     Description = ev.Description,
                     Latitude = ev.Latitude,
                     Longitude = ev.Longitude,

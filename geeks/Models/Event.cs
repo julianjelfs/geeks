@@ -19,6 +19,7 @@ namespace geeks.Models
             Id = model.Id;
             Description = model.Description;
             Date = model.Date;
+            Time = model.Time;
             Venue = model.Venue;
             CreatedBy = model.CreatedBy;
             Longitude = model.Longitude;
@@ -44,6 +45,7 @@ namespace geeks.Models
         public string Id { get; set; }
         public string Description { get; set; }
         public DateTime Date { get; set; }
+        public string Time { get; set; }
         public string Venue { get; set; }
         public string CreatedBy { get; set; }
         public IEnumerable<Invitation> Invitations { get; set; }
@@ -51,5 +53,6 @@ namespace geeks.Models
         public double Longitude { get; set; }
         public double TheoreticalMaximumScore { get; set; }
         public double Score { get; set; }
+        public double EveryoneComingScore { get; set; }
     }
 }

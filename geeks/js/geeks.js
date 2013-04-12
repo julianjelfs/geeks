@@ -153,14 +153,16 @@ app.factory("listData", function($http) {
     return {
         restrict: "E",
         replace: true,
-        template: "<input type='datetime' ng-model='model.Date' placeholder='Date and time' required />",
+        template: "<span><input type='datetime' style='width:150px;' ng-model='model.DateString' placeholder='Date' required /><input style='width:100px;margin-left:10px' type='text' ng-model='model.Time' placeholder='Time' required /></span>",
         link: function(scope, el, atts) {
             console.log("linking datepicker");
-            el.datepicker({ format : "dd mm yyyy"}).on('changeDate', function(ev) {
+            var input = angular.element('input:first', el);
+            input.datepicker({ format : "dd mm yyyy"}).on('changeDate', function(ev) {
                 scope.$apply(function() {
-                    scope.model.Date = $filter("date")(ev.date, "dd MMMM yyyy");
+                    scope.model.Date = ev.date;
+                    scope.model.DateString = $filter("date")(ev.date, "dd MMMM yyyy");
                 });
-                el.datepicker("hide");
+                input.datepicker("hide");
             });
         }
     };

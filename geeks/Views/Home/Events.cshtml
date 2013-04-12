@@ -15,14 +15,14 @@
 
 	<div id="table-placeholder" ng-show="events.length > 0">
         
-        <table class="table">
+        <table class="table events">
             <thead>
                 <tr>
                     <th>Description</th>
                     <th>Venue</th>
                     <th>Organiser</th>
-                    <th>When</th>
-                    <th width="80px">Score</th>
+                    <th class="centered">When</th>
+                    <th class="centered" width="80px">Score</th>
                     <th width="40px"></th>
                 </tr>
             </thead>
@@ -33,8 +33,8 @@
                     </td>
                     <td truncate="30" ng-bind="ev.Venue"></td>
                     <td ng-bind="ev.CreatedByUserName"></td>
-                    <td>{{ev.Date | date:'dd/MM/yyyy h:mma'}}</td>
-                    <td style="text-align: center">{{ev.Score | number:2}}% <i ng-class="thumbClass(ev)"></i></td>
+                    <td class="centered">{{ev.Date | date:'dd MMMM yyyy'}} @@ {{ev.Time}}</td>
+                    <td class="centered" style="text-align: center">{{ev.Score | number:2}}% <i ng-class="thumbClass(ev)"></i></td>
                     <td>
                         <delete-event warning="#delete-warning"></delete-event>
                     </td>

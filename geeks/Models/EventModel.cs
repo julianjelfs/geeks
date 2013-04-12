@@ -23,8 +23,13 @@ namespace geeks.Models
         
         [Required]
         [DataType(DataType.DateTime)]
-        [Display(Name = "Date and time")]
+        [Display(Name = "Date")]
         public DateTime Date { get; set; }
+
+        [Required]
+        [DataType(DataType.Time)]
+        [Display(Name = "Time")]
+        public string Time { get; set; }
         
         [Required]
         [DataType(DataType.MultilineText)]

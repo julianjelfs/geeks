@@ -23,7 +23,7 @@
                 </fieldset>
 				<br/>
                 <fieldset>
-                    <legend class="geek">Who's invited</legend>
+                    <legend class="geek">Who else is invited</legend>
                     <friend-picker></friend-picker>
                 </fieldset>
             </div>
@@ -43,7 +43,7 @@
         $("#nav-bar li.active").removeClass("active");
         $("#events-nav").addClass("active");
 
-        function EventCtrl($scope, $http, xsrfPost) {
+        function EventCtrl($scope, $http, $filter, xsrfPost) {
             $scope.zoom = 12;
             $scope.eventId = "@ViewBag.EventId";
             $scope.loading = true;
@@ -102,11 +102,14 @@
                             Longitude: $scope.theEvent.position.lng(),
                             Venue: $scope.model.Venue,
                             Invitations: $scope.model.Invitations,
-                            CreatedBy:$scope.model.CreatedBy
+                            CreatedBy:$scope.model.CreatedBy,
+                            Date:$scope.model.Date,
+                            Time:$scope.model.Time
                         }
                     }).success(function(data) {
                         $scope.model = data;
                         $scope.eventId = data.Id;
+                        $scope.model.DateString = $filter("date")($scope.model.Date, "dd MMMM yyyy");
                         console.log("saved changes to " + $scope.eventId);
                         $scope.loading = false;
                     });
@@ -115,6 +118,7 @@
 
             $http.get("/geeks/Home/EventData/" + $scope.eventId).success(function(data, status) {
 				$scope.model = data;
+                $scope.model.DateString = $filter("date")($scope.model.Date, "dd MMMM yyyy");
                 $scope.eventId = data.Id;
                 var latlng = new google.maps.LatLng(data.Latitude, data.Longitude);
                 $scope.theEvent = new google.maps.Marker({

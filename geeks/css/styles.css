@@ -13,6 +13,10 @@
 	height: 150px;
 }
 
+table.events th.centered, table.events td.centered {
+	text-align: center;
+}
+
 div.header {
 	height: 180px;
 }

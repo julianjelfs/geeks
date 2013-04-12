@@ -13,7 +13,8 @@ namespace geeks.Commands
 
         public override void Execute()
         {
-            var maxScore = 0D;
+            var everyoneComingScore = 0D;
+            var maxScore = Event.Invitations.Count() * 10 * 2;
             var actualScore = 0D;
 
             foreach (var i1 in Event.Invitations)
@@ -26,7 +27,7 @@ namespace geeks.Commands
                     var f = currentPerson.Friends.SingleOrDefault(friend => friend.PersonId == i2.PersonId);
                     if (f != null)
                     {
-                        maxScore += f.Rating;
+                        everyoneComingScore += f.Rating;
                         if (i1.Response == InvitationResponse.Yes
                             && i2.Response == InvitationResponse.Yes)
                         {
@@ -36,6 +37,7 @@ namespace geeks.Commands
                 }
             }
 
+            Event.EveryoneComingScore = everyoneComingScore;
             Event.TheoreticalMaximumScore = maxScore;
             Event.Score = actualScore;
         }
