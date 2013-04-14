@@ -184,12 +184,11 @@ namespace geeks.Controllers
         {
             var person = Query(new PersonByUserId {UserId = GetCurrentUserId()});
 
-            var emails = new HashSet<string>(from m in contacts.Distinct() select m.EmailAddress.ToLower());
-
-            //do we have paerson records that match these people
-            var people = RavenSession.Query<Person>()
-                            .Where(u => u.EmailAddress.In(emails))
-                                    .ToDictionary(u => u.EmailAddress);
+            var existingPeople = Query(new PeopleAlreadyImported
+                {
+                    Emails = new HashSet<string>(from m in contacts.Distinct() 
+                                                 select m.EmailAddress.ToLower())
+                });
 
             using (var bulkInsert = Store.BulkInsert())
             {
@@ -199,7 +198,7 @@ namespace geeks.Controllers
                     if (importModel.EmailAddress.ToLower() == User.Identity.Name) continue;
                     
                     //if we already have a person record for this address
-                    if (people.ContainsKey(importModel.EmailAddress.ToLower())) continue;
+                    if (existingPeople.ContainsKey(importModel.EmailAddress.ToLower())) continue;
 
                     var newPerson = new Person
                     {
@@ -216,15 +215,15 @@ namespace geeks.Controllers
                             }
                     };
                     bulkInsert.Store(newPerson);
-                    people.Add(newPerson.EmailAddress, newPerson);
+                    existingPeople.Add(newPerson.EmailAddress, newPerson);
                 }
 
                 person.Friends = person.Friends.Union(from i in contacts
                                                       let email = i.EmailAddress.ToLower()
-                                                  where !person.Friends.Any(f => f.PersonId == people[email].Id)
+                                                  where !person.Friends.Any(f => f.PersonId == existingPeople[email].Id)
                                                   select new Friend
                                                   {
-                                                      PersonId = people[email].Id
+                                                      PersonId = existingPeople[email].Id
                                                   }).ToList();
             }
             RavenSession.Delete(gc);

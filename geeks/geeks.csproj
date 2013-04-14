@@ -308,6 +308,7 @@
     <Compile Include="Queries\FriendsForAPerson.cs" />
     <Compile Include="Queries\ListQuery.cs" />
     <Compile Include="Queries\ListResult.cs" />
+    <Compile Include="Queries\PeopleAlreadyImported.cs" />
     <Compile Include="Queries\PersonByEmail.cs" />
     <Compile Include="Queries\PersonByUserId.cs" />
     <Compile Include="Queries\PersonByUserIdWithFriends.cs" />
