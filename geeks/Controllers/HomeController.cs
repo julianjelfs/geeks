@@ -129,7 +129,8 @@ namespace geeks.Controllers
                 {
                     Event = @event, 
                     Response = response, 
-                    PersonId = GetCurrentPersonId()
+                    PersonId = GetCurrentPersonId(),
+                    Emailer = _emailer
                 });
             
             Command(new ScoreEventCommand { Event = @event });

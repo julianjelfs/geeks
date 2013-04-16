@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Mail;
-using System.Web;
 using geeks.Models;
 
 namespace geeks.Services
@@ -10,14 +7,7 @@ namespace geeks.Services
     public interface IEmailer
     {
         bool Invite(Person organiser, Person user, Event ev);
-    }
-
-    public class FakeEmailer : IEmailer
-    {
-        public bool Invite(Person organiser, Person user, Event ev)
-        {
-            return true;
-        }
+        bool UpdateInvitationResponse(Event ev, Person organiser, Person responder, InvitationResponse response);
     }
 
     public class Emailer : IEmailer
@@ -39,15 +29,29 @@ namespace geeks.Services
                 Environment.NewLine +
                 "http://localhost/geeks/event/" + ev.Id  + "/" + user.Id;
             var smtp = new SmtpClient();
-            //try
-            //{
-                smtp.Send(message);
-            //}
-            //catch (SmtpFailedRecipientException exception)
-            //{
-            //    throw new ApplicationException(string.Format("The email address {0} does not seem to be reachable. Please make sure that the email address associated with your friend is correct.", user.Username), exception);
-            //}
+            smtp.Send(message);
 
+            return true;
+        }
+
+        public bool UpdateInvitationResponse(Event ev, Person organiser, Person responder, InvitationResponse response)
+        {
+            var message = new MailMessage();
+            message.To.Add(organiser.EmailAddress);
+            message.From = new MailAddress("robot@geeksdilemma.com");
+            message.Subject = string.Format("{0} has responded to your event invitation", DisplayName(responder));
+            message.Body = @"Your friend " + DisplayName(responder) + @" has " + (response == InvitationResponse.Yes ? "accepted":"declined") + @" your invitation to the following event:" +
+                Environment.NewLine +
+                Environment.NewLine +
+                ev.Description +
+                Environment.NewLine +
+                Environment.NewLine +
+                "To see how this may have affected the score for this event click the following link:" +
+                Environment.NewLine +
+                Environment.NewLine +
+                "http://localhost/geeks/event/" + ev.Id;
+            var smtp = new SmtpClient();
+            smtp.Send(message);
             return true;
         }
 
