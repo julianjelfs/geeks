@@ -260,11 +260,7 @@ namespace geeks.Controllers
             RavenSession.SaveChanges();
 
             var score = 0D;
-            foreach (var ev in Query(new EventsFeaturingPerson
-                {
-                    CurrentPersonId = GetCurrentPersonId(),
-                    PersonId = id
-                }))
+            foreach (var ev in Query(new EventsFeaturingPerson{PersonId = id}))
             {
                 Command(new ScoreEventCommand
                     {
