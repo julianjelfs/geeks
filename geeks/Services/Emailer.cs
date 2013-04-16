@@ -27,7 +27,7 @@ namespace geeks.Services
                 "To see the details including who else is invitee and to say whether or not you can go, click here:"+
                 Environment.NewLine +
                 Environment.NewLine +
-                "http://localhost/geeks/event/" + ev.Id  + "/" + user.Id;
+                "http://localhost/geeks/home/event/" + ev.Id  + "/" + user.Id;
             var smtp = new SmtpClient();
             smtp.Send(message);
 
@@ -49,7 +49,7 @@ namespace geeks.Services
                 "To see how this may have affected the score for this event click the following link:" +
                 Environment.NewLine +
                 Environment.NewLine +
-                "http://localhost/geeks/event/" + ev.Id;
+                "http://localhost/geeks/home/event/" + ev.Id;
             var smtp = new SmtpClient();
             smtp.Send(message);
             return true;

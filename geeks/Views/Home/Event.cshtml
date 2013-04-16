@@ -12,6 +12,7 @@
                     <textarea rows="4" ng-model="model.Description" placeholder="Description" required class="input-block-level"></textarea>
                     <date-picker></date-picker>
                     <input type="text" ng-model="model.Venue" class="input-block-level" placeholder="Venue" required />
+                    <div ng-class="statusClass()">Current Score: {{model.Score | number:2}}% <i ng-class="thumbClass()"></i></div>
                     <button ng-show="!model.ReadOnly" ng-disabled="loading" class="btn" type="submit" ng-click="submit()">Save</button>
                 </fieldset>
                 <br/>
@@ -47,6 +48,20 @@
             $scope.zoom = 12;
             $scope.eventId = "@ViewBag.EventId";
             $scope.loading = true;
+            
+            var threshold = 75;
+
+            $scope.statusClass = function() {
+                return $scope.model.Score > threshold
+                    ? "alert alert-success" : "alert alert-danger";
+            };
+            
+            $scope.thumbClass = function() {
+                var cls = "icon pull-right ";
+                cls += $scope.model.Score > threshold
+                    ? "icon-thumbs-up" : "icon-thumbs-down";
+                return cls;
+            };
 
 			$scope.going = function() {
 			    if($scope.model === undefined
@@ -85,7 +100,8 @@
 			    xsrfPost.post("/geeks/Home/RespondToInvite", {
 			        id : $scope.eventId, 
 			        response : $scope.model.MyResponse
-			    }).success(function() {
+			    }).success(function(data) {
+			        $scope.model.Score = data.Score;
                     console.log("saved changes to " + $scope.eventId);
 			        $scope.loading = false;
                 });

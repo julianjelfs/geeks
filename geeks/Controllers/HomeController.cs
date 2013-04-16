@@ -121,7 +121,7 @@ namespace geeks.Controllers
 
         [HttpPost]
         [Authorize]
-        public virtual HttpStatusCodeResult RespondToInvite(string id, InvitationResponse response)
+        public virtual JsonNetResult RespondToInvite(string id, InvitationResponse response)
         {
             var @event = Query(new EventWithInvitationsAndPersons {EventId = id});
             
@@ -140,17 +140,22 @@ namespace geeks.Controllers
                 Event = @event,
                 Emailer = _emailer
             });
-            
-            return new HttpStatusCodeResult(HttpStatusCode.OK);
+
+            return JsonNet(new {Score = ScoreFromEvent(@event)});
+        }
+
+        private double ScoreFromEvent(Event ev)
+        {
+            var score = 0D;
+            if (ev.TheoreticalMaximumScore > 0)
+                score = (ev.Score / ev.TheoreticalMaximumScore) * 100;
+            return score;
         }
 
         private EventModel EventModelFromEvent(Event ev, Person currentPerson = null)
         {
             var organiser = RavenSession.Load<User>(ev.CreatedBy);
             var myInvitation = ev.Invitations.FirstOrDefault(invitation => invitation.PersonId == currentPerson.Id);
-            var score = 0D;
-            if (ev.TheoreticalMaximumScore > 0)
-                score = (ev.Score / ev.TheoreticalMaximumScore) * 100;
 
             return new EventModel
                 {
@@ -164,7 +169,7 @@ namespace geeks.Controllers
                     Latitude = ev.Latitude,
                     Longitude = ev.Longitude,
                     Venue = ev.Venue,
-                    Score = score,
+                    Score = ScoreFromEvent(ev),
                     MyResponse = myInvitation == null ? InvitationResponse.No : myInvitation.Response,
                     Invitations = (from i in ev.Invitations
                                    let person = RavenSession.Load<Person>(i.PersonId)
