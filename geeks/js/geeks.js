@@ -137,9 +137,11 @@ app.factory("listData", function($http, $rootScope) {
                 scope.model.Rating = rating;
                 xsrfPost.post('/geeks/Home/RateFriend', {
                     id : scope.model.PersonId,
-                    rating : rating
-                }).success(function() {
+                    rating : rating,
+                    eventId : scope.model.EventId
+                }).success(function(data) {
                     el.popover("hide");
+                    scope.$emit("ScoreUpdated", data.Score);
                 });
             };
         }

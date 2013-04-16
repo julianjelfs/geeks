@@ -51,6 +51,10 @@
             
             var threshold = 75;
 
+            $scope.$on("ScoreUpdated", function(ev, data) {
+                $scope.model.Score = data;
+            });
+
             $scope.statusClass = function() {
                 return $scope.model.Score > threshold
                     ? "alert alert-success" : "alert alert-danger";

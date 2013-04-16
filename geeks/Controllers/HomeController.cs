@@ -181,7 +181,8 @@ namespace geeks.Controllers
                                            PersonId = person.Id,
                                            Rating = friend == null ? 0 : friend.Rating,
                                            EmailSent = i.EmailSent,
-                                           Response = i.Response
+                                           Response = i.Response,
+                                           EventId = ev.Id
                                        }).ToList()
                 };
         }
@@ -248,12 +249,38 @@ namespace geeks.Controllers
 
         [HttpPost]
         [Authorize]
-        public virtual void RateFriend(string id, string rating)
+        public virtual JsonNetResult RateFriend(string id, string rating, string eventId)
         {
             Command(new RateFriendCommand
                 {
                     PersonId = id,
                     Rating = Convert.ToInt32(rating)
+                });
+
+            RavenSession.SaveChanges();
+
+            var score = 0D;
+            foreach (var ev in Query(new EventsFeaturingPerson
+                {
+                    CurrentPersonId = GetCurrentPersonId(),
+                    PersonId = id
+                }))
+            {
+                Command(new ScoreEventCommand
+                    {
+                        Event = ev,
+                        Emailer = _emailer
+                    });
+                if (!string.IsNullOrEmpty(eventId)
+                    && ev.Id == eventId)
+                {
+                    score = ev.PercentageScore();
+                }
+            }
+
+            return JsonNet(new
+                {
+                    Score = score
                 });
         }
 

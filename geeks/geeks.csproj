@@ -303,6 +303,7 @@
     <Compile Include="Models\PersonFriend.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Queries\EventsDataForUser.cs" />
+    <Compile Include="Queries\EventsFeaturingPerson.cs" />
     <Compile Include="Queries\EventWithInvitations.cs" />
     <Compile Include="Queries\EventWithInvitationsAndPersons.cs" />
     <Compile Include="Queries\FriendsForAPerson.cs" />

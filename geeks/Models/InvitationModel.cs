@@ -8,5 +8,6 @@
         public int Rating { get; set; }
         public bool EmailSent { get; set; }
         public InvitationResponse Response { get; set; }
+        public string EventId { get; set; }
     }
 }
