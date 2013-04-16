@@ -37,6 +37,14 @@ namespace geeks.Models
             return this;
         }
 
+        public double PercentageScore()
+        {
+            var score = 0D;
+            if (TheoreticalMaximumScore > 0)
+                score = (Score / TheoreticalMaximumScore) * 100;
+            return score;
+        }
+
         public Event(EventModel model)
         {
             Merge(model);

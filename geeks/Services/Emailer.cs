@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Mail;
 using geeks.Models;
 
@@ -8,6 +9,8 @@ namespace geeks.Services
     {
         bool Invite(Person organiser, Person user, Event ev);
         bool UpdateInvitationResponse(Event ev, Person organiser, Person responder, InvitationResponse response);
+        void EventIsOff(Event ev, Person organiser, List<Person> invitees);
+        void EventIsOn(Event ev, Person organiser, List<Person> invitees);
     }
 
     public class Emailer : IEmailer
@@ -34,6 +37,56 @@ namespace geeks.Services
             return true;
         }
 
+        public void EventIsOn(Event ev, Person organiser, List<Person> invitees)
+        {
+            var message = new MailMessage();
+            var score = ev.PercentageScore();
+            message.To.Add(organiser.EmailAddress);
+            foreach (var invitee in invitees)
+            {
+                message.CC.Add(invitee.EmailAddress);
+            }
+            message.From = new MailAddress("robot@geeksdilemma.com");
+            message.Subject = string.Format("Your Geek's Dilemma event has a green light with a score of {0}%", score);
+            message.Body = @"The following event is looking good with a current score of "+ score  +@"%." +
+                Environment.NewLine +
+                Environment.NewLine +
+                ev.Description +
+                Environment.NewLine +
+                Environment.NewLine +
+                "To look at the details of this event, rate friends or change your attendance, click the following link:" +
+                Environment.NewLine +
+                Environment.NewLine +
+                "http://localhost/geeks/home/event/" + ev.Id;
+            var smtp = new SmtpClient();
+            smtp.Send(message);
+        }
+        
+        public void EventIsOff(Event ev, Person organiser, List<Person> invitees)
+        {
+            var message = new MailMessage();
+            var score = ev.PercentageScore();
+            message.To.Add(organiser.EmailAddress);
+            foreach (var invitee in invitees)
+            {
+                message.CC.Add(invitee.EmailAddress);
+            }
+            message.From = new MailAddress("robot@geeksdilemma.com");
+            message.Subject = string.Format("Your Geek's Dilemma event has a red light with a score of {0}%", score);
+            message.Body = @"The following event is not looking too good with a current score of "+ score  +@"%." +
+                Environment.NewLine +
+                Environment.NewLine +
+                ev.Description +
+                Environment.NewLine +
+                Environment.NewLine +
+                "To look at the details of this event, rate friends or change your attendance, click the following link:" +
+                Environment.NewLine +
+                Environment.NewLine +
+                "http://localhost/geeks/home/event/" + ev.Id;
+            var smtp = new SmtpClient();
+            smtp.Send(message);
+        }
+        
         public bool UpdateInvitationResponse(Event ev, Person organiser, Person responder, InvitationResponse response)
         {
             var message = new MailMessage();

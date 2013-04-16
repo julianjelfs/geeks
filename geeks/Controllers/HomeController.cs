@@ -95,7 +95,11 @@ namespace geeks.Controllers
                     ? SaveAndReload(model) 
                     : Query(new EventWithInvitationsAndPersons {EventId = model.Id}).Merge(model);
                 
-                Command(new ScoreEventCommand { Event = @event });
+                Command(new ScoreEventCommand
+                    {
+                        Event = @event,
+                        Emailer = _emailer
+                    });
                 
                 Command(new SaveEventCommand
                     {
@@ -133,7 +137,11 @@ namespace geeks.Controllers
                     Emailer = _emailer
                 });
             
-            Command(new ScoreEventCommand { Event = @event });
+            Command(new ScoreEventCommand
+                {
+                    Event = @event,
+                    Emailer = _emailer
+                });
             
             Command(new SaveEventCommand
             {
@@ -141,15 +149,7 @@ namespace geeks.Controllers
                 Emailer = _emailer
             });
 
-            return JsonNet(new {Score = ScoreFromEvent(@event)});
-        }
-
-        private double ScoreFromEvent(Event ev)
-        {
-            var score = 0D;
-            if (ev.TheoreticalMaximumScore > 0)
-                score = (ev.Score / ev.TheoreticalMaximumScore) * 100;
-            return score;
+            return JsonNet(new {Score = @event.PercentageScore()});
         }
 
         private EventModel EventModelFromEvent(Event ev, Person currentPerson = null)
@@ -169,7 +169,7 @@ namespace geeks.Controllers
                     Latitude = ev.Latitude,
                     Longitude = ev.Longitude,
                     Venue = ev.Venue,
-                    Score = ScoreFromEvent(ev),
+                    Score = ev.PercentageScore(),
                     MyResponse = myInvitation == null ? InvitationResponse.No : myInvitation.Response,
                     Invitations = (from i in ev.Invitations
                                    let person = RavenSession.Load<Person>(i.PersonId)
