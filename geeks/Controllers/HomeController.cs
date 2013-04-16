@@ -107,6 +107,7 @@ namespace geeks.Controllers
                         Emailer = _emailer
                     });
                 model.Id = @event.Id;
+                model.Score = @event.PercentageScore();
             }
             return JsonNet(model);
         }
