@@ -30,7 +30,7 @@
             </div>
             <div class="span5">
 				<div id="map-canvas" ui-map="eventMap" class="map"
-                        ui-event="{'map-click': 'moveMarker($event)' }"
+                        ui-event="{'map-click': 'moveMarker($event)', 'map-zoom_changed': 'zoomTo(eventMap.getZoom())' }"
                         ui-options="mapOptions">
                 </div>
             </div>
@@ -45,22 +45,28 @@
         $("#events-nav").addClass("active");
 
         function EventCtrl($scope, $http, $filter, xsrfPost) {
-            $scope.zoom = 12;
             $scope.eventId = "@ViewBag.EventId";
             $scope.loading = true;
             
             var threshold = 75;
+
+            $scope.zoomTo = function(zoom) {
+                $scope.model.Zoom = zoom;
+                console.log("zoomed to " + zoom);
+            };
 
             $scope.$on("ScoreUpdated", function(ev, data) {
                 $scope.model.Score = data;
             });
 
             $scope.statusClass = function() {
+                if (!$scope.model) return;
                 return $scope.model.Score > threshold
                     ? "alert alert-success" : "alert alert-danger";
             };
             
             $scope.thumbClass = function() {
+                if (!$scope.model) return;
                 var cls = "icon pull-right ";
                 cls += $scope.model.Score > threshold
                     ? "icon-thumbs-up" : "icon-thumbs-down";
@@ -81,7 +87,7 @@
 
             $scope.mapOptions = {
                 center: new google.maps.LatLng(51.509, -0.115),
-                zoom: $scope.zoom,
+                zoom: 12,
                 mapTypeId: google.maps.MapTypeId.ROADMAP
             };
 
@@ -124,7 +130,8 @@
                             Invitations: $scope.model.Invitations,
                             CreatedBy:$scope.model.CreatedBy,
                             Date:$scope.model.Date,
-                            Time:$scope.model.Time
+                            Time:$scope.model.Time,
+                            Zoom:$scope.model.Zoom
                         }
                     }).success(function(data) {
                         $scope.model = data;
@@ -146,6 +153,7 @@
                     position: latlng
                 });
                 $scope.eventMap.panTo($scope.theEvent.getPosition());
+                $scope.eventMap.setZoom($scope.model.Zoom);
                 $scope.loading = false;
             }).error(function(data, status) {
                 $scope.$emit("UNEXPECTEDERROR", data);

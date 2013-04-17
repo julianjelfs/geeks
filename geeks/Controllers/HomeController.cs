@@ -171,6 +171,7 @@ namespace geeks.Controllers
                     Longitude = ev.Longitude,
                     Venue = ev.Venue,
                     Score = ev.PercentageScore(),
+                    Zoom = ev.Zoom,
                     MyResponse = myInvitation == null ? InvitationResponse.No : myInvitation.Response,
                     Invitations = (from i in ev.Invitations
                                    let person = RavenSession.Load<Person>(i.PersonId)

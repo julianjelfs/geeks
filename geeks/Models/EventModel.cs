@@ -11,6 +11,7 @@ namespace geeks.Models
             Invitations = new List<InvitationModel>();
             Latitude = 51.509;
             Longitude = -0.115;
+            Zoom = 12;
             Date = DateTime.Today;
         }
 
@@ -51,6 +52,8 @@ namespace geeks.Models
         public double Score { get; set; }
         public InvitationResponse MyResponse { get; set; }
 
-        public List<InvitationModel> Invitations { get; set; } 
+        public List<InvitationModel> Invitations { get; set; }
+
+        public int Zoom { get; set; }
     }
 }

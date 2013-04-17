@@ -12,7 +12,9 @@ namespace geeks.Models
         {
             Latitude = 51.509;
             Longitude = -0.115;
+            Zoom = 12;
         }
+
 
         public Event Merge(EventModel model)
         {
@@ -24,6 +26,7 @@ namespace geeks.Models
             CreatedBy = model.CreatedBy;
             Longitude = model.Longitude;
             Latitude = model.Latitude;
+            Zoom = model.Zoom;
             if (model.Invitations != null)
             {
                 Invitations = from i in model.Invitations
@@ -62,5 +65,6 @@ namespace geeks.Models
         public double TheoreticalMaximumScore { get; set; }
         public double Score { get; set; }
         public double EveryoneComingScore { get; set; }
+        public int Zoom { get; set; }
     }
 }
